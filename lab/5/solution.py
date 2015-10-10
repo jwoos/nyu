@@ -4,9 +4,7 @@ import turtle
 def make_shapes():
 	num = int(input('Please enter an integer: '))
 	for x in range(1, num + 1):
-		the_asterisk = '*' * x * 2
-		the_asterisk = the_asterisk[:-1:]
-		print(the_asterisk)
+		print(' ' * (num - x) + '*' * (x * 2 - 1) + ' ' * (num - x))
 	num = int(input('Please enter an integer: '))
 	for i in range(num):
 		print('#' * (i) + '%' + '$' * (num - i - 1))
@@ -35,9 +33,9 @@ count_chars()
 
 
 def draw_shape():
-	side_num = int(input('Please enter a positive integer: '))
+	side_num = int(input('Please enter a positive integer to draw: '))
 	total_angle = 180 * (side_num - 2)
-	turtle.setup(500, 500)
+	turtle.setup(750, 750)
 	turtle.pendown()
 
 	for x in range(side_num):
@@ -49,6 +47,7 @@ draw_shape()
 
 def extra():
 	positive_int = int(input('Please enter a positive integer: '))
+	print('The perfect cubes up to that number are: ')
 	for x in range(1, positive_int):
 		if x ** 3 < positive_int:
 			print(x ** 3)
@@ -59,5 +58,6 @@ def extra():
 	while index <= up_to:
 		cubed_sum += index ** 3
 		index += 1
+	print('The sum of cubes up to that number is: ')
 	print(cubed_sum)
 extra()
