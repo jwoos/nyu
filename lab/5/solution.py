@@ -1,14 +1,15 @@
 import turtle
 
+
 def make_shapes():
 	num = int(input('Please enter an integer: '))
 	for x in range(1, num + 1):
 		the_asterisk = '*' * x * 2
 		the_asterisk = the_asterisk[:-1:]
 		print(the_asterisk)
-	box_shape = []
-	for x in range(0, num):
-		a_row = []
+	num = int(input('Please enter an integer: '))
+	for i in range(num):
+		print('#' * (i) + '%' + '$' * (num - i - 1))
 make_shapes()
 
 
@@ -23,12 +24,8 @@ def count_chars():
 	print('For')
 	print('The letter %s appears %s times' % (a_char, for_occurence))
 
-	end = False
 	x = 0
-	while end is not True:
-		if a_str.index(a_str[x]) == -1:
-			end = True
-		a_str[x]
+	while x < len(a_str):
 		if a_str[x] == a_char:
 			while_occurence += 1
 		x += 1
@@ -52,4 +49,15 @@ draw_shape()
 
 def extra():
 	positive_int = int(input('Please enter a positive integer: '))
+	for x in range(1, positive_int):
+		if x ** 3 < positive_int:
+			print(x ** 3)
+
+	up_to = int(input('Please enter another positive integer: '))
+	cubed_sum = 0
+	index = 1
+	while index <= up_to:
+		cubed_sum += index ** 3
+		index += 1
+	print(cubed_sum)
 extra()
