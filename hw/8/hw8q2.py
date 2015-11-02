@@ -52,3 +52,5 @@ def main():
 	user_input = input('Please enter a string to reverse: ')
 	user_input_reverse = reverse_sentence(user_input)
 	print('The reversed sentence is: \n %s' % user_input_reverse)
+
+if __name__ == '__main__': main()
