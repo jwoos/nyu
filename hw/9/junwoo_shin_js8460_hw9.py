@@ -7,11 +7,13 @@ def max_abs_val(lst):
             maximum = i
     return maximum
 
+
 def main_q1():
-    lst = [-19, -3, 20, -1, 0, -25] 
+    lst = [-19, -3, 20, -1, 0, -25]
     max_num = max_abs_val(lst)
     print('In %s the max absolute number is %s' % (lst, max_num))
 main_q1()
+
 
 def find_all(lst, val):
     solution = []
@@ -20,6 +22,7 @@ def find_all(lst, val):
             solution.append(elem)
     return solution
 
+
 def main_q2():
     lst = ['a', 'b', 10, 'bb', 'a']
     val = 'a'
@@ -27,14 +30,17 @@ def main_q2():
     print('In %s the value %s appears in the following indices: %s' % (lst, val, indices))
 main_q2()
 
+
 def reverse1(lst):
     reversed_list = lst[::-1]
     return reversed_list
+
 
 def reverse2(lst):
     for i in range(len(lst) - 1, -1, -1):
         lst.append(lst.pop(i))
     return lst
+
 
 def main_q3():
     lst1 = [1, 2, 3, 4, 5, 6]
@@ -44,6 +50,7 @@ def main_q3():
     reverse2(lst2)
     print('After reverse2, lst2 is ', lst2)
 main_q3()
+
 
 def encoder(a_string):
     encoded = []
@@ -55,15 +62,17 @@ def encoder(a_string):
         while index < len(a_string) and current_val == a_string[index]:
             count += 1
             index += 1
-        
+
         encoded.append([current_val, count])
     return encoded
+
 
 def decoder(a_list):
     decoded = ''
     for elem in a_list:
         decoded += elem[0] * elem[1]
     return decoded
+
 
 def main_q4():
     encode_this = 'aadccccaa'
@@ -80,6 +89,7 @@ def add_list(lst1, lst2):
     for index in range(len(lst1)):
         solution.append(lst1[index] + lst2[index])
     return solution
+
 
 def main_q5():
     lst1 = []
@@ -113,6 +123,7 @@ def create_prefix_list(lst):
         big_list.append(lst[0:index:])
     return big_list
 
+
 def main_q6():
     the_list = [2, 4, 6, 8, 10]
     prefixed = create_prefix_list(the_list)
@@ -132,7 +143,7 @@ def check_sudoku(lst):
             row = False
         else:
             row = True
-    
+
     column = None
     for index in range(9):
         duplicate = False
@@ -154,7 +165,7 @@ def check_sudoku(lst):
             for y in range(offsety, 3 + offsety):
                 for x in range(offsetx, 3 + offsetx):
                     ordered.append(lst[x][y])
-    
+
     for section in range(9):
         duplicate = None
         for index in range(9):
@@ -171,34 +182,35 @@ def check_sudoku(lst):
     elif column is True and row is True and grid is True:
         return True
 
+
 def main_q7():
     board1 = [
-        [5,3,4,6,7,8,9,1,2],
-        [6,7,2,1,9,5,3,4,8],
-        [1,9,8,3,4,2,5,6,7],
-        [8,5,9,7,6,1,4,2,3],
-        [4,2,6,8,5,3,7,9,1],
-        [7,1,3,9,2,4,8,5,6],
-        [9,6,1,5,3,7,2,8,4],
-        [2,8,7,4,1,9,6,3,5],
-        [3,4,5,2,8,6,1,7,9]
+        [5, 3, 4, 6, 7, 8, 9, 1, 2],
+        [6, 7, 2, 1, 9, 5, 3, 4, 8],
+        [1, 9, 8, 3, 4, 2, 5, 6, 7],
+        [8, 5, 9, 7, 6, 1, 4, 2, 3],
+        [4, 2, 6, 8, 5, 3, 7, 9, 1],
+        [7, 1, 3, 9, 2, 4, 8, 5, 6],
+        [9, 6, 1, 5, 3, 7, 2, 8, 4],
+        [2, 8, 7, 4, 1, 9, 6, 3, 5],
+        [3, 4, 5, 2, 8, 6, 1, 7, 9]
     ]
 
     board2 = [
-        [5,3,4,6,7,8,9,1,2],
-        [6,7,2,1,9,5,3,4,8],
-        [1,9,8,3,4,2,5,9,7],
-        [8,5,9,7,6,1,4,2,3],
-        [4,3,6,8,5,3,7,9,1],
-        [7,1,3,9,2,4,8,5,6],
-        [9,6,1,5,3,7,2,8,4],
-        [2,8,9,4,1,9,6,3,5],
-        [3,4,5,2,8,6,1,7,9]
+        [5, 3, 4, 6, 7, 8, 9, 1, 2],
+        [6, 7, 2, 1, 9, 5, 3, 4, 8],
+        [1, 9, 8, 3, 4, 2, 5, 9, 7],
+        [8, 5, 9, 7, 6, 1, 4, 2, 3],
+        [4, 3, 6, 8, 5, 3, 7, 9, 1],
+        [7, 1, 3, 9, 2, 4, 8, 5, 6],
+        [9, 6, 1, 5, 3, 7, 2, 8, 4],
+        [2, 8, 9, 4, 1, 9, 6, 3, 5],
+        [3, 4, 5, 2, 8, 6, 1, 7, 9]
     ]
 
     board1_status = check_sudoku(board1)
     board2_status = check_sudoku(board2)
-    
+
     if board1_status is False:
         print('%s is not a valid board' % board1)
     else:
