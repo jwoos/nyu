@@ -16,9 +16,10 @@ def make_shapes(num, char, shift):
 	for x in range(1, num + 1):
 		print(' ' * (shift) + ' ' * (num - x) + char * (x * 2 - 1) + ' ' * (num - x))
 
+
 def n_triangles(amount, shift, char):
 	for x in range(1, amount + 1):
-		make_shapes(x + 1, char, shift - x)
+		make_shapes(x + 1, char, shift - x + 1)
 
 
 def main():
@@ -28,4 +29,5 @@ def main():
 
 	n_triangles(amount, shift, char)
 
-if __name__ == '__main__': main()
+if __name__ == '__main__':
+	main()
