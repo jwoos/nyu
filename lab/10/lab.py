@@ -12,6 +12,8 @@ def remove_below_avg(lst):
 			solution.append(lst[index])
 	return solution
 
+print(remove_below_avg([2, 3, 5, 1, -4, 8, 0, -1]))
+
 
 def generate_state():
 	lst = ['rock', 'paper', 'scissors']
