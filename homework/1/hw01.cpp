@@ -56,7 +56,8 @@ int main() {
 	fileToDecrypt.close();
 
 	// iterate backwards and print each line
-	for (int index = decryptedVector.size(); --index >= 0;) {
+	// I used int for index rather than size_t as the latter is unsigned and would never become negative
+	for (int index = decryptedVector.size() - 1; index >= 0; index--) {
 		cout << decryptedVector[index] << endl;
 	}
 }
