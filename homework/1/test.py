@@ -90,8 +90,8 @@ def test_average(length, count, sorted='random'):
 def test_all():
     lengths = [10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000, 25000]
     for length in lengths:
-        # test_average(length, 1, sorted='random')
+        test_average(length, 1, sorted='random')
         # test_average(length, 1, sorted='ascending')
-        test_average(length, 1, sorted='descending')
+        # test_average(length, 1, sorted='descending')
 
 test_all()
