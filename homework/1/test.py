@@ -4,6 +4,10 @@ from selection import selectionSort
 from quicksort import quickSort
 from insertion import insertionSort
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+import matplotlib.ticker as mticks
+
+import numpy as np
 
 import sys
 sys.setrecursionlimit(1000000)
@@ -84,14 +88,62 @@ def test_average(length, count, sorted='random'):
     f.close()
 
     w = open('results/' + sorted + '/' + str(length) + '.txt', 'w')
-    w.write(str(selection_average) + ',' + str(quick_total) + ',' + str(insertion_total) + '\n')
+    w.write(str(selection_average) + '\n')
+    w.write(str(quick_total) + '\n')
+    w.write(str(insertion_total) + '\n')
     w.close()
 
 def test_all():
     lengths = [10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000, 25000]
     for length in lengths:
         test_average(length, 1, sorted='random')
-        # test_average(length, 1, sorted='ascending')
-        # test_average(length, 1, sorted='descending')
+    for length in lengths:
+        test_average(length, 1, sorted='ascending')
+    for length in lengths:
+        test_average(length, 1, sorted='descending')
 
-test_all()
+def graph(sorted="random"):
+    lengths = [10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000, 25000]
+    selection = []
+    quick = []
+    insertion = []
+
+    for length in lengths:
+        f = open('results/' +  sorted + '/' + str(length) + '.txt', 'r')
+        line = f.readline().strip()
+        selection.append(line)
+        line = f.readline().strip()
+        quick.append(line)
+        line = f.readline().strip()
+        insertion.append(line)
+        f.close()
+
+    print(len(lengths))
+    print(len(selection))
+
+    selection = np.array(selection)
+    quick = np.array(quick)
+    insertion = np.array(insertion)
+    lengths = np.array(lengths)
+
+    fix, ax = plt.subplots()
+    ax.xaxis.set_major_locator(mticks.MultipleLocator(1000))
+    ax.yaxis.set_major_locator(mticks.MultipleLocator(0.1))
+    selection_plot = plt.plot(lengths, selection, '-ro', label='selection sort')
+    quick_plot = plt.plot(lengths, quick, '-bo', label='quick sort')
+    insertion_plot = plt.plot(lengths, insertion, '-go', label='insertion sort')
+    plt.legend()
+    plt.show()
+
+    fix, ax = plt.subplots()
+    ax.xaxis.set_major_locator(mticks.MultipleLocator(1000))
+    ax.yaxis.set_major_locator(mticks.MultipleLocator(0.1))
+    plt.xscale('log')
+    plt.yscale('log')
+    selection_plot = plt.plot(lengths, selection, '-ro', label='selection sort')
+    quick_plot = plt.plot(lengths, quick, '-bo', label='quick sort')
+    insertion_plot = plt.plot(lengths, insertion, '-go', label='insertion sort')
+    plt.legend()
+    plt.show()
+
+graph(sorted='descending')
