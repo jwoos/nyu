@@ -127,8 +127,8 @@ def graph(sorted="random"):
     lengths = np.array(lengths)
 
     fix, ax = plt.subplots()
-    ax.xaxis.set_major_locator(mticks.MultipleLocator(1000))
-    ax.yaxis.set_major_locator(mticks.MultipleLocator(0.1))
+    ax.xaxis.set_major_locator(mticks.MultipleLocator(500))
+    ax.yaxis.set_major_locator(mticks.MultipleLocator(0.5))
     selection_plot = plt.plot(lengths, selection, '-ro', label='selection sort')
     quick_plot = plt.plot(lengths, quick, '-bo', label='quick sort')
     insertion_plot = plt.plot(lengths, insertion, '-go', label='insertion sort')
@@ -136,8 +136,8 @@ def graph(sorted="random"):
     plt.show()
 
     fix, ax = plt.subplots()
-    ax.xaxis.set_major_locator(mticks.MultipleLocator(1000))
-    ax.yaxis.set_major_locator(mticks.MultipleLocator(0.1))
+    ax.xaxis.set_major_locator(mticks.MultipleLocator(500))
+    ax.yaxis.set_major_locator(mticks.MultipleLocator(0.5))
     plt.xscale('log')
     plt.yscale('log')
     selection_plot = plt.plot(lengths, selection, '-ro', label='selection sort')
@@ -146,4 +146,6 @@ def graph(sorted="random"):
     plt.legend()
     plt.show()
 
-graph(sorted='descending')
+graph(sorted='random')
+# graph(sorted='ascending')
+# graph(sorted='descending')
