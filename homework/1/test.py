@@ -83,7 +83,7 @@ def test_average(length, count, sorted='random'):
 
     f.close()
 
-    w = open('results/' + str(length) + '-' + sorted + '.txt', 'w')
+    w = open('results/' + sorted + '/' + str(length) + '.txt', 'w')
     w.write(str(selection_average) + ',' + str(quick_total) + ',' + str(insertion_total) + '\n')
     w.close()
 
