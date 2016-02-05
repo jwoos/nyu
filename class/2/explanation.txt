@@ -1,0 +1,11 @@
+Junwoo Shin
+
+Mystery1()
+This is attempting to sort but it is not working because it doesn't have a temp variable to hold the of the next item.
+Instead, it is being overwritten directly effectively leaving the current element the same while changing the next element to the current.
+
+Mystery2()
+This is attempting to do an in place shift but it fails to take into account shifting past the 0 index, leaving the first n elements the same and duplicating it at the end of the list.
+
+Mystery3()
+This is designed to find the difference between the number given and the smallest multiple of the second number that is greater than the first number. It does so successfully
