@@ -11,10 +11,11 @@ struct Warrior {
 };
 
 vector<string> getWords(const string& line);
-void addWarriors(vector<string> wordsInLine, vector<Warrior>& warriorsVector);
+void addWarriors(const string& name, int strength, vector<Warrior>& warriorsVector);
 void status(const vector<Warrior>& warriorsVector);
-void battle(vector<string> wordsInLine, vector<Warrior>& warriorsVector);
+void battle(string& warriorOneName, string& warriorTwoName, vector<Warrior>& warriorsVector);
 void battleStatus(Warrior& warriorOne, Warrior& warriorTwo);
+void newLine();
 
 int main() {
 	ifstream warriorsFile("warriors.txt");
@@ -24,44 +25,34 @@ int main() {
 	}
 
 	vector<Warrior> warriorsVector;
-	string line;
+	string word;
+	string warriorOneName;
+	string warriorTwoName;
+	string name;
+	int strength;
 
 	// loop over each line and depending on the first word, choose an action
-	while (getline(warriorsFile, line)) {
-		vector<string> wordsInLine = getWords(line);
-		if (wordsInLine[0] == "Warrior") {
-			addWarriors(wordsInLine, warriorsVector);
-		} else if (wordsInLine[0] == "Battle") {
-			battle(wordsInLine, warriorsVector);
-			cout << endl;
-		} else if (wordsInLine[0] == "Status"){
+	while (warriorsFile >> word) {
+		if (word == "Status") {
 			status(warriorsVector);
-			cout << endl;
+			newLine();
+		} else if (word == "Warrior") {
+			warriorsFile >> name >> strength;
+			addWarriors(name, strength, warriorsVector);
+			newLine();
+		} else if (word == "Battle") {
+			warriorsFile >> warriorOneName >> warriorTwoName;
+			battle(warriorOneName, warriorTwoName, warriorsVector);
+			newLine();
 		}
 	}
-}
-
-// function to return a list of words on the line
-vector<string> getWords(const string& line) {
-	vector<string> wordsList;
-	string aWord = "";
-	for (size_t index = 0; index < line.size(); index++) {
-		if (isspace(line[index]) || index == line.size() - 1) {
-			wordsList.push_back(aWord);
-			aWord = "";
-		} else {
-			aWord += line[index];
-		}
-	}
-
-	return wordsList;
 }
 
 // add warriors to a vector
-void addWarriors(vector<string> wordsInLine, vector<Warrior>& warriorsVector) {
+void addWarriors(const string& name, int strength, vector<Warrior>& warriorsVector) {
 	Warrior aWarrior;
-	aWarrior.name = wordsInLine[1];
-	aWarrior.strength = stoi(wordsInLine[2]);
+	aWarrior.name = name;
+	aWarrior.strength = strength;
 	warriorsVector.push_back(aWarrior);
 }
 
@@ -75,13 +66,13 @@ void status(const vector<Warrior>& warriorsVector) {
 }
 
 // battle
-void battle(vector<string> wordsInLine, vector<Warrior>& warriorsVector) {
+void battle(string& warriorOneName, string& warriorTwoName, vector<Warrior>& warriorsVector) {
 	int warriorOneIndex;
 	int warriorTwoIndex;
 	for (size_t index = 0; index < warriorsVector.size(); index++) {
-		if (warriorsVector[index].name == wordsInLine[1]) {
+		if (warriorsVector[index].name == warriorOneName) {
 			warriorOneIndex = index;
-		} else if (warriorsVector[index].name == wordsInLine[2]) {
+		} else if (warriorsVector[index].name == warriorTwoName) {
 			warriorTwoIndex = index;
 		}
 	}
@@ -90,17 +81,31 @@ void battle(vector<string> wordsInLine, vector<Warrior>& warriorsVector) {
 
 void battleStatus(Warrior& warriorOne, Warrior& warriorTwo) {
 	cout << warriorOne.name << " battles " << warriorTwo.name << endl;
-	if (warriorOne.strength == warriorTwo.strength) {
+	if (warriorOne.strength == 0 && warriorTwo.strength == 0) {
+		cout << "Oh NO! They're both dead! Yuck!" << endl;
+	} else if (warriorOne.strength == warriorTwo.strength) {
 		warriorOne.strength = 0;
 		warriorTwo.strength = 0;
-		cout << warriorOne.name << " and " << warriorTwo.name << " have tied" << endl;
+		cout << "Mutual annhilation: " << warriorOne.name << " and " << warriorTwo.name << " die at each other's hands" << endl;
 	} else if (warriorOne.strength > warriorTwo.strength) {
-		warriorOne.strength -= warriorTwo.strength;
-		warriorTwo.strength = 0;
-		cout << warriorOne.name << " defeated " << warriorTwo.name << endl;
+		if (warriorTwo.strength == 0) {
+			cout << "He's dead, " << warriorOne.name << endl;
+		} else {
+			warriorOne.strength -= warriorTwo.strength;
+			warriorTwo.strength = 0;
+			cout << warriorOne.name << " defeats " << warriorTwo.name << endl;
+		}
 	} else  if (warriorOne.strength < warriorTwo.strength) {
-		warriorTwo.strength -= warriorOne.strength;
-		warriorOne.strength = 0;
+		if (warriorOne.strength == 0) {
+			cout << "He's dead, " << warriorTwo.name << endl;
+		} else {
+			warriorTwo.strength -= warriorOne.strength;
+			warriorOne.strength = 0;
+			cout << warriorTwo.name << " defeats " << warriorOne.name << endl;
+		}
 	}
 }
 
+void newLine() {
+	cout << endl;
+}
