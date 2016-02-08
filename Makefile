@@ -1,6 +1,7 @@
 main:
 	g++ $(FILE) -I. -Wall -std=c++11
 
+# lazy
 class:
 	g++ class/$(FILE) -I. -Wall -std=c++11
 
