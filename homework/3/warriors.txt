@@ -1,0 +1,11 @@
+Warrior Jim Glamdring 42
+Warrior Lancelot Naegling 15
+Warrior Arthur Excalibur 15
+Warrior Torvalds Narsil 20
+Warrior Gates Orcrist 8
+Status
+Battle Arthur Lancelot
+Battle Jim Lancelot
+Battle Torvalds Gates
+Battle Gates Lancelot
+Status
