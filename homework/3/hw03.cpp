@@ -5,6 +5,7 @@
 #include <vector>
 using namespace std;
 
+// POD
 struct Weapon {
 	Weapon(string name, int strength) :name(name), strength(strength) {}
 	string name;
@@ -13,20 +14,25 @@ struct Weapon {
 
 class Warrior {
 	public:
+		// initializes a Weapon as well along with the Warrior itself
 		Warrior(string name, string weaponName,int weaponStrength) :name(name), warriorWeapon(weaponName, weaponStrength) {}
 
+		// access name from outside; getter
 		string getName() const {
 			return name;
 		}
 
+		// display name, weapon, and strength
 		void status() const {
 			cout << "Warrior: " << name << ", weapon: " << warriorWeapon.name << ", " << warriorWeapon.strength << endl;
 		}
 
+		// change weapon strength; setter
 		void setWeaponStrength(int newStrength) {
 			warriorWeapon.strength = newStrength;
 		}
 
+		// get weapon strength; getter
 		int getWeaponStrength() const {
 			return warriorWeapon.strength;
 		}
@@ -71,6 +77,7 @@ int main() {
 }
 
 void addWarrior(vector<Warrior>& warriorsVector, const string& warriorName, const string& weaponName, int weaponStrength) {
+	// create a Warrior using the name, weapon name and weapon strength
 	Warrior aWarrior(warriorName, weaponName, weaponStrength);
 
 	warriorsVector.push_back(aWarrior);
@@ -79,6 +86,7 @@ void addWarrior(vector<Warrior>& warriorsVector, const string& warriorName, cons
 void battle(vector<Warrior>& warriorsVector, const string& warriorOneName, const string& warriorTwoName) {
 	size_t warriorOneIndex, warriorTwoIndex;
 
+	// find the index of the specific warriors in the vector to use for battling
 	for (size_t index = 0; index < warriorsVector.size(); index++) {
 		if (warriorsVector[index].getName() == warriorOneName) {
 			warriorOneIndex = index;
@@ -130,6 +138,9 @@ void battleStatus(Warrior& warriorOne, Warrior& warriorTwo) {
 }
 
 void status(vector<Warrior>& warriorsVector) {
+	cout << "There are: " << warriorsVector.size() << " warriors" << endl;
+
+	// use the status method to print everyone's status
 	for (Warrior aWarrior : warriorsVector) {
 		aWarrior.status();
 	}
