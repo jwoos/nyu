@@ -7,7 +7,7 @@ using namespace std;
 
 // POD
 struct Weapon {
-	Weapon(string name, int strength) :name(name), strength(strength) {}
+	Weapon(const string& name, int strength) :name(name), strength(strength) {}
 	string name;
 	int strength;
 };
@@ -15,7 +15,7 @@ struct Weapon {
 class Warrior {
 	public:
 		// initializes a Weapon as well along with the Warrior itself
-		Warrior(string name, string weaponName,int weaponStrength) :name(name), warriorWeapon(weaponName, weaponStrength) {}
+		Warrior(const string& name, const string& weaponName,int weaponStrength) :name(name), warriorWeapon(weaponName, weaponStrength) {}
 
 		// access name from outside; getter
 		string getName() const {
@@ -66,7 +66,6 @@ int main() {
 			int weaponStrength;
 			warriorsFile >> warriorName >> weaponName >> weaponStrength;
 			addWarrior(warriorsVector, warriorName, weaponName, weaponStrength);
-			newLine();
 		} else if (command == "Battle") {
 			string warriorOneName, warriorTwoName;
 			warriorsFile >> warriorOneName >> warriorTwoName;
