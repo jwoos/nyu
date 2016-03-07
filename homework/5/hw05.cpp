@@ -12,7 +12,7 @@ class Warrior;
 
 class Warrior {
 	public:
-		Warrior(const string& name, int strength) :name(name), strength(strength), noble(nullptr) {}
+		Warrior(const string& name, int strength) :name(name), strength(strength) {}
 
 		void setStrength(int newStrength) {
 			strength = newStrength;
@@ -26,10 +26,6 @@ class Warrior {
 			return name;
 		}
 
-		void setNoble(Noble* noblePointer) {
-			noble = noblePointer;
-		}
-
 		void display() const {
 			cout << name << ": " << strength << endl;
 		}
@@ -37,7 +33,6 @@ class Warrior {
 	private:
 		string name;
 		int strength;
-		Noble* noble;
 };
 
 class Noble {
@@ -96,8 +91,6 @@ class Noble {
 
 		void hire(Warrior& aWarrior) {
 			army.push_back(&aWarrior);
-
-			aWarrior.setNoble(this);
 		}
 
 		void fire(Warrior& aWarrior) {
@@ -113,7 +106,6 @@ class Noble {
 
 			army[warriorIndex] = army[army.size() - 1];
 			army.pop_back();
-			aWarrior.setNoble(nullptr);
 		}
 
 		void display() const {
