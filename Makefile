@@ -1,12 +1,11 @@
-main:
-	g++ $(FILE) -I. -Wall -std=c++11
+COMPILER = g++
+WARNING = -Wall
+STANDARD = -std=c++11
+DEBUG = -g
+OPTIMIZATION = -O0
+DIRECTORY = -I.
+BASE = $(basename $(FILE))
 
-# lazy
-class:
-	g++ class/$(FILE) -I. -Wall -std=c++11
-
-hw:
-	g++ homework/$(FILE) -I. -Wall -std=c++11
-
-lab:
-	g++ lab/$(FILE) -I. -Wall -std=c++11
+default:
+	$(COMPILER) $(WARNING) $(STANDARD) $(DEBUG) $(DIRECTORY) $(FILE) -o $(BASE).out
+	./$(BASE).out
