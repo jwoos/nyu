@@ -15,7 +15,11 @@ class Student {
 
 		void addCourse(Course* course);
 
+		void removeCourse(const std::string& course);
+
 		std::vector<Course*> getCourses() const;
+
+		void clearCourse();
 
 		void display() const;
 	private:

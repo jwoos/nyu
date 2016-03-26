@@ -12,7 +12,7 @@ string Course::getName() const {
 }
 
 int Course::getStudentIndexFromVector(const string& studentName) const {
-	int studentIndex;
+	int studentIndex = -1;
 
 	for (int i = 0; i < students.size(); i++) {
 		if (students[i] -> getName() == studentName) {
@@ -29,6 +29,11 @@ void Course::addStudent(Student* student) {
 
 void Course::removeStudent(const string& student) {
 	int studentIndex = getStudentIndexFromVector(student);
+
+	if (studentIndex != -1) {
+		students[studentIndex] = students[students.size() - 1];
+		students.pop_back();
+	}
 }
 
 vector<Student*> Course::getStudents() const {
