@@ -128,4 +128,29 @@ namespace CS1124 {
 	bool operator!=(const Rational& lhs, const Rational& rhs) {
 		return !(lhs == rhs);
 	}
+
+	bool operator<(const Rational& lhs, const Rational& rhs) {
+		Rational lhsCopy(lhs);
+		Rational rhsCopy(rhs);
+
+		lhsCopy.commonDenominator(rhs);
+		rhsCopy.commonDenominator(lhs);
+
+		if (lhsCopy.getNumerator() < rhsCopy.getNumerator()) {
+			return true;
+		}
+		return false;
+	}
+
+	bool operator<=(const Rational& lhs, const Rational& rhs) {
+		return (lhs < rhs) || (lhs == rhs);
+	}
+
+	bool operator>(const Rational& lhs, const Rational& rhs) {
+		return !(lhs < rhs) && (lhs != rhs);
+	}
+
+	bool operator>=(const Rational& lhs, const Rational& rhs) {
+		return (lhs > rhs) || (lhs == rhs);
+	}
 }

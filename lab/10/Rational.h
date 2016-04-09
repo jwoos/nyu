@@ -46,5 +46,12 @@ namespace CS1124 {
 
 	Rational operator+(const Rational& lhs, const Rational& rhs);
 
+	bool operator<(const Rational& lhs, const Rational& rhs);
+
+	bool operator<=(const Rational& lhs, const Rational& rhs);
+
+	bool operator>(const Rational& lhs, const Rational& rhs);
+
+	bool operator>=(const Rational& lhs, const Rational& rhs);
 }
 

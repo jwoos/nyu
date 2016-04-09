@@ -30,6 +30,8 @@ int main() {
 	cout << "1 == one: " << boolalpha << (1 == one) << endl;  // How does this work?
 	cout << "a != one: " << boolalpha << (a != one) << endl;  // Do not implement as friend.
 
+	cout << endl;
+
 	cout << "a = " << a << endl;
 	cout << "++a = " << (++a) << endl;
 	cout << "a = " << a << endl;
@@ -39,4 +41,20 @@ int main() {
 	cout << "a = " << a << endl;
 	cout << "a-- = " << (a--) << endl;
 	cout << "a = " << a << endl;
+
+	cout << endl;
+
+	Rational c, d;
+	cout << "Input two rational numbers.\n";
+	cout << "c: ";
+	cin >> c;
+	cout << "d: ";
+	cin >> d;
+
+	cout << "c = " << c << endl;
+	cout << "d = " << d << endl;
+	cout << "c < d: " << boolalpha << (c < d) << endl;
+	cout << "c <= d: " << boolalpha << (c <= d) << endl;
+	cout << "c > d: " << boolalpha << (c > d) << endl;
+	cout << "c >= d: " << boolalpha << (c >= d) << endl;
 }
