@@ -3,3 +3,4 @@
 *.swn
 __pycache__/
 numbers/
+*.pyc
