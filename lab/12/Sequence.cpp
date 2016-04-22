@@ -12,20 +12,66 @@ struct Node {
 
 Sequence::Sequence() : head(nullptr), current(nullptr) {}
 
+Sequence::Sequence(const Sequence& rhs) {
+	if (rhs.head != nullptr) {
+		head = new Node(rhs.head -> data);
+		current = head;
+
+		Node* p = rhs.head -> next;
+
+		while (p != nullptr) {
+			add(p -> data);
+			p = p -> next;
+		}
+	} else {
+		head = nullptr;
+		current = nullptr;
+	}
+}
+
+Sequence& Sequence::operator=(const Sequence& rhs) {
+	if (this != &rhs) {
+		head = new Node(rhs.head -> data);
+		current = head;
+
+		Node* p = rhs.head;
+
+		while (p != nullptr) {
+			add(p -> data);
+			p = p -> next;
+		}
+	}
+
+	return *this;
+}
+
+Sequence::~Sequence() {
+	Node* p = head;
+
+	while (p != nullptr) {
+		Node* temp = p;
+		delete temp;
+		p = p -> next;
+	}
+}
+
 void Sequence::reset() {
 	current = head;
 }
 
 void Sequence::add(int data) {
-	Node* p = new Node(data);
-	if (head == nullptr) {
+	if (current == nullptr) {
+		Node* p = new Node(data, head);
 		head = p;
 		current = head;
+	} else {
+		Node* p = new Node(data);
+
+		Node* temp = current -> next;
+		current -> next = p;
+		current = current -> next;
+		current -> next = temp;
 	}
-	Node* temp = current -> next;
-	current -> next = p;
-	current = current -> next;
-	current -> next = temp;
 }
 
 void Sequence::remove() {
@@ -52,11 +98,7 @@ int Sequence::data() {
 
 void Sequence::next() {
 	if (current != nullptr) {
-		if (current -> next != nullptr) {
-			current = current -> next;
-		} else {
-			current = head;
-		}
+		current = current -> next;
 	}
 }
 
@@ -71,6 +113,7 @@ void Sequence::clear() {
 		delete temp;
 		p = p -> next;
 	}
+	head = nullptr;
 }
 
 void Sequence::display(char delimiter, ostream& os) {

@@ -6,6 +6,12 @@ class Sequence {
 	public:
 		Sequence();
 
+		Sequence(const Sequence& rhs);
+
+		Sequence& operator=(const Sequence& rhs);
+
+		~Sequence();
+
 		void reset();
 
 		void add(int data);

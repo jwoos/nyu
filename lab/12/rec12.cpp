@@ -12,8 +12,8 @@ int main() {
 	for (int i = 0; i < 6; ++i) {
 		s.add(i);
 	}
-
 	s.display();
+
 	cout << "==========" << endl;
 	s.reset();
 	for (int i = 0; i < 3; ++i) {
@@ -32,4 +32,8 @@ int main() {
 	s.clear();
 	s.display();
 	cout << "==========" << endl;
+
+	Sequence t = s;
+	t.display();
+
 }
