@@ -68,11 +68,15 @@ void printMoreShit(int x, char uno, char dos) {
 }
 
 //Print n to 1 followed by 1 to n
-int printEvenMoreShit(int n) {
+void printEvenMoreShit(int n) {
 	if (n == 1) {
 		cout << n << ' ';
 		return;
 	}
+	
+	cout << n << ' ';
+	printEvenMoreShit(n - 1);
+	cout << n << ' ';
 }
 
 int main() {
