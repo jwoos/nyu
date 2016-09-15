@@ -10,5 +10,5 @@ FILE =
 LINK =
 
 default:
-	$(CXX) ${WARNING} ${STANDARD} ${DEBUG} ${DIRECTORY} ${FILE} ${LINK} -o ${BASE}.out
+	${CXX} ${WARNING} ${STANDARD} ${DEBUG} ${DIRECTORY} ${FILE} ${LINK} -o ${BASE}.out
 	./${BASE}.out
