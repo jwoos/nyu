@@ -4,13 +4,15 @@ class CombinationLock {
 
 		bool state;
 	public:
-		CombinationLock(int* combinationArr);
+		CombinationLock(int, int, int);
 
-		CombinationLock(const CombinationLock& original);
+		CombinationLock(int*);
+
+		CombinationLock(const CombinationLock&) = delete;
 
 		virtual ~CombinationLock();
 
-		void open(int* combination);
+		void open(int*);
 
-		void changeCombo(int* combinationArr, int* newCombination);
+		void changeCombo(int*, int*);
 };

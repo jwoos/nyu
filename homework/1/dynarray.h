@@ -5,21 +5,21 @@ class DynArray {
 	public:
 		DynArray();
 
-		DynArray(const DynArray& rhs);
+		DynArray(const DynArray&);
 
-		DynArray& operator=(const DynArray& rhs);
+		DynArray& operator=(const DynArray&);
 
 		virtual ~DynArray();
 
-		void push_back(T newdata);
+		void push_back(T);
 
 		void pop_back();
 
-		void resize(size_t n);
+		void resize(size_t);
 
-		T operator[](size_t index) const;
+		T operator[](size_t) const;
 
-		T& operator[](size_t index);
+		T& operator[](size_t);
 
 		size_t size() const;
 
@@ -33,3 +33,5 @@ class DynArray {
 
 		T* data;
 };
+
+#include "dynarray.cpp"

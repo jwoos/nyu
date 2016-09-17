@@ -5,15 +5,16 @@
 
 using namespace std;
 
-CombinationLock::CombinationLock(int * combinationArr) : combination(nullptr), state(false) {
-	for (int i = 0; i < 3; i++) {
-		combination[i] = combinationArr[i];
-	}
+CombinationLock::CombinationLock(int one, int two, int three) : combination(new int[3]), state(false) {
+	combination[0] = one;
+	combination[1] = two;
+	combination[2] = three;
 }
 
-CombinationLock::CombinationLock(const CombinationLock& original) {
-	cout << "You cannot copy a combination lock!" << endl;
-	exit(1);
+CombinationLock::CombinationLock(int* data) : combination(new int[3]), state(false) {
+	for (int i = 0; i < 3; i++) {
+		combination[i] = data[i];
+	}
 }
 
 CombinationLock::~CombinationLock() {
@@ -23,19 +24,26 @@ CombinationLock::~CombinationLock() {
 void CombinationLock::open(int* combinationArr) {
 	for (int i = 0; i < 3; i++) {
 		if (combinationArr[i] != combination[i]) {
-			std::cout << "Wrong combination! Aborting..." << endl;
+			std::cout << "Wrong combination. Aborting..." << endl;
 			return;
 		}
 	}
 
 	state = true;
+	cout << "Unlocked" << endl;
 }
 
 void CombinationLock::changeCombo(int* combinationArr, int* newCombination) {
 	for (int i = 0; i < 3; i++) {
 		if (combinationArr[i] != combination[i]) {
-			std::cout << "Wrong combination! Aborting..." << endl;
+			std::cout << "Wrong combination. Aborting..." << endl;
 			return;
 		}
 	}
+
+	for (int i = 0; i < 3; i++) {
+		combination[i] = newCombination[i];
+	}
+
+	cout << "Combination changed" << endl;
 }

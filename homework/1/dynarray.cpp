@@ -1,20 +1,19 @@
-#include<iostream>
-
-#include "dynarray.h"
+#include <iostream>
 
 template <typename T>
-DynArray<T>::DynArray() :_size(0), _capacity(0), data(nullptr), bracketsUsed(false) {}
+DynArray<T>::DynArray() :_size(0), _capacity(0), bracketsUsed(false), data(nullptr) {}
 
 template <typename T>
-DynArray<T>::DynArray(const DynArray<T>& rhs) {
+DynArray<T>::DynArray(const DynArray<T>& rhs) :_size(0), _capacity(0), bracketsUsed(false), data(nullptr) {
 	*this = rhs;
 }
 
 template <typename T>
-DynArray<T>& DynArray<T>::operator=(const DynArray<T>& rhs) {
+DynArray<T>& DynArray<T>::operator=(const DynArray<T>& rhs){
 	if (this != &rhs) {
 		_size = rhs._size;
 		_capacity = rhs._capacity;
+		bracketsUsed = rhs.bracketsUsed;
 
 		delete [] data;
 
@@ -35,7 +34,7 @@ DynArray<T>::~DynArray() {
 template <typename T>
 void DynArray<T>::push_back(T newData) {
 	if (bracketsUsed) {
-		cout << "Brackets have been used!" << endl;
+		std::cout << "Brackets have been used so you can't push_back" << std::endl;
 		return;
 	}
 
@@ -62,15 +61,18 @@ void DynArray<T>::push_back(T newData) {
 
 template <typename T>
 void DynArray<T>::pop_back() {
-	data[_size] = nullptr;
 	_size--;
 }
 
 // TODO finish this
 template <typename T>
 void DynArray<T>::resize(size_t n) {
-	if (n < _size) {
-		for (size_t i = n; i < _size; i++) {}
+	if (n > _size) {
+		if (n > _capacity) {
+			// expand
+		}
+	} else if (n < _size) {
+		_size = n;
 	}
 }
 
