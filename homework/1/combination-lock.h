@@ -9,6 +9,8 @@ class CombinationLock {
 		CombinationLock(int*);
 
 		CombinationLock(const CombinationLock&) = delete;
+	
+		CombinationLock(CombinationLock&&) = delete;
 
 		virtual ~CombinationLock();
 
