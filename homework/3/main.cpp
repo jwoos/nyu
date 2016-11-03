@@ -1,3 +1,10 @@
+/*
+ * name: Junwoo Shin
+ * class: Section E
+ * compiler: g++-6 (Ubuntu 6.2.0-3ubuntu11~16.04) 6.2.0 20160901
+ * commands: g++-6 -Wall -g -std=c++14 hw2.cpp
+ */
+
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
