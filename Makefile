@@ -2,7 +2,7 @@ CXX = g++
 WARNING = -Wall -Wextra
 OPTIMIZE = -O0
 DEBUG = -g
-STD = -std=C++14
+STD = -std=c++14
 ARGS = $(WARNING) $(OPTIMIZE) $(DEBUG) $(STD)
 
 ALL = utils.o
@@ -21,12 +21,15 @@ main: $(ALL)
 encryption: $(ALL)
 	$(CXX) $(ARGS) $@.cpp $^ -o $@
 
+test: $(ALL) encryption
+	$(CXX) $(ARGS) $@.cpp $^ -o $@
+
 # Compile into object files
 %.o: %.cpp
 	$(CXX) $(ARGS) -c $^ -o $@
 
 force:
-	touch $(ALL) main encryption
+	touch $(ALL) main encryption test
 
 clean: force
-	rm $(ALL) main encryption
+	rm $(ALL) main encryption test
