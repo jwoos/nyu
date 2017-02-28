@@ -7,7 +7,7 @@ ARGS = $(WARNING) $(OPTIMIZE) $(DEBUG) $(STD)
 
 ALL = utils.o
 
-default: clean main
+default: clean test
 
 debug-mem-encryption: default
 	valgrind --leak-check=full -v ./encryption

@@ -3,7 +3,13 @@
 
 #include <random>
 #include <vector>
+#include <map>
+#include <set>
 
 std::vector<unsigned int>* generateRandomNumber(int, int, int);
+
+std::vector<unsigned int>* generateDistinctRandomNumbers(int, int, int);
+
+std::map<char, unsigned int>* generateFrequencyMap();
 
 #endif
