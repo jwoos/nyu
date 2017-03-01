@@ -5,7 +5,7 @@ DEBUG = -g
 STD = -std=c++14
 ARGS = $(WARNING) $(OPTIMIZE) $(DEBUG) $(STD)
 
-ALL = utils.o
+ALL = utils.o encryption.o
 
 default: clean test
 
@@ -16,9 +16,6 @@ debug-mem-main: encryption
 	valgrind --leak-check=full -v ./main
 
 main: $(ALL)
-	$(CXX) $(ARGS) $@.cpp $^ -o $@
-
-encryption: $(ALL)
 	$(CXX) $(ARGS) $@.cpp $^ -o $@
 
 test: $(ALL)
