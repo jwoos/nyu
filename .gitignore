@@ -27,3 +27,12 @@
 *.exe
 *.out
 *.app
+
+# files
+encryption
+main
+test
+
+# vim swap files
+*.swp
+*.swo
