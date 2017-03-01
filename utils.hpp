@@ -6,18 +6,34 @@
 #include <map>
 #include <set>
 
-std::vector<unsigned int>* generateRandomNumber(int, int, int);
+class RNG {
+	public:
+		RNG(uint32_t, uint32_t);
+		void setSeed(uint32_t);
+		void setBounds(uint32_t, uint32_t);
+		uint32_t getUpper() const;
+		uint32_t getLower() const;
+		uint32_t randomNumber();
 
-std::vector<unsigned int>* identityPermutation(int);
-void shuffle(std::vector<unsigned int>*);
+	private:
+		uint32_t lower;
+		uint32_t upper;
+		std::mt19937 generator;
+		std::random_device rd;
+		std::uniform_int_distribution<uint32_t> dist;
+};
 
-std::map<char, unsigned int>* generateFrequencyMap();
+std::vector<uint32_t>* generateRandomNumber(int, int, int);
 
-struct Permutation 
-{
-	std::vector<unsigned int> values;
+std::vector<uint32_t>* identityPermutation(int);
+void shuffle(std::vector<uint32_t>*);
+
+std::map<char, uint32_t>* generateFrequencyMap();
+
+struct Permutation {
+	std::vector<uint32_t> values;
 	std::vector<int> directions;
-	std::vector<unsigned int> positions;
+	std::vector<uint32_t> positions;
 
 	explicit Permutation(int size);
 	int LargestMobile() const;

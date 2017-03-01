@@ -8,9 +8,9 @@
 using namespace std;
 
 void testRNG() {
-	vector<unsigned int>* v = generateRandomNumber(1, 100, 10);
+	vector<uint32_t>* v = generateRandomNumber(1, 100, 10);
 
-	for (unsigned int i = 0; i < v -> size(); i++) {
+	for (uint32_t i = 0; i < v -> size(); i++) {
 		cout << (*v)[i] << endl;
 	}
 
@@ -18,9 +18,9 @@ void testRNG() {
 }
 
 void testGenerateFrequencyMap() {
-	map<char, unsigned int>* m = generateFrequencyMap();
+	map<char, uint32_t>* m = generateFrequencyMap();
 
-	for (map<char, unsigned int>::iterator it = m -> begin(); it != m -> end(); it++) {
+	for (map<char, uint32_t>::iterator it = m -> begin(); it != m -> end(); it++) {
 		cout << it -> first << ": " << it -> second << endl;
 	}
 }
@@ -40,14 +40,32 @@ void testPermutations() {
 }
 
 void testRandomPermutations() {
-	vector<unsigned int>* s = identityPermutation(10);
+	vector<uint32_t>* s = identityPermutation(10);
 	shuffle(s);
-	for (vector<unsigned int>::iterator i = s -> begin(); i != s -> end(); i++) {
+	for (vector<uint32_t>::iterator i = s -> begin(); i != s -> end(); i++) {
 		cout << *i << ';';
 	}
 	cout << endl;
 }
 
+void testEncrypt() {
+	map<char, set<uint32_t>*>* m = generateKeys();
+
+	for (map<char, set<uint32_t>*>::iterator it = m -> begin(); it != m -> end(); it++) {
+		char ch = it -> first;
+		set<uint32_t>* s = it -> second;
+
+		cout << "CHAR: " << ch << endl;
+		for (set<uint32_t>::iterator inner = s -> begin(); inner != s -> end(); inner++) {
+			cout << *inner << ", ";
+		}
+		cout << endl << endl;
+	}
+
+	encrypt(m, "asd");
+}
+
 int main() {
-	testRandomPermutations();
+	//testRandomPermutations();
+	testEncrypt();
 }

@@ -1,16 +1,14 @@
 #include "encryption.hpp"
 
-using namespace std;
-
-map<char, set<unsigned int>*>* generateKeys() {
-	map<char, set<unsigned int>*>* m = new map<char, set<unsigned int>*>();
-	map<char, unsigned int>* frequencyMap = generateFrequencyMap();
-	vector<unsigned int>* randoms = identityPermutation(115);
+std::map<char, std::set<uint32_t>*>* generateKeys() {
+	std::map<char, std::set<uint32_t>*>* m = new std::map<char, std::set<uint32_t>*>();
+	std::map<char, uint32_t>* frequencyMap = generateFrequencyMap();
+	std::vector<uint32_t>* randoms = identityPermutation(115);
 	shuffle(randoms);
 
-	for (map<char, unsigned int>::iterator it = frequencyMap -> begin(); it != frequencyMap -> end(); it++) {
+	for (std::map<char, uint32_t>::iterator it = frequencyMap -> begin(); it != frequencyMap -> end(); it++) {
 		char ch = it -> first;
-		set<unsigned int>* s = new set<unsigned int>();
+		std::set<uint32_t>* s = new std::set<uint32_t>();
 
 		for (int i = 0; i <  it -> second; i++) {
 			s -> insert((*randoms)[randoms -> size() - 1]);
@@ -26,24 +24,29 @@ map<char, set<unsigned int>*>* generateKeys() {
 	return m;
 }
 
-string* encrypt(map<char, set<unsigned int>*>* keyMap, string plaintext) {
-	string ciphertext;
+std::string* encrypt(std::map<char, std::set<uint32_t>*>* keyMap, std::string plaintext) {
+	std::string* cipherPointer = new std::string();
+	std::string ciphertext = *cipherPointer;
+	RNG rng(0, 10);
 
-	for (unsigned int i = 0; i < plaintext.size(); i++) {
+	for (uint32_t i = 0; i < plaintext.size(); i++) {
 		char ch = plaintext[i];
-		map<char, set<unsigned int>*>::iterator it = keyMap -> find(ch);
-		set<unsigned int>* keys = it -> second;
-		vector<unsigned int>* rn = generateRandomNumber(0, keys -> size(), 1);
-		unsigned int index = (*rn)[0];
-		delete rn;
+		std::map<char, std::set<uint32_t>*>::iterator it = keyMap -> find(ch);
+		std::set<uint32_t>* keys = it -> second;
 
-		set<unsigned int>::iterator begin = keys -> begin();
+		rng.setBounds(0, keys -> size());
+		uint32_t index = rng.randomNumber();
 
-		for (unsigned int i = 0; i < index; i++) {
+		std::set<uint32_t>::iterator begin = keys -> begin();
+
+		for (uint32_t i = 0; i < index; i++) {
 			begin++;
 		}
-		ciphertext += to_string(*begin) + ',';
+
+		ciphertext += std::to_string(*begin) + ',';
 	}
 
-	cout << ciphertext << endl;
+	std::cout << ciphertext << std::endl;
+
+	return cipherPointer;
 }

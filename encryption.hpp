@@ -9,8 +9,8 @@
 #include <set>
 #include <string>
 
-std::map<char, std::set<unsigned int>* >* generateKeys();
+std::map<char, std::set<uint32_t>*>* generateKeys();
 
-std::string* encrypt(std::string);
+std::string* encrypt(std::map<char, std::set<uint32_t>*>* keyMap, std::string plaintext);
 
 #endif

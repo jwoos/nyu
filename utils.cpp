@@ -1,16 +1,48 @@
 #include "utils.hpp"
 
-std::vector<unsigned int>* generateRandomNumber(int lower, int upper, int amount) {
+RNG::RNG(uint32_t lo = 0, uint32_t hi = 10) : lower(lo), upper(hi) {
+	// seed the generator with random device
+	generator.seed(rd());
+
+	// use initial range to generate a uniform distribution
+	dist = std::uniform_int_distribution<uint32_t>(lower, upper);
+}
+
+void RNG::setSeed(uint32_t seed) {
+	generator.seed(seed);
+}
+
+void RNG::setBounds(uint32_t lo, uint32_t hi) {
+	lower = lo;
+	upper = hi;
+
+	// generate a new distribution based on bounds
+	dist = std::uniform_int_distribution<uint32_t>(lower, upper);
+}
+
+uint32_t RNG::getUpper() const {
+	return upper;
+}
+
+uint32_t RNG::getLower() const {
+	return lower;
+}
+
+uint32_t RNG::randomNumber() {
+	return dist(generator);
+}
+
+std::vector<uint32_t>* generateRandomNumber(int lower, int upper, int amount) {
 	std::mt19937 rng;
 	std::random_device rd;
 
 	rng.seed(rd());
-	std::uniform_int_distribution<unsigned int> dist(lower, upper);
+	std::uniform_int_distribution<uint32_t> dist(lower, upper);
 
-	std::vector<unsigned int>* v = new std::vector<unsigned int>();
+	std::vector<uint32_t>* v = new std::vector<uint32_t>();
 
 	for (int i = 0; i < amount; i++) {
-		unsigned int temp = dist(rng);
+		uint32_t temp = dist(rng);
 		v -> push_back(temp);
 	}
 
@@ -19,7 +51,7 @@ std::vector<unsigned int>* generateRandomNumber(int lower, int upper, int amount
 
 
 Permutation::Permutation(int size) : values(size), directions(size), positions(size) {
-	for(int i = 0; i < size; i++) {
+	for (int i = 0; i < size; i++) {
 		values[i] = i;
 		positions[i] = i;
 		directions[i] = (i == 0 ? 0 : -1);
@@ -27,8 +59,8 @@ Permutation::Permutation(int size) : values(size), directions(size), positions(s
 }
 
 int Permutation::LargestMobile() const {
-	for(int i = values.size() - 1; i >= 0; i--) {
-		if(directions[i] != 0) {
+	for (int i = values.size() - 1; i >= 0; i--) {
+		if (directions[i] != 0) {
 			return i;
 		}
 	}
@@ -38,7 +70,7 @@ int Permutation::LargestMobile() const {
 // Implemented from https://en.wikipedia.org/wiki/Steinhaus%E2%80%93Johnson%E2%80%93Trotter_algorithm
 bool Permutation::Advance() {
 	int swap = LargestMobile();
-	if(swap < 0) return false;
+	if (swap < 0) return false;
 
 	int direction = directions[swap];
 	int position = positions[swap];
@@ -51,15 +83,15 @@ bool Permutation::Advance() {
 
 	// If we've hit a wall (first position, last position, or a bigger number)
 	// this number stops moving
-	if(destination == 0 || destination == values.size() - 1) {
+	if (destination == 0 || destination == values.size() - 1) {
 		directions[swap] = 0;
 	}
-	if(next >= 0 && next <= values.size() - 1 && values[next] > swap) {
+	if (next >= 0 && next <= values.size() - 1 && values[next] > swap) {
 		directions[swap] = 0;
 	}
 
 	// Reset all larger numbers to "moving" towards the element that just moved
-	for(int i = swap + 1; i < values.size(); i++) {
+	for (int i = swap + 1; i < values.size(); i++) {
 		directions[i] = (positions[i] < destination) ? 1 : -1;
 	}
 
@@ -67,30 +99,30 @@ bool Permutation::Advance() {
 }
 
 // Generate a list with the numbers 0 to amount
-std::vector<unsigned int>* identityPermutation(int amount) {
-	std::vector<unsigned int>* v = new std::vector<unsigned int>(amount);
-	for(int i = 0; i < amount; i++) {
+std::vector<uint32_t>* identityPermutation(int amount) {
+	std::vector<uint32_t>* v = new std::vector<uint32_t>(amount);
+	for (int i = 0; i < amount; i++) {
 		(*v)[i] = i;
 	}
 	return v;
 }
 
 // Randomly shuffle the given list, using Knuth shuffles.
-void shuffle(std::vector<unsigned int>* items) {
+void shuffle(std::vector<uint32_t>* items) {
 	std::mt19937 rng;
 	std::random_device rd;
 
 	rng.seed(rd());
 
-	for(int i = 0; i < items->size() - 1; i++) {
-		std::uniform_int_distribution<unsigned int> dist(i+1, items->size() - 1);
+	for (int i = 0; i < items -> size() - 1; i++) {
+		std::uniform_int_distribution<uint32_t> dist(i + 1, items -> size() - 1);
 		int swapWith = dist(rng);
 		std::swap((*items)[i], (*items)[swapWith]);
 	}
 }
 
-std::map<char, unsigned int>* generateFrequencyMap() {
-	std::map<char, unsigned int> literal = {
+std::map<char, uint32_t>* generateFrequencyMap() {
+	std::map<char, uint32_t> literal = {
 		{' ', 19},
 		{'a', 7},
 		{'b', 1},
@@ -120,7 +152,7 @@ std::map<char, unsigned int>* generateFrequencyMap() {
 		{'z', 1}
 	};
 
-	std::map<char, unsigned int>* m = new std::map<char, unsigned int>(literal);
+	std::map<char, uint32_t>* m = new std::map<char, uint32_t>(literal);
 
 	return m;
 }
