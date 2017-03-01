@@ -25,6 +25,20 @@ void testGenerateFrequencyMap() {
 	}
 }
 
+void testPermutations() {
+	Permutation p(10);
+
+	int count = 0;
+	do {
+		count++;
+		for (auto i = p.values.begin(); i != p.values.end(); i++) {
+			//cout << *i;
+		}
+		//cout << "; " << p.LargestMobile() << endl;
+	} while(p.Advance());
+	cout << "total: " << count << endl; // Expected: 3628800
+}
+
 void testRandomPermutations() {
 	vector<unsigned int>* s = identityPermutation(10);
 	shuffle(s);

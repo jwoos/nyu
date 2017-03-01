@@ -13,4 +13,15 @@ void shuffle(std::vector<unsigned int>*);
 
 std::map<char, unsigned int>* generateFrequencyMap();
 
+struct Permutation 
+{
+	std::vector<unsigned int> values;
+	std::vector<int> directions;
+	std::vector<unsigned int> positions;
+
+	explicit Permutation(int size);
+	int LargestMobile() const;
+	bool Advance();
+};
+
 #endif

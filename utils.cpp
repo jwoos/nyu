@@ -17,6 +17,55 @@ std::vector<unsigned int>* generateRandomNumber(int lower, int upper, int amount
 	return v;
 }
 
+
+Permutation::Permutation(int size) : values(size), directions(size), positions(size) {
+	for(int i = 0; i < size; i++) {
+		values[i] = i;
+		positions[i] = i;
+		directions[i] = (i == 0 ? 0 : -1);
+	}
+}
+
+int Permutation::LargestMobile() const {
+	for(int i = values.size() - 1; i >= 0; i--) {
+		if(directions[i] != 0) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+// Implemented from https://en.wikipedia.org/wiki/Steinhaus%E2%80%93Johnson%E2%80%93Trotter_algorithm
+bool Permutation::Advance() {
+	int swap = LargestMobile();
+	if(swap < 0) return false;
+
+	int direction = directions[swap];
+	int position = positions[swap];
+	int destination = position + direction;
+	int next = destination + direction;
+
+	// Move the largest "mobile" number in the appropriate direction
+	std::swap(positions[values[position]], positions[values[destination]]);
+	std::swap(values[position], values[destination]);
+
+	// If we've hit a wall (first position, last position, or a bigger number)
+	// this number stops moving
+	if(destination == 0 || destination == values.size() - 1) {
+		directions[swap] = 0;
+	}
+	if(next >= 0 && next <= values.size() - 1 && values[next] > swap) {
+		directions[swap] = 0;
+	}
+
+	// Reset all larger numbers to "moving" towards the element that just moved
+	for(int i = swap + 1; i < values.size(); i++) {
+		directions[i] = (positions[i] < destination) ? 1 : -1;
+	}
+
+	return true;
+}
+
 // Generate a list with the numbers 0 to amount
 std::vector<unsigned int>* identityPermutation(int amount) {
 	std::vector<unsigned int>* v = new std::vector<unsigned int>(amount);
