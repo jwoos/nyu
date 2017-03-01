@@ -7,5 +7,10 @@
 #include <map>
 #include <vector>
 #include <set>
+#include <string>
+
+std::map<char, std::set<unsigned int>* >* generateKeys();
+
+std::string* encrypt(std::string);
 
 #endif

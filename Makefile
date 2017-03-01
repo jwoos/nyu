@@ -21,7 +21,7 @@ main: $(ALL)
 encryption: $(ALL)
 	$(CXX) $(ARGS) $@.cpp $^ -o $@
 
-test: $(ALL) encryption
+test: $(ALL)
 	$(CXX) $(ARGS) $@.cpp $^ -o $@
 
 # Compile into object files

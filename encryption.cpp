@@ -1,15 +1,65 @@
-#include <map>
-#include <set>
-
 #include "encryption.hpp"
-#include "utils.hpp"
 
 using namespace std;
 
-map<char, unsigned int*> generateKeys() {
+map<char, set<unsigned int>*>* generateKeys() {
 	map<char, set<unsigned int>*>* m = new map<char, set<unsigned int>*>();
 	map<char, unsigned int>* frequencyMap = generateFrequencyMap();
-	set<unsigned int> used;
+	vector<unsigned int>* randoms = generateDistinctRandomNumbers(0, 115, 115);
+
+	for (map<char, unsigned int>::iterator it = frequencyMap -> begin(); it != frequencyMap -> end(); it++) {
+		char ch = it -> first;
+		set<unsigned int>* s = new set<unsigned int>();
+
+		for (int i = 0; i <  it -> second; i++) {
+			s -> insert((*randoms)[randoms -> size() - 1]);
+			randoms -> pop_back();
+		}
+
+		m -> insert(make_pair(ch, s));
+	}
+
+	delete randoms;
+	delete frequencyMap;
+
+	return m;
 }
 
-int main() {}
+string* encrypt(map<char, set<unsigned int>*>* keyMap, string plaintext) {
+	string ciphertext;
+
+	for (unsigned int i = 0; i < plaintext.size(); i++) {
+		char ch = plaintext[i];
+		map<char, set<unsigned int>*>::iterator it = keyMap -> find(ch);
+		set<unsigned int>* keys = it -> second;
+		vector<unsigned int>* rn = generateRandomNumber(0, keys -> size(), 1);
+		unsigned int index = (*rn)[0];
+		delete rn;
+
+		set<unsigned int>::iterator begin = keys -> begin();
+
+		for (unsigned int i = 0; i < index; i++) {
+			begin++;
+		}
+		ciphertext += to_string(*begin) + ',';
+	}
+
+	cout << ciphertext << endl;
+}
+
+int main() {
+	map<char, set<unsigned int>*>* m = generateKeys();
+
+	for (map<char, set<unsigned int>*>::iterator it = m -> begin(); it != m -> end(); it++) {
+		char ch = it -> first;
+		set<unsigned int>* s = it -> second;
+
+		cout << "CHAR: " << ch << endl;
+		for (set<unsigned int>::iterator inner = s -> begin(); inner != s -> end(); inner++) {
+			cout << *inner << ", ";
+		}
+		cout << endl << endl;
+	}
+
+	encrypt(m, "asd");
+}
