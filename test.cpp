@@ -57,6 +57,9 @@ void testEncrypt() {
 }
 
 int main() {
-	//testRandomPermutations();
-	testEncrypt();
+	vector<uint32_t>* v = identityPermutation(115);
+	for (vector<uint32_t>::iterator it = v -> begin(); it != v -> end(); it++) {
+		cout << *it << ' ';
+	}
+	cout << endl;
 }

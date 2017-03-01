@@ -101,9 +101,7 @@ bool Permutation::Advance() {
 // Generate a list with the numbers 0 to amount
 std::vector<uint32_t>* identityPermutation(int amount) {
 	std::vector<uint32_t>* v = new std::vector<uint32_t>(amount);
-	for (int i = 0; i < amount; i++) {
-		(*v)[i] = i;
-	}
+	std::iota(v -> begin(), v -> end(), 0);
 	return v;
 }
 
