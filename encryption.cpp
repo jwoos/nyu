@@ -5,7 +5,8 @@ using namespace std;
 map<char, set<unsigned int>*>* generateKeys() {
 	map<char, set<unsigned int>*>* m = new map<char, set<unsigned int>*>();
 	map<char, unsigned int>* frequencyMap = generateFrequencyMap();
-	vector<unsigned int>* randoms = generateDistinctRandomNumbers(0, 115, 115);
+	vector<unsigned int>* randoms = identityPermutation(115);
+	shuffle(randoms);
 
 	for (map<char, unsigned int>::iterator it = frequencyMap -> begin(); it != frequencyMap -> end(); it++) {
 		char ch = it -> first;
