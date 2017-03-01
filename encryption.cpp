@@ -1,12 +1,14 @@
 #include "encryption.hpp"
 
-std::map<char, std::set<uint32_t>*>* generateKeys() {
-	std::map<char, std::set<uint32_t>*>* m = new std::map<char, std::set<uint32_t>*>();
-	std::map<char, uint32_t>* frequencyMap = generateFrequencyMap();
+Encryptor::Encryptor() : rng(0, 10), keyMap(generateKeys()) {}
+
+std::map<char, std::set<uint32_t>*> Encryptor::generateKeys() {
+	std::map<char, std::set<uint32_t>*> m;
+	std::map<char, uint32_t> frequencyMap = generateFrequencyMap();
 	std::vector<uint32_t>* randoms = identityPermutation(115);
 	shuffle(randoms);
 
-	for (std::map<char, uint32_t>::iterator it = frequencyMap -> begin(); it != frequencyMap -> end(); it++) {
+	for (std::map<char, uint32_t>::iterator it = frequencyMap.begin(); it != frequencyMap.end(); it++) {
 		char ch = it -> first;
 		std::set<uint32_t>* s = new std::set<uint32_t>();
 
@@ -15,23 +17,20 @@ std::map<char, std::set<uint32_t>*>* generateKeys() {
 			randoms -> pop_back();
 		}
 
-		m -> insert(make_pair(ch, s));
+		m.insert(make_pair(ch, s));
 	}
 
 	delete randoms;
-	delete frequencyMap;
 
 	return m;
 }
 
-std::string* encrypt(std::map<char, std::set<uint32_t>*>* keyMap, std::string plaintext) {
-	std::string* cipherPointer = new std::string();
-	std::string ciphertext = *cipherPointer;
-	RNG rng(0, 10);
+std::string Encryptor::encrypt(std::string plaintext) {
+	std::string ciphertext;
 
 	for (uint32_t i = 0; i < plaintext.size(); i++) {
 		char ch = plaintext[i];
-		std::map<char, std::set<uint32_t>*>::iterator it = keyMap -> find(ch);
+		std::map<char, std::set<uint32_t>*>::iterator it = keyMap.find(ch);
 		std::set<uint32_t>* keys = it -> second;
 
 		rng.setBounds(0, keys -> size());
@@ -48,5 +47,22 @@ std::string* encrypt(std::map<char, std::set<uint32_t>*>* keyMap, std::string pl
 
 	std::cout << ciphertext << std::endl;
 
-	return cipherPointer;
+	return ciphertext;
+}
+
+void Encryptor::printKeyMap() const {
+	std::cout << "Key Map:" << std::endl;
+	for (std::map<char, std::set<uint32_t>*>::const_iterator it = keyMap.begin(); it != keyMap.end(); it++) {
+		char ch = it -> first;
+		std::set<uint32_t>* s = it -> second;
+
+		std::cout << '\t' << ch << ": ";
+
+		for (std::set<uint32_t>::iterator inner = s -> begin(); inner != s -> end(); inner++) {
+			std::cout << *inner << ", ";
+		}
+
+		std::cout << std::endl;
+	}
+	std::cout << std::endl;
 }

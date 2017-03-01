@@ -121,7 +121,7 @@ void shuffle(std::vector<uint32_t>* items) {
 	}
 }
 
-std::map<char, uint32_t>* generateFrequencyMap() {
+std::map<char, uint32_t> generateFrequencyMap() {
 	std::map<char, uint32_t> literal = {
 		{' ', 19},
 		{'a', 7},
@@ -152,7 +152,5 @@ std::map<char, uint32_t>* generateFrequencyMap() {
 		{'z', 1}
 	};
 
-	std::map<char, uint32_t>* m = new std::map<char, uint32_t>(literal);
-
-	return m;
+	return literal;
 }

@@ -28,7 +28,7 @@ std::vector<uint32_t>* generateRandomNumber(int, int, int);
 std::vector<uint32_t>* identityPermutation(int);
 void shuffle(std::vector<uint32_t>*);
 
-std::map<char, uint32_t>* generateFrequencyMap();
+std::map<char, uint32_t> generateFrequencyMap();
 
 struct Permutation {
 	std::vector<uint32_t> values;

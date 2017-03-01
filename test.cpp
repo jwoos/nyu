@@ -18,9 +18,9 @@ void testRNG() {
 }
 
 void testGenerateFrequencyMap() {
-	map<char, uint32_t>* m = generateFrequencyMap();
+	map<char, uint32_t> m = generateFrequencyMap();
 
-	for (map<char, uint32_t>::iterator it = m -> begin(); it != m -> end(); it++) {
+	for (map<char, uint32_t>::iterator it = m.begin(); it != m.end(); it++) {
 		cout << it -> first << ": " << it -> second << endl;
 	}
 }
@@ -49,20 +49,11 @@ void testRandomPermutations() {
 }
 
 void testEncrypt() {
-	map<char, set<uint32_t>*>* m = generateKeys();
+	Encryptor enc;
 
-	for (map<char, set<uint32_t>*>::iterator it = m -> begin(); it != m -> end(); it++) {
-		char ch = it -> first;
-		set<uint32_t>* s = it -> second;
+	enc.printKeyMap();
 
-		cout << "CHAR: " << ch << endl;
-		for (set<uint32_t>::iterator inner = s -> begin(); inner != s -> end(); inner++) {
-			cout << *inner << ", ";
-		}
-		cout << endl << endl;
-	}
-
-	encrypt(m, "asd");
+	enc.encrypt("asd");
 }
 
 int main() {

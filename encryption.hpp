@@ -9,8 +9,16 @@
 #include <set>
 #include <string>
 
-std::map<char, std::set<uint32_t>*>* generateKeys();
+class Encryptor {
+	public:
+		Encryptor();
+		std::map<char, std::set<uint32_t>*> generateKeys();
+		std::string encrypt(std::string plaintext);
+		void printKeyMap() const;
 
-std::string* encrypt(std::map<char, std::set<uint32_t>*>* keyMap, std::string plaintext);
+	private:
+		std::map<char, std::set<uint32_t>*> keyMap;
+		RNG rng;
+};
 
 #endif
