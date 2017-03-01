@@ -8,7 +8,8 @@
 
 std::vector<unsigned int>* generateRandomNumber(int, int, int);
 
-std::vector<unsigned int>* generateDistinctRandomNumbers(int, int, int);
+std::vector<unsigned int>* identityPermutation(int);
+void shuffle(std::vector<unsigned int>*);
 
 std::map<char, unsigned int>* generateFrequencyMap();
 

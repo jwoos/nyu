@@ -17,27 +17,27 @@ std::vector<unsigned int>* generateRandomNumber(int lower, int upper, int amount
 	return v;
 }
 
-std::vector<unsigned int>* generateDistinctRandomNumbers(int lower, int upper, int amount) {
+// Generate a list with the numbers 0 to amount
+std::vector<unsigned int>* identityPermutation(int amount) {
+	std::vector<unsigned int>* v = new std::vector<unsigned int>(amount);
+	for(int i = 0; i < amount; i++) {
+		(*v)[i] = i;
+	}
+	return v;
+}
+
+// Randomly shuffle the given list, using Knuth shuffles.
+void shuffle(std::vector<unsigned int>* items) {
 	std::mt19937 rng;
 	std::random_device rd;
 
 	rng.seed(rd());
-	std::uniform_int_distribution<unsigned int> dist(lower, upper);
 
-	std::set<unsigned int> s;
-	std::vector<unsigned int>* v = new std::vector<unsigned int>();
-
-	while (s.size() < amount) {
-		unsigned int temp = dist(rng);
-
-		if (!s.count(temp)) {
-			s.insert(temp);
-			v -> push_back(temp);
-		}
+	for(int i = 0; i < items->size() - 1; i++) {
+		std::uniform_int_distribution<unsigned int> dist(i+1, items->size() - 1);
+		int swapWith = dist(rng);
+		std::swap((*items)[i], (*items)[swapWith]);
 	}
-
-	return v;
-
 }
 
 std::map<char, unsigned int>* generateFrequencyMap() {

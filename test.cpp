@@ -17,14 +17,6 @@ void testRNG() {
 	delete v;
 }
 
-void testDistinctRNG() {
-	vector<unsigned int>* s = generateDistinctRandomNumbers(0, 115, 115);
-
-	for (vector<unsigned int>::iterator i = s -> begin(); i != s -> end(); i++) {
-		cout << *i << endl;
-	}
-}
-
 void testGenerateFrequencyMap() {
 	map<char, unsigned int>* m = generateFrequencyMap();
 
@@ -33,6 +25,15 @@ void testGenerateFrequencyMap() {
 	}
 }
 
+void testRandomPermutations() {
+	vector<unsigned int>* s = identityPermutation(10);
+	shuffle(s);
+	for (vector<unsigned int>::iterator i = s -> begin(); i != s -> end(); i++) {
+		cout << *i << ';';
+	}
+	cout << endl;
+}
+
 int main() {
-	testDistinctRNG();
+	testRandomPermutations();
 }
