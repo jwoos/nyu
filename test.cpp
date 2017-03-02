@@ -56,10 +56,21 @@ void testEncrypt() {
 	enc.encrypt("asd");
 }
 
+void testCalculateCharFrequency() {
+	map<char, uint32_t> freq = calculateCharFrequency("asd");
+
+	for (map<char, uint32_t>::iterator it = freq.begin(); it != freq.end(); it++) {
+		cout << "CHAR: " << it -> first << " COUNT: " << it -> second << endl;
+	}
+}
+
 int main() {
 	vector<uint32_t>* v = identityPermutation(115);
 	for (vector<uint32_t>::iterator it = v -> begin(); it != v -> end(); it++) {
 		cout << *it << ' ';
 	}
 	cout << endl;
+
+	cout << endl;
+	testCalculateCharFrequency();
 }

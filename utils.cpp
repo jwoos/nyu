@@ -152,3 +152,23 @@ std::map<char, uint32_t> generateFrequencyMap() {
 
 	return literal;
 }
+
+void flush() {
+	std::cout << std::endl;
+}
+
+std::map<char, uint32_t> calculateCharFrequency(const std::string& text) {
+	std::map<char, uint32_t> freq;
+
+	for (uint32_t i = 0; i < text.size(); i++) {
+		char c = text[i];
+
+		if (!freq[c]) {
+			freq[c] = 1;
+		} else {
+			freq[c]++;
+		}
+	}
+
+	return freq;
+}
