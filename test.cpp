@@ -7,16 +7,6 @@
 
 using namespace std;
 
-void testRNG() {
-	vector<uint32_t>* v = generateRandomNumber(1, 100, 10);
-
-	for (uint32_t i = 0; i < v -> size(); i++) {
-		cout << (*v)[i] << endl;
-	}
-
-	delete v;
-}
-
 void testGenerateFrequencyMap() {
 	map<char, uint32_t> m = generateFrequencyMap();
 

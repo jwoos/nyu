@@ -23,8 +23,6 @@ class RNG {
 		std::uniform_int_distribution<uint32_t> dist;
 };
 
-std::vector<uint32_t>* generateRandomNumber(int, int, int);
-
 std::vector<uint32_t>* identityPermutation(int);
 void shuffle(std::vector<uint32_t>*);
 

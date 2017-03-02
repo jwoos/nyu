@@ -32,23 +32,6 @@ uint32_t RNG::randomNumber() {
 	return dist(generator);
 }
 
-std::vector<uint32_t>* generateRandomNumber(int lower, int upper, int amount) {
-	std::mt19937 rng;
-	std::random_device rd;
-
-	rng.seed(rd());
-	std::uniform_int_distribution<uint32_t> dist(lower, upper);
-
-	std::vector<uint32_t>* v = new std::vector<uint32_t>();
-
-	for (int i = 0; i < amount; i++) {
-		uint32_t temp = dist(rng);
-		v -> push_back(temp);
-	}
-
-	return v;
-}
-
 
 Permutation::Permutation(int size) : values(size), directions(size), positions(size) {
 	for (int i = 0; i < size; i++) {
