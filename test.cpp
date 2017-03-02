@@ -1,3 +1,7 @@
+/* Test file
+ * Test out functions here
+ */
+
 #include "utils.hpp"
 #include "encryption.hpp"
 

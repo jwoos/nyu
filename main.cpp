@@ -1,3 +1,6 @@
+/* Actual program to decrypt
+ */
+
 #include "utils.hpp"
 #include "encryption.hpp"
 
