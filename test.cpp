@@ -53,13 +53,9 @@ void testEncrypt() {
 
 	enc.printKeyMap();
 
-	enc.encrypt("asd");
+	enc.encrypt("l");
 }
 
 int main() {
-	vector<uint32_t>* v = identityPermutation(115);
-	for (vector<uint32_t>::iterator it = v -> begin(); it != v -> end(); it++) {
-		cout << *it << ' ';
-	}
-	cout << endl;
+	testEncrypt();
 }
