@@ -13,7 +13,7 @@ class Encryptor {
 	public:
 		Encryptor();
 		std::map<char, std::set<uint32_t>*> generateKeys();
-		std::string encrypt(std::string plaintext);
+		std::string encrypt(std::string&);
 		void printKeyMap() const;
 
 	private:

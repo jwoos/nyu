@@ -9,10 +9,7 @@ ALL = utils.o encryption.o
 
 default: clean test
 
-debug-mem-encryption: default
-	valgrind --leak-check=full -v ./encryption
-
-debug-mem-main: encryption
+debug-mem-main: main
 	valgrind --leak-check=full -v ./main
 
 main: $(ALL)
