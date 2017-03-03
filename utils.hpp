@@ -1,10 +1,12 @@
 #ifndef ENCRYPTION_UTILS_H
 #define ENCRYPTION_UTILS_H
 
+#include <iostream>
 #include <random>
 #include <vector>
 #include <map>
 #include <set>
+#include <string>
 
 class RNG {
 	public:
@@ -27,6 +29,10 @@ std::vector<uint32_t>* identityPermutation(int);
 void shuffle(std::vector<uint32_t>*);
 
 std::map<char, uint32_t> generateFrequencyMap();
+
+std::map<char, uint32_t> calculateCharFrequency(const std::string&);
+
+void flush();
 
 struct Permutation {
 	std::vector<uint32_t> values;
