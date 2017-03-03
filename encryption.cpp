@@ -25,7 +25,7 @@ std::map<char, std::set<uint32_t>*> Encryptor::generateKeys() {
 	return m;
 }
 
-std::string Encryptor::encrypt(std::string plaintext) {
+std::string Encryptor::encrypt(std::string& plaintext) {
 	std::string ciphertext;
 
 	for (uint32_t i = 0; i < plaintext.size(); i++) {
