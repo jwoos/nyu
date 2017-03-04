@@ -1,5 +1,6 @@
 #include "utils.hpp"
 
+// BEGIN: RNG
 RNG::RNG(uint32_t lo = 0, uint32_t hi = 10) : lower(lo), upper(hi) {
 	// seed the generator with random device
 	generator.seed(rd());
@@ -31,8 +32,50 @@ uint32_t RNG::getLower() const {
 uint32_t RNG::randomNumber() {
 	return dist(generator);
 }
+// END: RNG
+
+// BEGIN: MATRIX
+Matrix::Matrix(uint32_t rowCount, uint32_t columnCount) : rows(rowCount), columns(columnCount), matrix(rowCount, std::vector<uint32_t>(columnCount, 0)) {}
+
+void Matrix::swapRow(uint32_t a, uint32_t b) {
+	matrix[a].swap(matrix[b]);
+}
+
+void Matrix::swapColumn(uint32_t a, uint32_t b) {
+	for (std::vector<std::vector<uint32_t>>::iterator outer = matrix.begin(); outer != matrix.end(); outer++) {
+		std::vector<uint32_t> row = *outer;
+		std::swap(row[a], row[b]);
+	}
+}
+
+void Matrix::printMatrix() {
+	for (std::vector<std::vector<uint32_t>>::iterator outer = matrix.begin(); outer != matrix.end(); outer++) {
+		for (std::vector<uint32_t>::iterator inner = outer -> begin(); inner != outer -> end(); inner++) {
+			std::cout << *inner << ' ';
+		}
+		std::cout << std::endl;
+	}
+}
+// END: MATRIX
+
+// BEGIN: DIGRAM_FREQ_MATRIX
+DigramFreqMatrix::DigramFreqMatrix(uint32_t rowCount, uint32_t columnCount) : Matrix(rowCount, columnCount) {}
+
+void DigramFreqMatrix::populateMatrix(const std::string& text) {
+	std::vector<std::string> splitVector = split(text, ',');
+	std::vector<uint32_t> numVector = stringToUnsignedInt(splitVector);
 
 
+	for (uint32_t i = 0; i < numVector.size() - 1; i++) {
+		uint32_t row = numVector[i];
+		uint32_t column = numVector[i + 1];
+
+		matrix[row][column]++;
+	}
+}
+// END: DIGRAM_FREQ_MATRIX
+
+// BEGIN: PERMUTATION
 Permutation::Permutation(int size) : values(size), directions(size), positions(size) {
 	for (int i = 0; i < size; i++) {
 		values[i] = i;
@@ -80,12 +123,13 @@ bool Permutation::Advance() {
 
 	return true;
 }
+// END: PERMUTATION
 
 // Generate a list with the numbers 0 to amount
 std::vector<uint32_t>* identityPermutation(int amount) {
-	std::vector<uint32_t>* v = new std::vector<uint32_t>(amount);
-	std::iota(v -> begin(), v -> end(), 0);
-	return v;
+	std::vector<uint32_t>* input = new std::vector<uint32_t>(amount);
+	std::iota(input -> begin(), input -> end(), 0);
+	return input;
 }
 
 // Randomly shuffle the given list, using Knuth shuffles.
@@ -154,4 +198,27 @@ std::map<char, uint32_t> calculateCharFrequency(const std::string& text) {
 	}
 
 	return freq;
+}
+
+std::vector<std::string> split(const std::string& input, char delimiter) {
+	std::vector<std::string> output;
+
+	std::stringstream ss;
+	ss.str(input);
+	std::string item;
+	while (std::getline(ss, item, delimiter)) {
+		output.push_back(item);
+	}
+
+	return output;
+}
+
+std::vector<uint32_t> stringToUnsignedInt(const std::vector<std::string>& input) {
+	std::vector<uint32_t> v;
+
+	for (std::vector<std::string>::const_iterator it = input.begin(); it != input.end(); it++) {
+		v.push_back(std::stoul(*it, nullptr, 10));
+	}
+
+	return v;
 }
