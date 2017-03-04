@@ -7,6 +7,10 @@
 #include <map>
 #include <set>
 #include <string>
+#include <sstream>
+#include <iostream>
+#include <algorithm>
+#include <utility>
 
 class RNG {
 	public:
@@ -25,7 +29,30 @@ class RNG {
 		std::uniform_int_distribution<uint32_t> dist;
 };
 
-std::vector<uint32_t>* identityPermutation(int);
+class Matrix {
+	public:
+		explicit Matrix(uint32_t, uint32_t);
+		void swapRow(uint32_t, uint32_t);
+		void swapColumn(uint32_t, uint32_t);
+		void printMatrix();
+		void increment(uint32_t, uint32_t);
+		virtual void populateMatrix(const std::string&) = 0;
+
+	protected:
+		std::vector<std::vector<uint32_t>> matrix;
+
+	private:
+		uint32_t rows;
+		uint32_t columns;
+};
+
+class DigramFreqMatrix : public Matrix {
+	public:
+		explicit DigramFreqMatrix(uint32_t, uint32_t);
+		void populateMatrix(const std::string&);
+};
+
+std::vector<uint32_t>* identityPermutation(uint32_t);
 void shuffle(std::vector<uint32_t>*);
 
 std::map<char, uint32_t> generateFrequencyMap();
@@ -34,12 +61,16 @@ std::map<char, uint32_t> calculateCharFrequency(const std::string&);
 
 void flush();
 
+std::vector<std::string> split(const std::string&, char);
+
+std::vector<uint32_t> stringToUnsignedInt(const std::vector<std::string>&);
+
 struct Permutation {
 	std::vector<uint32_t> values;
 	std::vector<int> directions;
 	std::vector<uint32_t> positions;
 
-	explicit Permutation(int size);
+	explicit Permutation(uint32_t size);
 	int LargestMobile() const;
 	bool Advance();
 };

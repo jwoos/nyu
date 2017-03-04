@@ -47,7 +47,21 @@ void testEncrypt() {
 
 	enc.printKeyMap();
 
-	enc.encrypt("l");
+	string a = "l";
+
+	enc.encrypt(a);
+}
+
+void testMatrix() {
+	DigramFreqMatrix m(11, 11);
+	m.populateMatrix("10,2,10,4,1,2,2,2,2");
+	m.printMatrix();
+	flush();
+	m.swapRow(0, 2);
+	m.printMatrix();
+	flush();
+	m.swapColumn(0, 2);
+	m.printMatrix();
 }
 
 void testCalculateCharFrequency() {
@@ -59,15 +73,5 @@ void testCalculateCharFrequency() {
 }
 
 int main() {
-	vector<uint32_t>* v = identityPermutation(115);
-	for (vector<uint32_t>::iterator it = v -> begin(); it != v -> end(); it++) {
-		cout << *it << ' ';
-	}
-	cout << endl;
-
-	cout << endl;
-	testCalculateCharFrequency();
-
-	testEncrypt();
-
+	testMatrix();
 }

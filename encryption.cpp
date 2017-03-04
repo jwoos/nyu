@@ -12,7 +12,7 @@ std::map<char, std::set<uint32_t>*> Encryptor::generateKeys() {
 		char ch = it -> first;
 		std::set<uint32_t>* s = new std::set<uint32_t>();
 
-		for (int i = 0; i <  it -> second; i++) {
+		for (uint32_t i = 0; i <  it -> second; i++) {
 			s -> insert((*randoms)[randoms -> size() - 1]);
 			randoms -> pop_back();
 		}

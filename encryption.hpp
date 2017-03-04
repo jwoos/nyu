@@ -17,8 +17,8 @@ class Encryptor {
 		void printKeyMap() const;
 
 	private:
-		std::map<char, std::set<uint32_t>*> keyMap;
 		RNG rng;
+		std::map<char, std::set<uint32_t>*> keyMap;
 };
 
 #endif
