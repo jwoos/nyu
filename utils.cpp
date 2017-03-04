@@ -43,8 +43,11 @@ void Matrix::swapRow(uint32_t a, uint32_t b) {
 
 void Matrix::swapColumn(uint32_t a, uint32_t b) {
 	for (std::vector<std::vector<uint32_t>>::iterator outer = matrix.begin(); outer != matrix.end(); outer++) {
-		std::vector<uint32_t> row = *outer;
-		std::swap(row[a], row[b]);
+		std::vector<uint32_t>::iterator aIter = outer -> begin() + a;
+		std::vector<uint32_t>::iterator bIter = outer -> begin() + b;
+
+		std::cout << *aIter << " : " << *bIter << std::endl;
+		std::iter_swap(aIter, bIter);
 	}
 }
 

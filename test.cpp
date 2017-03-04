@@ -56,6 +56,12 @@ void testMatrix() {
 	DigramFreqMatrix m(11, 11);
 	m.populateMatrix("10,2,10,4,1,2,2,2,2");
 	m.printMatrix();
+	flush();
+	m.swapRow(0, 2);
+	m.printMatrix();
+	flush();
+	m.swapColumn(0, 2);
+	m.printMatrix();
 }
 
 void testCalculateCharFrequency() {

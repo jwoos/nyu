@@ -9,6 +9,8 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <algorithm>
+#include <utility>
 
 class RNG {
 	public:
