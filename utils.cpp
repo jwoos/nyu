@@ -35,7 +35,7 @@ uint32_t RNG::randomNumber() {
 // END: RNG
 
 // BEGIN: MATRIX
-Matrix::Matrix(uint32_t rowCount, uint32_t columnCount) : rows(rowCount), columns(columnCount), matrix(rowCount, std::vector<uint32_t>(columnCount, 0)) {}
+Matrix::Matrix(uint32_t rowCount, uint32_t columnCount) : matrix(rowCount, std::vector<uint32_t>(columnCount, 0)), rows(rowCount), columns(columnCount) {}
 
 void Matrix::swapRow(uint32_t a, uint32_t b) {
 	matrix[a].swap(matrix[b]);
@@ -76,8 +76,8 @@ void DigramFreqMatrix::populateMatrix(const std::string& text) {
 // END: DIGRAM_FREQ_MATRIX
 
 // BEGIN: PERMUTATION
-Permutation::Permutation(int size) : values(size), directions(size), positions(size) {
-	for (int i = 0; i < size; i++) {
+Permutation::Permutation(uint32_t size) : values(size), directions(size), positions(size) {
+	for (uint32_t i = 0; i < size; i++) {
 		values[i] = i;
 		positions[i] = i;
 		directions[i] = (i == 0 ? 0 : -1);
@@ -90,6 +90,7 @@ int Permutation::LargestMobile() const {
 			return i;
 		}
 	}
+
 	return -1;
 }
 
@@ -109,16 +110,17 @@ bool Permutation::Advance() {
 
 	// If we've hit a wall (first position, last position, or a bigger number)
 	// this number stops moving
-	if (destination == 0 || destination == values.size() - 1) {
+	if (destination == 0 || destination == (int)values.size() - 1) {
 		directions[swap] = 0;
 	}
-	if (next >= 0 && next <= values.size() - 1 && values[next] > swap) {
+
+	if (next >= 0 && next <= (int)values.size() - 1 && (int)values[next] > swap) {
 		directions[swap] = 0;
 	}
 
 	// Reset all larger numbers to "moving" towards the element that just moved
-	for (int i = swap + 1; i < values.size(); i++) {
-		directions[i] = (positions[i] < destination) ? 1 : -1;
+	for (uint32_t i = swap + 1; i < values.size(); i++) {
+		directions[i] = ((int)positions[i] < destination) ? 1 : -1;
 	}
 
 	return true;
@@ -126,7 +128,7 @@ bool Permutation::Advance() {
 // END: PERMUTATION
 
 // Generate a list with the numbers 0 to amount
-std::vector<uint32_t>* identityPermutation(int amount) {
+std::vector<uint32_t>* identityPermutation(uint32_t amount) {
 	std::vector<uint32_t>* input = new std::vector<uint32_t>(amount);
 	std::iota(input -> begin(), input -> end(), 0);
 	return input;
@@ -139,9 +141,9 @@ void shuffle(std::vector<uint32_t>* items) {
 
 	rng.seed(rd());
 
-	for (int i = 0; i < items -> size() - 1; i++) {
+	for (uint32_t i = 0; i < items -> size() - 1; i++) {
 		std::uniform_int_distribution<uint32_t> dist(i + 1, items -> size() - 1);
-		int swapWith = dist(rng);
+		uint32_t swapWith = dist(rng);
 		std::swap((*items)[i], (*items)[swapWith]);
 	}
 }

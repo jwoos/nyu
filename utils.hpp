@@ -50,7 +50,7 @@ class DigramFreqMatrix : public Matrix {
 		void populateMatrix(const std::string&);
 };
 
-std::vector<uint32_t>* identityPermutation(int);
+std::vector<uint32_t>* identityPermutation(uint32_t);
 void shuffle(std::vector<uint32_t>*);
 
 std::map<char, uint32_t> generateFrequencyMap();
@@ -68,7 +68,7 @@ struct Permutation {
 	std::vector<int> directions;
 	std::vector<uint32_t> positions;
 
-	explicit Permutation(int size);
+	explicit Permutation(uint32_t size);
 	int LargestMobile() const;
 	bool Advance();
 };
