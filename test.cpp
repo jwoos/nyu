@@ -53,15 +53,25 @@ void testEncrypt() {
 }
 
 void testMatrix() {
-	DigramFreqMatrix m(11, 11);
-	m.populateMatrix("10,2,10,4,1,2,2,2,2");
-	m.printMatrix();
+	vector<char> k = {'c', 'g', 'a', 'h', 'b', 'a', 'f', 'b', 'e', 'd'};
+	map<char, uint32_t> fm = generateFrequencyMap();
+	DCipherMatrix dCipher(10, 10);
+	dCipher.populateMatrix("0,9,4,9,8,2,4,9,5,0,7,2,9,8,5,2,2,8,6,1,0,7,2,3,0,9,3,9,8,2,4,8,0,5,9,0,1,0,7,6,8,6,1,0,7,6,4,4,8,5,2,0,7");
+	dCipher.printMatrix();
 	flush();
-	m.swapRow(0, 2);
-	m.printMatrix();
+
+	DPlainMatrix dPlain(8, 8);
+	dPlain.setKey(&k);
+	dPlain.setCipherMatrix(&dCipher);
+	dPlain.setFrequencyMap(&fm);
+	dPlain.populateMatrix();
+	dPlain.printMatrix();
 	flush();
-	m.swapColumn(0, 2);
-	m.printMatrix();
+
+	dPlain.updateKey(2, 9);
+	dPlain.updateMatrix(2, 9);
+	dPlain.printMatrix();
+	flush();
 }
 
 void testCalculateCharFrequency() {
