@@ -82,6 +82,19 @@ void testCalculateCharFrequency() {
 	}
 }
 
+void testGenerateKey() {
+	vector<char> v = generateKey(115);
+
+	for (char x : v) {
+		if (x == ' ') {
+			x = '!';
+		}
+
+		cout << x << ' ';
+	}
+	flush();
+}
+
 int main() {
-	testMatrix();
+	testGenerateKey();
 }

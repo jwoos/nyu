@@ -150,14 +150,13 @@ void DPlainMatrix::updateMatrix(uint32_t a, uint32_t b) {
 }
 
 uint32_t DPlainMatrix::computeScore() {
-	std::vector<std::vector<uint32_t>> expected;
-	expected = *expectedMatrix;
+	EMatrix expected = *expectedMatrix;
 
 	uint32_t score = 0;
 
 	for (uint32_t outer = 0; outer < rows; outer++) {
 		for (uint32_t inner = 0; inner < columns; outer++) {
-			uint32_t local = matrix[outer][inner] - expectedMatrix[outer][inner];
+			int local = matrix[outer][inner] - expected[outer][inner];
 
 			if (local < 0) {
 				local *= -1;
@@ -393,4 +392,19 @@ std::vector<uint32_t> stringToUnsignedInt(const std::vector<std::string>& input)
 
 uint32_t getIndexForChar(char x) {
 	return x == ' ' ? 26 : (uint32_t)x - 97;
+}
+
+char getCharForIndex(uint32_t x) {
+	return x == 26 ? ' ' : (x + 97);
+}
+
+std::vector<char> generateKey(uint32_t size) {
+	std::vector<char> v(size);
+	RNG rng(0, 26);
+
+	for (std::vector<char>::iterator it = v.begin(); it != v.end(); it++) {
+		*it = getCharForIndex(rng.randomNumber());
+	}
+
+	return v;
 }

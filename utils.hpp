@@ -44,10 +44,10 @@ class DigramFreqMatrix {
 
 	protected:
 		std::vector<std::vector<uint32_t>> matrix;
-
-	private:
 		uint32_t rows;
 		uint32_t columns;
+
+	private:
 };
 
 class EMatrix : public DigramFreqMatrix {
@@ -93,11 +93,15 @@ std::map<char, uint32_t> calculateCharFrequency(const std::string&);
 
 uint32_t getIndexForChar(char);
 
+char getCharForIndex(uint32_t);
+
 void flush();
 
 std::vector<std::string> split(const std::string&, char);
 
 std::vector<uint32_t> stringToUnsignedInt(const std::vector<std::string>&);
+
+std::vector<char> generateKey(uint32_t);
 
 struct Permutation {
 	std::vector<uint32_t> values;
