@@ -66,6 +66,7 @@ class DPlainMatrix : public DigramFreqMatrix {
 		explicit DPlainMatrix(uint32_t, uint32_t);
 		void updateMatrix(uint32_t, uint32_t);
 		void updateKey(uint32_t, uint32_t);
+		uint32_t computeScore();
 		int getFrequencyForChar(char);
 		void populateMatrix();
 		void setKey(std::vector<char>*);

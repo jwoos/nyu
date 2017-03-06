@@ -149,6 +149,27 @@ void DPlainMatrix::updateMatrix(uint32_t a, uint32_t b) {
 	}
 }
 
+uint32_t DPlainMatrix::computeScore() {
+	std::vector<std::vector<uint32_t>> expected;
+	expected = *expectedMatrix;
+
+	uint32_t score = 0;
+
+	for (uint32_t outer = 0; outer < rows; outer++) {
+		for (uint32_t inner = 0; inner < columns; outer++) {
+			uint32_t local = matrix[outer][inner] - expectedMatrix[outer][inner];
+
+			if (local < 0) {
+				local *= -1;
+			}
+
+			score += local;
+		}
+	}
+
+	return score;
+}
+
 void DPlainMatrix::setKey(std::vector<char>* k) {
 	key = k;
 }
