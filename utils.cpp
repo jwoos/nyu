@@ -34,24 +34,38 @@ uint32_t RNG::randomNumber() {
 }
 // END: RNG
 
-// BEGIN: MATRIX
-Matrix::Matrix(uint32_t rowCount, uint32_t columnCount) : matrix(rowCount, std::vector<uint32_t>(columnCount, 0)), rows(rowCount), columns(columnCount) {}
 
-void Matrix::swapRow(uint32_t a, uint32_t b) {
+// BEGIN: DIGRAM_FREQ_MATRIX
+DigramFreqMatrix::DigramFreqMatrix(uint32_t rowCount, uint32_t columnCount) : matrix(rowCount, std::vector<uint32_t>(columnCount, 0)), rows(rowCount), columns(columnCount) {}
+
+void DigramFreqMatrix::swapRow(uint32_t a, uint32_t b) {
 	matrix[a].swap(matrix[b]);
 }
 
-void Matrix::swapColumn(uint32_t a, uint32_t b) {
+void DigramFreqMatrix::swapColumn(uint32_t a, uint32_t b) {
 	for (std::vector<std::vector<uint32_t>>::iterator outer = matrix.begin(); outer != matrix.end(); outer++) {
 		std::vector<uint32_t>::iterator aIter = outer -> begin() + a;
 		std::vector<uint32_t>::iterator bIter = outer -> begin() + b;
 
-		std::cout << *aIter << " : " << *bIter << std::endl;
 		std::iter_swap(aIter, bIter);
 	}
 }
 
-void Matrix::printMatrix() {
+std::vector<uint32_t> DigramFreqMatrix::getRow(uint32_t index) {
+	return matrix[index];
+}
+
+std::vector<uint32_t> DigramFreqMatrix::getColumn(uint32_t index) {
+	std::vector<uint32_t> v;
+
+	for (std::vector<std::vector<uint32_t>>::iterator outer = matrix.begin(); outer != matrix.end(); outer++) {
+		v.push_back((*outer)[index]);
+	}
+
+	return v;
+}
+
+void DigramFreqMatrix::printMatrix() {
 	for (std::vector<std::vector<uint32_t>>::iterator outer = matrix.begin(); outer != matrix.end(); outer++) {
 		for (std::vector<uint32_t>::iterator inner = outer -> begin(); inner != outer -> end(); inner++) {
 			std::cout << *inner << ' ';
@@ -59,15 +73,29 @@ void Matrix::printMatrix() {
 		std::cout << std::endl;
 	}
 }
-// END: MATRIX
 
-// BEGIN: DIGRAM_FREQ_MATRIX
-DigramFreqMatrix::DigramFreqMatrix(uint32_t rowCount, uint32_t columnCount) : Matrix(rowCount, columnCount) {}
+std::vector<uint32_t>& DigramFreqMatrix::operator[](const uint32_t index) {
+	return matrix[index];
+}
 
-void DigramFreqMatrix::populateMatrix(const std::string& text) {
+uint32_t DigramFreqMatrix::size() {
+	return rows == columns ? rows : 0;
+}
+
+void DigramFreqMatrix::clearMatrix() {
+	for (std::vector<std::vector<uint32_t>>::iterator outer = matrix.begin(); outer != matrix.end(); outer++) {
+		std::fill(outer -> begin(), outer -> end(), 0);
+	}
+}
+// END: DIGRAM_FREQ_MATRIX
+
+
+// BEGIN: D_CIPHER_MATRIX
+DCipherMatrix::DCipherMatrix(uint32_t rowCount = 116, uint32_t columnCount = 116) : DigramFreqMatrix(rowCount, columnCount) {}
+
+void DCipherMatrix::populateMatrix(const std::string& text) {
 	std::vector<std::string> splitVector = split(text, ',');
 	std::vector<uint32_t> numVector = stringToUnsignedInt(splitVector);
-
 
 	for (uint32_t i = 0; i < numVector.size() - 1; i++) {
 		uint32_t row = numVector[i];
@@ -76,7 +104,107 @@ void DigramFreqMatrix::populateMatrix(const std::string& text) {
 		matrix[row][column]++;
 	}
 }
-// END: DIGRAM_FREQ_MATRIX
+// END: D_CIPHER_MATRIX
+
+
+// BEGIN: D_PLAIN_MATRIX
+DPlainMatrix::DPlainMatrix(uint32_t rowCount = 27, uint32_t columnCount = 27) : DigramFreqMatrix(rowCount, columnCount) {}
+
+void DPlainMatrix::populateMatrix() {
+	std::vector<uint32_t> row;
+
+	for (uint32_t i = 0; i < cipherMatrix -> size(); i++) {
+		row = (*cipherMatrix)[i];
+
+		for (uint32_t j = 0; j < row.size(); j++) {
+			uint32_t xIndex = getIndexForChar((*key)[i]);
+			uint32_t yIndex = getIndexForChar((*key)[j]);
+
+			matrix[xIndex][yIndex] += row[j];
+		}
+	}
+}
+
+// update matrix based on updated key and if needed, ciphertext matrix
+void DPlainMatrix::updateMatrix(uint32_t a, uint32_t b) {
+	clearMatrix();
+
+	char x = (*key)[a];
+	char y = (*key)[b];
+
+	int xCount = getFrequencyForChar(x);
+	int yCount = getFrequencyForChar(y);
+
+	if ((xCount == -1) || (yCount == -1)) {
+		throw std::runtime_error("Could not find char in frequencyMap");
+	}
+
+	if ((xCount == 1) && (yCount == 1)) {
+		// both plaintexts only have one corresponding ciphertext symbol
+		swapColumn(a, b);
+		swapRow(a, b);
+	} else {
+		// one or more have more than one ciphertext symbols
+		populateMatrix();
+	}
+}
+
+uint32_t DPlainMatrix::computeScore() {
+	EMatrix expected = *expectedMatrix;
+
+	uint32_t score = 0;
+
+	for (uint32_t outer = 0; outer < rows; outer++) {
+		for (uint32_t inner = 0; inner < columns; outer++) {
+			int local = matrix[outer][inner] - expected[outer][inner];
+
+			if (local < 0) {
+				local *= -1;
+			}
+
+			score += local;
+		}
+	}
+
+	return score;
+}
+
+void DPlainMatrix::setKey(std::vector<char>* k) {
+	key = k;
+}
+
+void DPlainMatrix::setFrequencyMap(std::map<char, uint32_t>* fm) {
+	frequencyMap = fm;
+}
+
+void DPlainMatrix::setCipherMatrix(DCipherMatrix* dc) {
+	cipherMatrix = dc;
+}
+
+void DPlainMatrix::setExpectedMatrix(EMatrix* em) {
+	expectedMatrix = em;
+}
+
+// swap index a and b of the key
+void DPlainMatrix::updateKey(uint32_t a, uint32_t b) {
+	std::vector<char>::iterator aIter = key -> begin() + a;
+	std::vector<char>::iterator bIter = key -> begin() + b;
+	std::swap(*aIter, *bIter);
+}
+
+int DPlainMatrix::getFrequencyForChar(char x) {
+	std::map<char, uint32_t>::iterator it;
+	it = frequencyMap -> find(x);
+
+	return it == frequencyMap -> end() ? -1 : it -> second;
+}
+// END: D_PLAIN_MATRIX
+
+
+// BEGIN: E_MATRIX
+EMatrix::EMatrix(uint32_t rowCount, uint32_t columnCount) : DigramFreqMatrix(rowCount, columnCount) {}
+// END: E_MATRIX
+
 
 // BEGIN: PERMUTATION
 Permutation::Permutation(uint32_t size) : values(size), directions(size), positions(size) {
@@ -185,6 +313,40 @@ std::map<char, uint32_t> generateFrequencyMap() {
 	return literal;
 }
 
+std::map<char, uint32_t> generateIndexMap() {
+	std::map<char, uint32_t> literal = {
+		{'a', 0},
+		{'b', 1},
+		{'c', 2},
+		{'d', 3},
+		{'e', 4},
+		{'f', 5},
+		{'g', 6},
+		{'h', 7},
+		{'i', 8},
+		{'j', 9},
+		{'k', 10},
+		{'l', 11},
+		{'m', 12},
+		{'n', 13},
+		{'o', 14},
+		{'p', 15},
+		{'q', 16},
+		{'r', 17},
+		{'s', 18},
+		{'t', 19},
+		{'u', 20},
+		{'v', 21},
+		{'w', 22},
+		{'x', 23},
+		{'y', 24},
+		{'z', 25},
+		{' ', 26}
+	};
+
+	return literal;
+}
+
 void flush() {
 	std::cout << std::endl;
 }
@@ -223,6 +385,25 @@ std::vector<uint32_t> stringToUnsignedInt(const std::vector<std::string>& input)
 
 	for (std::vector<std::string>::const_iterator it = input.begin(); it != input.end(); it++) {
 		v.push_back(std::stoul(*it, nullptr, 10));
+	}
+
+	return v;
+}
+
+uint32_t getIndexForChar(char x) {
+	return x == ' ' ? 26 : (uint32_t)x - 97;
+}
+
+char getCharForIndex(uint32_t x) {
+	return x == 26 ? ' ' : (x + 97);
+}
+
+std::vector<char> generateKey(uint32_t size) {
+	std::vector<char> v(size);
+	RNG rng(0, 26);
+
+	for (std::vector<char>::iterator it = v.begin(); it != v.end(); it++) {
+		*it = getCharForIndex(rng.randomNumber());
 	}
 
 	return v;

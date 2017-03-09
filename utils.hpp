@@ -29,27 +29,57 @@ class RNG {
 		std::uniform_int_distribution<uint32_t> dist;
 };
 
-class Matrix {
+class DigramFreqMatrix {
 	public:
-		explicit Matrix(uint32_t, uint32_t);
+		explicit DigramFreqMatrix(uint32_t, uint32_t);
 		void swapRow(uint32_t, uint32_t);
 		void swapColumn(uint32_t, uint32_t);
+		std::vector<uint32_t> getRow(uint32_t);
+		std::vector<uint32_t> getColumn(uint32_t);
+		void clearMatrix();
 		void printMatrix();
-		void increment(uint32_t, uint32_t);
-		virtual void populateMatrix(const std::string&) = 0;
+		uint32_t size();
+
+		std::vector<uint32_t>& operator[](const uint32_t index);
 
 	protected:
 		std::vector<std::vector<uint32_t>> matrix;
-
-	private:
 		uint32_t rows;
 		uint32_t columns;
+
+	private:
 };
 
-class DigramFreqMatrix : public Matrix {
+class EMatrix : public DigramFreqMatrix {
 	public:
-		explicit DigramFreqMatrix(uint32_t, uint32_t);
+		explicit EMatrix(uint32_t, uint32_t);
+};
+
+class DCipherMatrix : public DigramFreqMatrix {
+	public:
+		explicit DCipherMatrix(uint32_t, uint32_t);
 		void populateMatrix(const std::string&);
+};
+
+class DPlainMatrix : public DigramFreqMatrix {
+	public:
+		explicit DPlainMatrix(uint32_t, uint32_t);
+		void updateMatrix(uint32_t, uint32_t);
+		void updateKey(uint32_t, uint32_t);
+		uint32_t computeScore();
+		int getFrequencyForChar(char);
+		void populateMatrix();
+		void setKey(std::vector<char>*);
+		void setFrequencyMap(std::map<char, uint32_t>*);
+		void setCipherMatrix(DCipherMatrix*);
+		void setExpectedMatrix(EMatrix*);
+
+	private:
+		std::vector<char>* key;
+		std::map<char, uint32_t>* frequencyMap;
+		std::map<char, uint32_t>* indexMap;
+		DCipherMatrix* cipherMatrix;
+		EMatrix* expectedMatrix;
 };
 
 std::vector<uint32_t>* identityPermutation(uint32_t);
@@ -57,13 +87,21 @@ void shuffle(std::vector<uint32_t>*);
 
 std::map<char, uint32_t> generateFrequencyMap();
 
+std::map<char, uint32_t> generateIndexMap();
+
 std::map<char, uint32_t> calculateCharFrequency(const std::string&);
+
+uint32_t getIndexForChar(char);
+
+char getCharForIndex(uint32_t);
 
 void flush();
 
 std::vector<std::string> split(const std::string&, char);
 
 std::vector<uint32_t> stringToUnsignedInt(const std::vector<std::string>&);
+
+std::vector<char> generateKey(uint32_t);
 
 struct Permutation {
 	std::vector<uint32_t> values;

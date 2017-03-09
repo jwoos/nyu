@@ -41,7 +41,23 @@ int main(int argc, char** argv) {
 
 		enc.encrypt(text);
 	} else if (action == "decrypt") {
+		if (!text.size()) {
+			cout << "TEXT cannot be empty" << endl;
+			return 1;
+		}
 
+		map<char, uint32_t> fm = generateFrequencyMap();
+		vector<char> key = generateKey();
+
+		// Generate and populate cipher matrix
+		DCipherMatrix dCipher(116, 116);
+		dCipher.populateMatrix(text);
+
+		DPlainMatrix dPlain(27, 27);
+		dPlain.setKey(&key);
+		dPlain.setCipherMatrix(&dCipher);
+		dPlain.setFrequencyMap(&fm);
+		dPlain.populateMatrix();
 	} else {
 		cout << "Invalid ACTION" << endl;
 		return 1;
