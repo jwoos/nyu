@@ -2,6 +2,9 @@
  */
 
 #include "utils.hpp"
+#include "matrix.hpp"
+#include "frequency.hpp"
+#include "key.hpp"
 #include "encryption.hpp"
 
 #include <iostream>
@@ -50,7 +53,7 @@ int main(int argc, char** argv) {
 		vector<char> key = generateKey();
 
 		// Generate and populate cipher matrix
-		DCipherMatrix dCipher(116, 116);
+		DCipherMatrix dCipher(106, 106);
 		dCipher.populateMatrix(text);
 
 		DPlainMatrix dPlain(27, 27);
