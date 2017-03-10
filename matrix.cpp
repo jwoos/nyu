@@ -47,6 +47,16 @@ uint32_t DigramFreqMatrix::size() {
 	return rows == columns ? rows : 0;
 }
 
+void DigramFreqMatrix::clearColumn(uint32_t index) {
+	for (std::vector<std::vector<uint32_t>>::iterator outer = matrix.begin(); outer != matrix.end(); outer++) {
+		(*outer)[index] = 0;
+	}
+}
+
+void DigramFreqMatrix::clearRow(uint32_t index) {
+	std::fill(matrix[index].begin(), matrix[index].end(), 0);
+}
+
 void DigramFreqMatrix::clearMatrix() {
 	for (std::vector<std::vector<uint32_t>>::iterator outer = matrix.begin(); outer != matrix.end(); outer++) {
 		std::fill(outer -> begin(), outer -> end(), 0);
@@ -92,8 +102,6 @@ void DPlainMatrix::populateMatrix() {
 
 // update matrix based on updated key and if needed, ciphertext matrix
 void DPlainMatrix::updateMatrix(uint32_t a, uint32_t b) {
-	clearMatrix();
-
 	char x = (*key)[a];
 	char y = (*key)[b];
 
@@ -110,7 +118,40 @@ void DPlainMatrix::updateMatrix(uint32_t a, uint32_t b) {
 		swapRow(a, b);
 	} else {
 		// one or more have more than one ciphertext symbols
-		populateMatrix();
+		std::vector<uint32_t> columnA;
+		std::vector<uint32_t> columnB;
+		std::vector<uint32_t> rowA;
+		std::vector<uint32_t> rowB;
+
+		columnA = cipherMatrix -> getColumn(a);
+		columnB = cipherMatrix -> getColumn(b);
+		rowA = cipherMatrix -> getRow(a);
+		rowB = cipherMatrix -> getRow(b);
+
+		uint32_t aIndex = getIndexForChar(x);
+		uint32_t bIndex = getIndexForChar(y);
+
+		uint32_t ind;
+
+		for (uint32_t i = 0; i < rowA.size(); i++) {
+			ind = getIndexForChar((*key)[i]);
+
+			matrix[aIndex][ind] -= rowB[i];
+			matrix[bIndex][ind] -= rowA[i];
+
+			matrix[aIndex][ind] += rowA[i];
+			matrix[bIndex][ind] += rowB[i];
+		}
+
+		for (uint32_t i = 0; i < columnA.size(); i++) {
+			ind = getIndexForChar((*key)[i]);
+
+			matrix[ind][aIndex] -= columnB[i];
+			matrix[ind][bIndex] -= columnA[i];
+
+			matrix[ind][aIndex] += columnA[i];
+			matrix[ind][bIndex] += columnB[i];
+		}
 	}
 }
 
@@ -169,4 +210,3 @@ int DPlainMatrix::getFrequencyForChar(char x) {
 // BEGIN: E_MATRIX
 EMatrix::EMatrix(uint32_t rowCount, uint32_t columnCount) : DigramFreqMatrix(rowCount, columnCount) {}
 // END: E_MATRIX
-

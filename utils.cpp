@@ -170,9 +170,9 @@ std::vector<uint32_t> stringToUnsignedInt(const std::vector<std::string>& input)
 }
 
 uint32_t getIndexForChar(char x) {
-	return x == ' ' ? 26 : (uint32_t)x - 97;
+	return x == ' ' ? 26 : (uint32_t)(x - 'a');
 }
 
 char getCharForIndex(uint32_t x) {
-	return x == 26 ? ' ' : (x + 97);
+	return x == 26 ? ' ' : (x + 'a');
 }

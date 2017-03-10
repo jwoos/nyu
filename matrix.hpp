@@ -10,6 +10,8 @@ class DigramFreqMatrix {
 		void swapColumn(uint32_t, uint32_t);
 		std::vector<uint32_t> getRow(uint32_t);
 		std::vector<uint32_t> getColumn(uint32_t);
+		void clearRow(uint32_t);
+		void clearColumn(uint32_t);
 		void clearMatrix();
 		void printMatrix();
 		uint32_t size();
@@ -57,4 +59,3 @@ class DPlainMatrix : public DigramFreqMatrix {
 };
 
 #endif
-
