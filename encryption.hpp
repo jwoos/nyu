@@ -1,13 +1,16 @@
 #ifndef ENCRYPTION_ENCRPYT_H
 #define ENCRYPTION_ENCRPYT_H
 
-#include "utils.hpp"
-
 #include <iostream>
 #include <map>
 #include <vector>
 #include <set>
 #include <string>
+
+#include "matrix.hpp"
+#include "frequency.hpp"
+#include "key.hpp"
+#include "utils.hpp"
 
 class Encryptor {
 	public:

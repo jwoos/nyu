@@ -3,6 +3,9 @@
  */
 
 #include "utils.hpp"
+#include "matrix.hpp"
+#include "frequency.hpp"
+#include "key.hpp"
 #include "encryption.hpp"
 
 #include <iostream>
@@ -96,5 +99,5 @@ void testGenerateKey() {
 }
 
 int main() {
-	testGenerateKey();
+	testMatrix();
 }
