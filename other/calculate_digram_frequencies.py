@@ -1,10 +1,17 @@
-from decimal import Decimal
+import sys
+from decimal import Decimal, ROUND_HALF_EVEN
 
-filename = input('filename: ')
+# This will be the length of the text passed into the program
+NORMALIZE = 500
+
+ROUND_DECIMAL = Decimal('.1111')
+
+filename = sys.argv[1] or input('filename: ')
 
 freq_number = {}
 freq_percent = {}
 
+print('Parsing %s' % filename)
 f = open(filename)
 text = f.read()
 text_length = len(text)
@@ -19,14 +26,27 @@ for i in range(0, text_length - 1):
 
 total = Decimal(text_length - 1)
 for k in freq_number.keys():
-    freq_percent[k] = Decimal(freq_number[k]) / total
+    freq_percent[k] = NORMALIZE * (Decimal(freq_number[k]) / total)
+    freq_percent[k] = freq_percent[k].quantize(ROUND_DECIMAL, rounding=ROUND_HALF_EVEN)
 
 data = ''
-file = open(filename[0:-4] + '_digram_frequency.csv', 'w')
+out_filename = filename[0:-4] + '_digram_frequency.txt'
+file = open(out_filename, 'w')
 
-TEXT = ' abcdefghijklmnopqrstuvwxyz'
+test_sum = 0
+
+TEXT = 'abcdefghijklmnopqrstuvwxyz '
 for c in TEXT:
+    temp = ''
+
     for h in TEXT:
-        data += '{"%s%s": %s}\n' % (c, h, freq_percent[c + h]) if freq_percent.get(c + h) else '{"%s%s": 0}\n' % (c, h)
+        test_sum += freq_percent[c + h] if freq_percent.get(c + h) else 0
+
+        temp += '%s, ' % freq_percent[c + h] if freq_percent.get(c + h) else '0, '
+
+    data += '{' + temp + '}\n'
+
+print('Total sum of frequencies: %s' % test_sum)
 
 file.write(data)
+print('Written to %s' % out_filename)

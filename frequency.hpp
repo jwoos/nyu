@@ -7,6 +7,7 @@ std::map<char, uint32_t> calculateCharFrequency(const std::string&);
 
 std::map<char, uint32_t> generateFrequencyMap();
 
-std::map<std::string, uint32_t> generateDigramFrequencyMap();
+std::vector<std::vector<float>> generatePlaintextDictionaryDigramFrequencyMatrix();
 
+std::vector<std::vector<float>> generateEnglishWordsDigramFrequencyMap();
 #endif
