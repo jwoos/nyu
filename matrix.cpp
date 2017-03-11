@@ -66,7 +66,7 @@ void DigramFreqMatrix::clearMatrix() {
 
 
 // BEGIN: D_CIPHER_MATRIX
-DCipherMatrix::DCipherMatrix(uint32_t rowCount = 116, uint32_t columnCount = 116) : DigramFreqMatrix(rowCount, columnCount) {}
+DCipherMatrix::DCipherMatrix(uint32_t rowCount, uint32_t columnCount) : DigramFreqMatrix(rowCount, columnCount) {}
 
 void DCipherMatrix::populateMatrix(const std::string& text) {
 	std::vector<std::string> splitVector = split(text, ',');
@@ -83,7 +83,7 @@ void DCipherMatrix::populateMatrix(const std::string& text) {
 
 
 // BEGIN: D_PLAIN_MATRIX
-DPlainMatrix::DPlainMatrix(uint32_t rowCount = 27, uint32_t columnCount = 27) : DigramFreqMatrix(rowCount, columnCount) {}
+DPlainMatrix::DPlainMatrix(uint32_t rowCount, uint32_t columnCount) : DigramFreqMatrix(rowCount, columnCount) {}
 
 void DPlainMatrix::populateMatrix() {
 	std::vector<uint32_t> row;
