@@ -1,12 +1,16 @@
 #include "utils.hpp"
 
 // BEGIN: RNG
-RNG::RNG(uint32_t lo = 0, uint32_t hi = 10) : lower(lo), upper(hi) {
+RNG::RNG(uint32_t lo = 0, uint32_t hi = 10, const std::string& type = "uniform") : lower(lo), upper(hi), distType(type) {
 	// seed the generator with random device
 	generator.seed(rd());
 
 	// use initial range to generate a uniform distribution
-	dist = std::uniform_int_distribution<uint32_t>(lower, upper);
+	uniform = std::uniform_int_distribution<uint32_t>(lower, upper);
+}
+
+RNG::RNG(const std::vector<uint32_t>& prob, const std::string& type = "discrete") : distType(type) {
+	discrete = std::discrete_distribution<uint32_t>(prob.begin(), prob.end());
 }
 
 void RNG::setSeed(uint32_t seed) {
@@ -18,7 +22,12 @@ void RNG::setBounds(uint32_t lo, uint32_t hi) {
 	upper = hi;
 
 	// generate a new distribution based on bounds
-	dist = std::uniform_int_distribution<uint32_t>(lower, upper);
+	uniform = std::uniform_int_distribution<uint32_t>(lower, upper);
+}
+
+void RNG::setBounds(const std::vector<uint32_t>& d) {
+	// generate a new distribution based on bounds
+	discrete = std::discrete_distribution<uint32_t>(d.begin(), d.end());
 }
 
 uint32_t RNG::getUpper() const {
@@ -30,7 +39,11 @@ uint32_t RNG::getLower() const {
 }
 
 uint32_t RNG::randomNumber() {
-	return dist(generator);
+	if (distType == "uniform") {
+		return uniform(generator);
+	} else {
+		return discrete(generator);
+	}
 }
 // END: RNG
 
@@ -105,6 +118,15 @@ void shuffle(std::vector<uint32_t>* items) {
 		std::uniform_int_distribution<uint32_t> dist(i + 1, items -> size() - 1);
 		uint32_t swapWith = dist(rng);
 		std::swap((*items)[i], (*items)[swapWith]);
+	}
+}
+
+void shuffle(std::vector<char>& v) {
+	RNG rng(0, 0, "uniform");
+
+	for (uint32_t i = 0; i < v.size() - 1; i++) {
+		rng.setBounds(i + 1, v.size() - 1);
+		std::swap(v[i], v[rng.randomNumber()]);
 	}
 }
 
