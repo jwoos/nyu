@@ -1,6 +1,6 @@
 #include "encryption.hpp"
 
-Encryptor::Encryptor() : rng(0, 10), keyMap(generateKeys()) {}
+Encryptor::Encryptor() : rng(0, 10, "uniform"), keyMap(generateKeys()) {}
 
 std::map<char, std::set<uint32_t>*> Encryptor::generateKeys() {
 	std::map<char, std::set<uint32_t>*> m;

@@ -14,9 +14,13 @@
 
 class RNG {
 	public:
-		RNG(uint32_t, uint32_t);
+		// uniform constructor
+		RNG(uint32_t, uint32_t, const std::string&);
+		// discrete constructor
+		RNG(const std::vector<uint32_t>&, const std::string&);
 		void setSeed(uint32_t);
 		void setBounds(uint32_t, uint32_t);
+		void setBounds(const std::vector<uint32_t>&);
 		uint32_t getUpper() const;
 		uint32_t getLower() const;
 		uint32_t randomNumber();
@@ -24,13 +28,18 @@ class RNG {
 	private:
 		uint32_t lower;
 		uint32_t upper;
+		std::string distType;
 		std::mt19937 generator;
 		std::random_device rd;
-		std::uniform_int_distribution<uint32_t> dist;
+		std::uniform_int_distribution<uint32_t> uniform;
+		std::discrete_distribution<uint32_t> discrete;
 };
 
 std::vector<uint32_t>* identityPermutation(uint32_t);
+
 void shuffle(std::vector<uint32_t>*);
+
+void shuffle(std::vector<char>&);
 
 std::map<char, uint32_t> generateIndexMap();
 
