@@ -213,4 +213,12 @@ int DPlainMatrix::getFrequencyForChar(char x) {
 
 // BEGIN: E_MATRIX
 EMatrix::EMatrix(uint32_t rowCount, uint32_t columnCount) : DigramFreqMatrix(rowCount, columnCount) {}
+
+void EMatrix::populateMatrix(std::vector<std::vector<float>> percentage, uint32_t normalizer) {
+	for (uint32_t i = 0; i < rows; i++) {
+		for (uint32_t j = 0; j < columns; j++) {
+			matrix[i][j] = round(percentage[i][j] * normalizer);
+		}
+	}
+}
 // END: E_MATRIX
