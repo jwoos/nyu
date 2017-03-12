@@ -112,7 +112,7 @@ void DPlainMatrix::updateMatrix(uint32_t a, uint32_t b) {
 		throw std::runtime_error("Could not find char in frequencyMap");
 	}
 
-	if ((xCount == 1) && (yCount == 1)) {
+	if (false && (xCount == 1) && (yCount == 1)) {
 		// both plaintexts only have one corresponding ciphertext symbol
 		swapColumn(a, b);
 		swapRow(a, b);
@@ -193,9 +193,13 @@ void DPlainMatrix::setExpectedMatrix(EMatrix* em) {
 
 // swap index a and b of the key
 void DPlainMatrix::updateKey(uint32_t a, uint32_t b) {
+	// First update our internal representation of the key
 	std::vector<char>::iterator aIter = key -> begin() + a;
 	std::vector<char>::iterator bIter = key -> begin() + b;
 	std::swap(*aIter, *bIter);
+
+	// Then update our matrix to match
+	updateMatrix(a, b);
 }
 
 int DPlainMatrix::getFrequencyForChar(char x) {

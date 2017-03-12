@@ -72,7 +72,6 @@ void testMatrix() {
 	flush();
 
 	dPlain.updateKey(2, 9);
-	dPlain.updateMatrix(2, 9);
 	dPlain.printMatrix();
 	flush();
 }

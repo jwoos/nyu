@@ -40,7 +40,6 @@ class DCipherMatrix : public DigramFreqMatrix {
 class DPlainMatrix : public DigramFreqMatrix {
 	public:
 		explicit DPlainMatrix(uint32_t rowCount = 27, uint32_t columnCount = 27);
-		void updateMatrix(uint32_t, uint32_t);
 		void updateKey(uint32_t, uint32_t);
 		uint32_t computeScore();
 		int getFrequencyForChar(char);
@@ -51,6 +50,7 @@ class DPlainMatrix : public DigramFreqMatrix {
 		void setExpectedMatrix(EMatrix*);
 
 	private:
+		void updateMatrix(uint32_t, uint32_t);
 		std::vector<char>* key;
 		std::map<char, uint32_t>* frequencyMap;
 		DCipherMatrix* cipherMatrix;
