@@ -29,6 +29,7 @@ class DigramFreqMatrix {
 class EMatrix : public DigramFreqMatrix {
 	public:
 		explicit EMatrix(uint32_t, uint32_t);
+		void populateMatrix(std::vector<std::vector<float>>, uint32_t);
 };
 
 class DCipherMatrix : public DigramFreqMatrix {
