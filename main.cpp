@@ -74,6 +74,7 @@ int main(int argc, char** argv) {
 				}
 			}
 			flush();
+			flush();
 
 			text = enc.encrypt(plaintext);
 		}
@@ -92,7 +93,7 @@ int main(int argc, char** argv) {
 		}
 		flush();
 
-		cout << "TEXT DECRYPTED WITH A SCORE OF " << d.currentScore() << ": " << endl;
+		cout << "TEXT DECRYPTED WITH A SCORE OF " << d.currentScore() << " AND A HARD SCORE OF [" << d.currentScore(true) <<  "]: " << endl;
 		cout << d.currentCandidatePlaintext() << endl;
 	} else {
 		cout << "Invalid ACTION" << endl;
