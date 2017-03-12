@@ -5,7 +5,7 @@ DEBUG = -g
 STD = -std=c++14
 ARGS = $(WARNING) $(OPTIMIZE) $(DEBUG) $(STD)
 
-ALL = utils.o encryption.o frequency.o key.o matrix.o
+ALL = utils.o encryption.o frequency.o key.o matrix.o decryption.o dictionary.o
 
 default: clean test
 

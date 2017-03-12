@@ -7,6 +7,8 @@
 #include "frequency.hpp"
 #include "key.hpp"
 #include "encryption.hpp"
+#include "decryption.hpp"
+#include "dictionary.hpp"
 
 #include <iostream>
 #include <set>
@@ -45,12 +47,17 @@ void testRandomPermutations() {
 	cout << endl;
 }
 
+std::string getPlaintext() {
+	string a = randomWords(500);
+	return a;
+}
+
 void testEncrypt() {
 	Encryptor enc;
 
 	enc.printKeyMap();
 
-	string a = "l";
+	auto a = getPlaintext();
 
 	enc.encrypt(a);
 }
@@ -72,7 +79,6 @@ void testMatrix() {
 	flush();
 
 	dPlain.updateKey(2, 9);
-	dPlain.updateMatrix(2, 9);
 	dPlain.printMatrix();
 	flush();
 }
@@ -85,28 +91,174 @@ void testCalculateCharFrequency() {
 	}
 }
 
+void printKey(vector<char>* key) {
+	for (char x : *key) {
+		if (x == ' ') {
+			x = '!';
+		}
+
+		cout << x;
+	}
+	cout << endl;
+	flush();
+}
+
 void testGenerateKey() {
 	vector<char> v = generateKey(105);
-
-	for (char x : v) {
-		if (x == ' ') {
-			x = '!';
-		}
-
-		cout << x << ' ';
-	}
-	flush();
+	printKey(&v);
 
 	vector<char> b = generateKey(generateFrequencyMap());
-	for (char x : b) {
-		if (x == ' ') {
-			x = '!';
+	printKey(&b);
+}
+
+
+void fullTest() {
+	std::string plaintext = getPlaintext();
+
+	Encryptor enc;
+	cout << "Real Key:" << endl;
+	std::vector<char> realKey(106);
+	for(uint32_t l = 0; l < 27; l++) {
+		char c = getCharForIndex(l);
+		auto set = enc.keyMap[c];
+		for(auto it = set->begin(); it != set->end(); it++) {
+			realKey[*it] = c;
+		}
+	}
+	printKey(&realKey);
+	std::string ciphertext = enc.encrypt(plaintext);
+
+	Decryptor d(ciphertext);
+/*
+	cout << "Actual Plain: " << plaintext.substr(0, 100) << endl;
+	cout << "Before Plain: " << d.currentCandidatePlaintext().substr(0, 100) << endl;
+	cout << "Before Score: " << d.currentScore() << endl;
+	for(uint32_t i = 0; i < 1000; i++) {
+		d.performOneRound();
+		
+		cout << "Actual Plain: " << plaintext.substr(0, 100) << endl;
+		cout << "During Plain: " << d.currentCandidatePlaintext().substr(0, 100) << endl;
+		cout << "During Score: " << d.currentScore() << endl;
+	}*/
+
+	d.decrypt();
+
+	cout << "Actual Plain: " << plaintext.substr(0, 100) << endl;
+	cout << "After Plain:  " << d.currentCandidatePlaintext().substr(0, 100) << endl;
+	cout << "After Score:  " << d.currentScore() << endl;
+
+	auto finalKey = d.currentCandidateKey();
+	cout << "Final Key:" << endl;
+	printKey(finalKey);
+
+	uint32_t differences = 0;
+	for(uint32_t i = 0; i < finalKey->size(); i++) {
+		if(realKey[i] != (*finalKey)[i]) {
+			differences++;
+		}
+	}
+	cout << "Number of key differences: " << differences << endl;
+}
+
+void computeThreshold() {
+	auto freqMap = generateFrequencyMap();
+	float total = 0;
+	uint32_t min = 5000;
+	uint32_t max = 0;
+	for(uint32_t i = 1; i < 1000; i++) {
+		std::string plaintext = randomWords(500);
+		Encryptor enc;
+		std::string ciphertext = enc.encrypt(plaintext);
+
+		EMatrix e(27, 27);
+		std::vector<std::string> splitVector = split(ciphertext, ',');
+		e.populateMatrix(generateEnglishWordsDigramFrequencyMap(), splitVector.size());
+
+		std::vector<char> key(106);
+		for(uint32_t l = 0; l < 27; l++) {
+			char c = getCharForIndex(l);
+			auto set = enc.keyMap[c];
+			for(auto it = set->begin(); it != set->end(); it++) {
+				key[*it] = c;
+			}
+		}
+		DCipherMatrix dc(106, 106);
+		dc.populateMatrix(ciphertext);
+		DPlainMatrix dp(27,27);
+		dp.setFrequencyMap(&freqMap);
+		dp.setExpectedMatrix(&e);
+		dp.setCipherMatrix(&dc);
+		dp.setKey(&key);
+		uint32_t score = dp.computeScore();
+		total += score;
+		if(score > max) {
+			max = score;
+		}
+		if(score < min) {
+			min = score;
+		}
+		std::cout << min << " < " << total / i << " < " << max << std::endl;
+	}
+}
+
+void testSwapping() {
+	auto freqMap = generateFrequencyMap();
+	for(uint32_t j = 0; j < 50; j++) {
+		// Fixed key for easy debugging
+		Encryptor enc;
+
+		std::string plaintext = randomWords(500);
+		std::string ciphertext = enc.encrypt(plaintext);
+
+		std::vector<char> safeKey(106);
+		for(uint32_t l = 0; l < 27; l++) {
+			char c = getCharForIndex(l);
+			auto set = enc.keyMap[c];
+			for(auto it = set->begin(); it != set->end(); it++) {
+				safeKey[*it] = c;
+			}
 		}
 
-		cout << x << ' ';
+		EMatrix e(27, 27);
+		std::vector<std::string> splitVector = split(ciphertext, ',');
+		e.populateMatrix(generateEnglishWordsDigramFrequencyMap(), splitVector.size());
+
+		std::vector<char> swapKey(safeKey);
+		DCipherMatrix dc(106, 106);
+		dc.populateMatrix(ciphertext);
+		DPlainMatrix dpSafe(27,27);
+		dpSafe.setFrequencyMap(&freqMap);
+		dpSafe.setCipherMatrix(&dc);
+		dpSafe.setKey(&safeKey);
+
+		DPlainMatrix dpSwap(27,27);
+		dpSwap.setFrequencyMap(&freqMap);
+		dpSwap.setCipherMatrix(&dc);
+		dpSwap.setKey(&swapKey);
+
+		RNG rng(0, 105);
+		bool spoiled = false;
+		uint32_t maxIterations = 1000;
+		uint32_t i = 0;
+		for(i = 0; i < maxIterations; i++) {
+			uint32_t x = rng.randomNumber();
+			uint32_t y = rng.randomNumber();
+			dpSafe.safeUpdateKey(x, y);
+			dpSwap.updateKey(x, y);
+			if(dpSafe.countDifferences(dpSwap) > 0) {
+				spoiled = true;
+				break;
+			}
+		}
+		if(spoiled) {
+			std::cout << "DIFFERENCES FOUND!!  After " << i << " iterations." << std::endl;
+			dpSafe.printDifferences(dpSwap);
+		} else {
+			std::cout << "Still pristine after " << maxIterations << " iterations!" << std::endl;
+		}
 	}
 }
 
 int main() {
-	testGenerateKey();
+	fullTest();
 }

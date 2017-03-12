@@ -2,6 +2,7 @@
 #define ENCRYPTION_KEY_H
 
 #include "utils.hpp"
+#include "frequency.hpp"
 
 std::vector<char> generateKey(uint32_t);
 

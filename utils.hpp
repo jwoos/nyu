@@ -5,6 +5,7 @@
 #include <iostream>
 #include <iostream>
 #include <map>
+#include <cmath>
 #include <random>
 #include <set>
 #include <sstream>
@@ -15,9 +16,9 @@
 class RNG {
 	public:
 		// uniform constructor
-		RNG(uint32_t, uint32_t, const std::string&);
+		RNG(uint32_t lo = 0, uint32_t hi = 10, const std::string& type = "uniform");
 		// discrete constructor
-		RNG(const std::vector<uint32_t>&, const std::string&);
+		RNG(const std::vector<uint32_t>&, const std::string& type = "discrete");
 		void setSeed(uint32_t);
 		void setBounds(uint32_t, uint32_t);
 		void setBounds(const std::vector<uint32_t>&);

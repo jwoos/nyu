@@ -18,10 +18,10 @@ class Encryptor {
 		std::map<char, std::set<uint32_t>*> generateKeys();
 		std::string encrypt(std::string&);
 		void printKeyMap() const;
+		std::map<char, std::set<uint32_t>*> keyMap;
 
 	private:
 		RNG rng;
-		std::map<char, std::set<uint32_t>*> keyMap;
 };
 
 #endif

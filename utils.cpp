@@ -1,7 +1,7 @@
 #include "utils.hpp"
 
 // BEGIN: RNG
-RNG::RNG(uint32_t lo = 0, uint32_t hi = 10, const std::string& type = "uniform") : lower(lo), upper(hi), distType(type) {
+RNG::RNG(uint32_t lo, uint32_t hi, const std::string& type) : lower(lo), upper(hi), distType(type) {
 	// seed the generator with random device
 	generator.seed(rd());
 
@@ -9,7 +9,7 @@ RNG::RNG(uint32_t lo = 0, uint32_t hi = 10, const std::string& type = "uniform")
 	uniform = std::uniform_int_distribution<uint32_t>(lower, upper);
 }
 
-RNG::RNG(const std::vector<uint32_t>& prob, const std::string& type = "discrete") : distType(type) {
+RNG::RNG(const std::vector<uint32_t>& prob, const std::string& type) : distType(type) {
 	discrete = std::discrete_distribution<uint32_t>(prob.begin(), prob.end());
 }
 
