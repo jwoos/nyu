@@ -33,7 +33,7 @@ class EMatrix : public DigramFreqMatrix {
 
 class DCipherMatrix : public DigramFreqMatrix {
 	public:
-		explicit DCipherMatrix(uint32_t rowCount = 116, uint32_t columnCount = 116);
+		explicit DCipherMatrix(uint32_t rowCount = 106, uint32_t columnCount = 106);
 		void populateMatrix(const std::string&);
 };
 

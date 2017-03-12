@@ -5,7 +5,7 @@ Encryptor::Encryptor() : rng(0, 10, "uniform"), keyMap(generateKeys()) {}
 std::map<char, std::set<uint32_t>*> Encryptor::generateKeys() {
 	std::map<char, std::set<uint32_t>*> m;
 	std::map<char, uint32_t> frequencyMap = generateFrequencyMap();
-	std::vector<uint32_t>* randoms = identityPermutation(115);
+	std::vector<uint32_t>* randoms = identityPermutation(106);
 	shuffle(randoms);
 
 	for (std::map<char, uint32_t>::iterator it = frequencyMap.begin(); it != frequencyMap.end(); it++) {
@@ -33,7 +33,7 @@ std::string Encryptor::encrypt(std::string& plaintext) {
 		std::map<char, std::set<uint32_t>*>::iterator it = keyMap.find(ch);
 		std::set<uint32_t>* keys = it -> second;
 
-		rng.setBounds(0, keys -> size());
+		rng.setBounds(0, keys -> size() - 1);
 		uint32_t index = rng.randomNumber();
 
 		std::set<uint32_t>::iterator begin = keys -> begin();
@@ -41,7 +41,6 @@ std::string Encryptor::encrypt(std::string& plaintext) {
 		for (uint32_t i = 0; i < index; i++) {
 			begin++;
 		}
-
 		ciphertext += std::to_string(*begin) + ',';
 	}
 
