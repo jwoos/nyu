@@ -1,7 +1,9 @@
 #include "matrix.hpp"
 
 // BEGIN: DIGRAM_FREQ_MATRIX
-DigramFreqMatrix::DigramFreqMatrix(uint32_t rowCount, uint32_t columnCount) : matrix(rowCount, std::vector<uint32_t>(columnCount, 0)), rows(rowCount), columns(columnCount) {}
+DigramFreqMatrix::DigramFreqMatrix(uint32_t rowCount, uint32_t columnCount) : matrix(rowCount, std::vector<uint32_t>(columnCount, 0)), rows(rowCount), columns(columnCount) {
+	clearMatrix();
+}
 
 void DigramFreqMatrix::swapRow(uint32_t a, uint32_t b) {
 	matrix[a].swap(matrix[b]);
@@ -39,6 +41,40 @@ void DigramFreqMatrix::printMatrix() {
 	}
 }
 
+void DigramFreqMatrix::printDifferences(DigramFreqMatrix& other) {
+	for (uint32_t outer = 0; outer != matrix.size(); outer++) {
+		for (uint32_t inner = 0; inner != matrix.size(); inner++) {
+			int diff = matrix[inner][outer] - other.matrix[inner][outer];
+			if(diff == 0) {
+				std::cout << " . ";
+			} else if(diff < 0) {
+				std::cout << diff << " ";
+			} else {
+				std::cout << " " << diff;
+				if(diff < 10) {
+					std::cout << " ";
+				}
+			}
+		}
+		std::cout << std::endl;
+	}
+}
+
+uint32_t DigramFreqMatrix::countDifferences(DigramFreqMatrix& other) {
+	uint32_t totalDifferences = 0;
+	for (uint32_t outer = 0; outer != matrix.size(); outer++) {
+		for (uint32_t inner = 0; inner != matrix.size(); inner++) {
+			int diff = matrix[inner][outer] - other.matrix[inner][outer];
+			if(diff < 0) {
+				totalDifferences -= diff;
+			} else {
+				totalDifferences += diff;
+			}
+		}
+	}
+	return totalDifferences;
+}
+
 std::vector<uint32_t>& DigramFreqMatrix::operator[](const uint32_t index) {
 	return matrix[index];
 }
@@ -69,6 +105,7 @@ void DigramFreqMatrix::clearMatrix() {
 DCipherMatrix::DCipherMatrix(uint32_t rowCount, uint32_t columnCount) : DigramFreqMatrix(rowCount, columnCount) {}
 
 void DCipherMatrix::populateMatrix(const std::string& text) {
+	clearMatrix();
 	std::vector<std::string> splitVector = split(text, ',');
 	std::vector<uint32_t> numVector = stringToUnsignedInt(splitVector);
 
@@ -100,76 +137,6 @@ void DPlainMatrix::populateMatrix() {
 	}
 }
 
-// update matrix based on updated key and if needed, ciphertext matrix
-void DPlainMatrix::updateMatrix(uint32_t a, uint32_t b) {
-	char x = (*key)[a];
-	char y = (*key)[b];
-	// one or more have more than one ciphertext symbols
-	std::vector<uint32_t> columnA;
-	std::vector<uint32_t> columnB;
-	std::vector<uint32_t> rowA;
-	std::vector<uint32_t> rowB;
-
-	columnA = cipherMatrix -> getColumn(a);
-	columnB = cipherMatrix -> getColumn(b);
-	rowA = cipherMatrix -> getRow(a);
-	rowB = cipherMatrix -> getRow(b);
-
-	uint32_t aIndex = getIndexForChar(x);
-	uint32_t bIndex = getIndexForChar(y);
-
-	uint32_t ind;
-
-	for (uint32_t i = 0; i < rowA.size(); i++) {
-		ind = getIndexForChar((*key)[i]);
-
-		// subtract the values from the previous putative key
-		if (i == a) {
-			matrix[aIndex][ind] -= rowB[b];
-		} else if (i == b) {
-			matrix[aIndex][ind] -= rowB[a];
-		} else {
-			matrix[aIndex][ind] -= rowB[i];
-		}
-
-		if (i == a) {
-			matrix[bIndex][ind] -= rowA[b];
-		} else if (i == b) {
-			matrix[bIndex][ind] -= rowA[a];
-		} else {
-			matrix[bIndex][ind] -= rowA[i];
-		}
-
-		// add current values
-		matrix[aIndex][ind] += rowA[i];
-		matrix[bIndex][ind] += rowB[i];
-	}
-
-	for (uint32_t i = 0; i < columnA.size(); i++) {
-		ind = getIndexForChar((*key)[i]);
-
-		// subtract the values from the previous putative key
-		// omit values that were subtracted by the row calculations
-		if (i != a && i != b) {
-			matrix[ind][aIndex] -= columnB[i];
-		}
-
-		if (i != a && i != b) {
-			matrix[ind][bIndex] -= columnA[i];
-		}
-
-		// add in new values
-		// omit values that were added by the row calulations
-		if (i != a && i != b) {
-			matrix[ind][aIndex] += columnA[i];
-		}
-
-		if (i != a && i != b) {
-			matrix[ind][bIndex] += columnB[i];
-		}
-	}
-}
-
 uint32_t DPlainMatrix::computeScore() {
 	EMatrix expected = *expectedMatrix;
 
@@ -192,6 +159,7 @@ uint32_t DPlainMatrix::computeScore() {
 
 void DPlainMatrix::setKey(std::vector<char>* k) {
 	key = k;
+	populateMatrix();
 }
 
 void DPlainMatrix::setFrequencyMap(std::map<char, uint32_t>* fm) {
@@ -206,15 +174,78 @@ void DPlainMatrix::setExpectedMatrix(EMatrix* em) {
 	expectedMatrix = em;
 }
 
-// swap index a and b of the key
-void DPlainMatrix::updateKey(uint32_t a, uint32_t b) {
-	// First update our internal representation of the key
-	std::vector<char>::iterator aIter = key -> begin() + a;
-	std::vector<char>::iterator bIter = key -> begin() + b;
-	std::swap(*aIter, *bIter);
+void DPlainMatrix::safeUpdateKey(uint32_t x, uint32_t y) {
+		// Finally, swap our key
+	auto xIter = key -> begin() + x;
+	auto yIter = key -> begin() + y;
+	std::swap(*xIter, *yIter);
 
 	// Then update our matrix to match
 	populateMatrix();
+}
+
+// swap index x and y of the key
+void DPlainMatrix::updateKey(uint32_t x, uint32_t y) {
+
+	// Update the plaintext matrix by shuffling around quantities from the ciphertext matrix
+	// The best way to think of this code is as each entry in the plaintext
+	// matrix still holding memory of what was summed to get there in the first place
+	// And we're just pulling a value out of that sum, and adding it elsewhere
+
+	// First, swap rows x and y from the cipher matrix
+	char oldKeyX = getIndexForChar((*key)[x]);
+	char oldKeyY = getIndexForChar((*key)[y]);
+
+	char newKeyX = oldKeyY; // For clarity
+	char newKeyY = oldKeyX; // For clarity
+	auto cipherMatrix = (*this->cipherMatrix);
+
+	for(uint32_t element = 0; element < cipherMatrix.size(); element++) {
+		uint32_t oldKeyElement = getIndexForChar((*key)[element]);
+		uint32_t newKeyElement;
+		// The corners where x and y interesect need to swap diagonally,
+		// so we handle that carefully here
+		if(element == x) {
+			newKeyElement = getIndexForChar((*key)[y]); // X and Y swap
+		} else if(element == y) {
+			newKeyElement = getIndexForChar((*key)[x]); // X and Y swap
+		} else {
+			newKeyElement = oldKeyElement;
+		}
+
+		// Move the bits and bobs from old row X to new row X
+		matrix[oldKeyX][oldKeyElement] -= cipherMatrix[x][element];
+		matrix[newKeyX][newKeyElement] += cipherMatrix[x][element];
+
+		// Move the bits and bobs from old row Y to new row Y
+		matrix[oldKeyY][oldKeyElement] -= cipherMatrix[y][element];
+		matrix[newKeyY][newKeyElement] += cipherMatrix[y][element];
+	}
+
+	for(uint32_t element = 0; element < cipherMatrix.size(); element++) {
+		// Skip swapping the corners, because we already swapped them diagonally
+		if(element == x || element == y) {
+			continue;
+		} 
+
+		// I use two variables here for clarity, even though they're the same value
+		uint32_t oldKeyElement = getIndexForChar((*key)[element]);
+		uint32_t newKeyElement = oldKeyElement;
+
+
+		// Move the bits and bobs from old column X to new column X
+		matrix[oldKeyElement][oldKeyX] -= cipherMatrix[element][x];
+		matrix[newKeyElement][newKeyX] += cipherMatrix[element][x];
+
+		// Move the bits and bobs from old column Y to new column Y
+		matrix[oldKeyElement][oldKeyY] -= cipherMatrix[element][y];
+		matrix[newKeyElement][newKeyY] += cipherMatrix[element][y];
+	}
+
+	// Finally, swap our key
+	auto xIter = key -> begin() + x;
+	auto yIter = key -> begin() + y;
+	std::swap(*xIter, *yIter);
 }
 
 int DPlainMatrix::getFrequencyForChar(char x) {

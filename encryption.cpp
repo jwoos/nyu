@@ -1,6 +1,9 @@
 #include "encryption.hpp"
 
-Encryptor::Encryptor() : rng(0, 10, "uniform"), keyMap(generateKeys()) {}
+Encryptor::Encryptor() :
+	keyMap(generateKeys()),
+	rng(0, 10, "uniform")	{
+}
 
 std::map<char, std::set<uint32_t>*> Encryptor::generateKeys() {
 	std::map<char, std::set<uint32_t>*> m;
@@ -43,8 +46,6 @@ std::string Encryptor::encrypt(std::string& plaintext) {
 		}
 		ciphertext += std::to_string(*begin) + ',';
 	}
-
-	std::cout << ciphertext << std::endl;
 
 	return ciphertext;
 }

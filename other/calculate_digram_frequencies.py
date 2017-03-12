@@ -4,7 +4,7 @@ from decimal import Decimal, ROUND_HALF_EVEN
 # This will be the length of the text passed into the program
 NORMALIZE = 500
 
-ROUND_DECIMAL = Decimal('.111111')
+ROUND_DECIMAL = Decimal('.11111111')
 
 filename = sys.argv[1] or input('filename: ')
 
