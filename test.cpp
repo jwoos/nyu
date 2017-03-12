@@ -118,7 +118,8 @@ void testDecrypt() {
 	//cout << d.currentCandidatePlaintext() << endl;
 	cout << "Before: " << d.currentScore() << endl;
 	d.performOneRound();
-	cout << "After: " << d.currentScore() << endl;
+	cout << "After:  " << d.currentScore() << endl;
+	printKey(key);
 }
 
 int main() {

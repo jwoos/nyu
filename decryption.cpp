@@ -39,40 +39,55 @@ uint32_t Decryptor::currentScore() {
 }
 
 void Decryptor::performOneRound() {
-	uint32_t currentScore = dp->computeScore();
 	// Understanding the boundary conditions of this is tricky, so:
 	// The outer loop is a "gap size",
 	// The inner loop is each column we might swap with a later one,
 	// so for each gap size (starting with adjacent letters)
 	// we loop over each column that has a gap column to swap with
-	for(uint32_t gapSize = 1; gapSize < 2; gapSize++) {
+	for(uint32_t gapSize = 1; gapSize < 106; gapSize++) {
 		for(uint32_t column = 0; column < 106 - gapSize; column++) {
 			uint32_t swapWith = column + gapSize;
 			// If the two letters of the key at j and j+i are the same,
-			if((*putativeKey)[column] == (*putativeKey)[swapWith]) {
+			char columnLetter = (*putativeKey)[column];
+			char swapLetter = (*putativeKey)[swapWith];
+			if(columnLetter == swapLetter) {
 				continue;
 			}
 			uint32_t beforeSwap = dp->computeScore();
 			dp->updateKey(column, swapWith);
 			uint32_t newScore = dp->computeScore();
 			// If we improved, use this new key as the putative key
-			if(newScore <= currentScore) {
-				// Swap the key as well
-				currentScore = newScore;
+			if(newScore <= beforeSwap) {
+				// Keep!
+				//std::cout << "Improvement." << std::endl;
+				//currentScore = newScore;
 			} else {
 				// Otherwise, set our matrix back
 				dp->updateKey(column, swapWith);
+				uint32_t currentScore = dp->computeScore();
 
-				if(beforeSwap != dp->computeScore()) {
+				if(beforeSwap != currentScore) {
 					std::cout << std::endl;
 					std::cout << "WARNING: " << std::endl;
 					std::cout << "After swapping " << column << " and " << swapWith << " and swapping back, the score didn't return to normal." << std::endl;
+					std::cout << "Column Letter: " << columnLetter << " Swap Letter: " << swapLetter << std::endl;
+					std::cout << "Column Freq:   " << frequencyMap[columnLetter] << " Swap Freq:   " << frequencyMap[swapLetter] << std::endl;
 					std::cout << "Before swap:  " << beforeSwap << std::endl;
 					std::cout << "After swap:   " << newScore << std::endl;
 					std::cout << "After return: " <<  dp->computeScore() << std::endl;
+					return;
+				} else if(false) {
+					std::cout << std::endl;
+					std::cout << "Successfully reverted!" << std::endl;
+					std::cout << "After swapping " << column << " and " << swapWith << " and swapping back, the score returned to normal." << std::endl;
+					std::cout << "Column Letter: " << columnLetter << " Swap Letter: " << swapLetter << std::endl;
+					std::cout << "Column Freq:   " << frequencyMap[columnLetter] << " Swap Freq:   " << frequencyMap[swapLetter] << std::endl;
+					std::cout << "Before swap:  " << beforeSwap << std::endl;
+					std::cout << "After swap:   " << newScore << std::endl;
+					std::cout << "After return: " <<  dp->computeScore() << std::endl;	
 				}
 			}
+			//std::cout << "During: " << dp->computeScore() << std::endl;
 		}
-		std::cout << std::endl;
 	}
 }

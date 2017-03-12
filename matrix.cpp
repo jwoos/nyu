@@ -87,7 +87,7 @@ DPlainMatrix::DPlainMatrix(uint32_t rowCount, uint32_t columnCount) : DigramFreq
 
 void DPlainMatrix::populateMatrix() {
 	std::vector<uint32_t> row;
-
+	clearMatrix();
 	for (uint32_t i = 0; i < cipherMatrix -> size(); i++) {
 		row = (*cipherMatrix)[i];
 
@@ -214,7 +214,7 @@ void DPlainMatrix::updateKey(uint32_t a, uint32_t b) {
 	std::swap(*aIter, *bIter);
 
 	// Then update our matrix to match
-	updateMatrix(a, b);
+	populateMatrix();
 }
 
 int DPlainMatrix::getFrequencyForChar(char x) {
