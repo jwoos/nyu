@@ -104,52 +104,67 @@ void DPlainMatrix::populateMatrix() {
 void DPlainMatrix::updateMatrix(uint32_t a, uint32_t b) {
 	char x = (*key)[a];
 	char y = (*key)[b];
+	// one or more have more than one ciphertext symbols
+	std::vector<uint32_t> columnA;
+	std::vector<uint32_t> columnB;
+	std::vector<uint32_t> rowA;
+	std::vector<uint32_t> rowB;
 
-	int xCount = getFrequencyForChar(x);
-	int yCount = getFrequencyForChar(y);
+	columnA = cipherMatrix -> getColumn(a);
+	columnB = cipherMatrix -> getColumn(b);
+	rowA = cipherMatrix -> getRow(a);
+	rowB = cipherMatrix -> getRow(b);
 
-	if ((xCount == -1) || (yCount == -1)) {
-		throw std::runtime_error("Could not find char in frequencyMap");
-	}
+	uint32_t aIndex = getIndexForChar(x);
+	uint32_t bIndex = getIndexForChar(y);
 
-	if (false && (xCount == 1) && (yCount == 1)) {
-		// both plaintexts only have one corresponding ciphertext symbol
-		swapColumn(a, b);
-		swapRow(a, b);
-	} else {
-		// one or more have more than one ciphertext symbols
-		std::vector<uint32_t> columnA;
-		std::vector<uint32_t> columnB;
-		std::vector<uint32_t> rowA;
-		std::vector<uint32_t> rowB;
+	uint32_t ind;
 
-		columnA = cipherMatrix -> getColumn(a);
-		columnB = cipherMatrix -> getColumn(b);
-		rowA = cipherMatrix -> getRow(a);
-		rowB = cipherMatrix -> getRow(b);
+	for (uint32_t i = 0; i < rowA.size(); i++) {
+		ind = getIndexForChar((*key)[i]);
 
-		uint32_t aIndex = getIndexForChar(x);
-		uint32_t bIndex = getIndexForChar(y);
-
-		uint32_t ind;
-
-		for (uint32_t i = 0; i < rowA.size(); i++) {
-			ind = getIndexForChar((*key)[i]);
-
+		// subtract the values from the previous putative key
+		if (i == a) {
+			matrix[aIndex][ind] -= rowB[b];
+		} else if (i == b) {
+			matrix[aIndex][ind] -= rowB[a];
+		} else {
 			matrix[aIndex][ind] -= rowB[i];
-			matrix[bIndex][ind] -= rowA[i];
-
-			matrix[aIndex][ind] += rowA[i];
-			matrix[bIndex][ind] += rowB[i];
 		}
 
-		for (uint32_t i = 0; i < columnA.size(); i++) {
-			ind = getIndexForChar((*key)[i]);
+		if (i == a) {
+			matrix[bIndex][ind] -= rowA[b];
+		} else if (i == b) {
+			matrix[bIndex][ind] -= rowA[a];
+		} else {
+			matrix[bIndex][ind] -= rowA[i];
+		}
 
+		// add current values
+		matrix[aIndex][ind] += rowA[i];
+		matrix[bIndex][ind] += rowB[i];
+	}
+
+	for (uint32_t i = 0; i < columnA.size(); i++) {
+		ind = getIndexForChar((*key)[i]);
+
+		// subtract the values from the previous putative key
+		// omit values that were subtracted by the row calculations
+		if (i != a && i != b) {
 			matrix[ind][aIndex] -= columnB[i];
-			matrix[ind][bIndex] -= columnA[i];
+		}
 
+		if (i != a && i != b) {
+			matrix[ind][bIndex] -= columnA[i];
+		}
+
+		// add in new values
+		// omit values that were added by the row calulations
+		if (i != a && i != b) {
 			matrix[ind][aIndex] += columnA[i];
+		}
+
+		if (i != a && i != b) {
 			matrix[ind][bIndex] += columnB[i];
 		}
 	}
