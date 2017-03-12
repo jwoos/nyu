@@ -161,7 +161,7 @@ uint32_t DPlainMatrix::computeScore() {
 	uint32_t score = 0;
 
 	for (uint32_t outer = 0; outer < rows; outer++) {
-		for (uint32_t inner = 0; inner < columns; outer++) {
+		for (uint32_t inner = 0; inner < columns; inner++) {
 			int local = matrix[outer][inner] - expected[outer][inner];
 
 			if (local < 0) {
