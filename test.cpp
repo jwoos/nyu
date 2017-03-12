@@ -146,6 +146,7 @@ void fullTest() {
 	cout << "Actual Plain: " << plaintext.substr(0, 100) << endl;
 	cout << "After Plain:  " << d.currentCandidatePlaintext().substr(0, 100) << endl;
 	cout << "After Score:  " << d.currentScore() << endl;
+	cout << "(Hard Score): " << d.currentScore(true) << endl;
 
 	auto finalKey = d.currentCandidateKey();
 	cout << "Final Key:" << endl;

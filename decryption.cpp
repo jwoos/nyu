@@ -6,6 +6,7 @@ Decryptor::Decryptor(std::string& cipherText): cipherText(cipherText) {
 	e = new EMatrix(27, 27);
 	std::vector<std::string> splitVector = split(cipherText, ',');
 	e->populateMatrix(generateEnglishWordsDigramFrequencyMap(), splitVector.size());
+	dictionary = loadDictionary("dictionary.txt");
 
 	// Initialize and wire up our matrices
 	dc = new DCipherMatrix(106, 106);
@@ -100,9 +101,20 @@ std::string Decryptor::currentCandidatePlaintext() {
 	return plaintext;
 }
 
-uint32_t Decryptor::currentScore() {
-	return dp->computeScore();
+uint32_t Decryptor::currentScore(bool countWords) {
+	uint32_t nonWordLetters = 0;
+	if(countWords) {
+		std::string plaintext = this->currentCandidatePlaintext();
+		std::vector<std::string> tokens = split(plaintext, ' ');
+		for(uint32_t i = 0; i < tokens.size(); i++) {
+			if(dictionary.find(tokens[i]) == dictionary.end()) {
+				nonWordLetters += 2 * tokens[i].length();
+			}
+		}
+	}
+	return dp->computeScore() + nonWordLetters;
 }
+
 
 void Decryptor::printKey() {
 	for (char x : *putativeKey) {
@@ -116,7 +128,7 @@ void Decryptor::printKey() {
 }
 
 void Decryptor::decrypt() {
-	uint32_t rounds = 15;
+	uint32_t rounds = 5;
 	for(uint32_t i = 0; i < rounds; i++) {
 		std::cout << "Rounds remaining: " << rounds - i << std::endl;
 		performOneRound();
@@ -128,14 +140,22 @@ void Decryptor::decrypt() {
 			std::cout << "Better key found, with score " << bestScore << std::endl;
 			printKey();
 		}
+		// If we converged super early, we can just do the final hill climb
+		if(bestScore < 1000) {
+			std::cout << "Converged early, skipping to the final hill climb." << std::endl;
+			break;
+		}
 		randomizeKey();
 	}
 	delete putativeKey;
 	putativeKey = bestKey;
 	dp->setKey(putativeKey);
+	std::cout << "Doing a final hill climb with hard scoring turned on." << std::endl;
+	std::cout << "Current hard score: " << currentScore(true) << std::endl;
+	performOneRound(true);
 }
 
-void Decryptor::performOneRound() {
+void Decryptor::performOneRound(bool countWords) {
 	// Understanding the boundary conditions of this is tricky, so:
 	// The outer loop is a "gap size",
 	// The inner loop is each column we might swap with a later one,
@@ -144,7 +164,7 @@ void Decryptor::performOneRound() {
 	bool swaps = false;
 	do {
 		swaps = false;
-		uint32_t currentScore = dp->computeScore();
+		uint32_t currentScore = this->currentScore(countWords);
 		for(uint32_t gapSize = 1; gapSize < 106; gapSize++) {
 			for(uint32_t column = 0; column < 106 - gapSize; column++) {
 				uint32_t swapWith = column + gapSize;
@@ -155,12 +175,15 @@ void Decryptor::performOneRound() {
 					continue;
 				}
 				dp->updateKey(column, swapWith);
-				uint32_t newScore = dp->computeScore();
+				uint32_t newScore = this->currentScore(countWords);
 				// If we improved, use this new key as the putative key
 				if(newScore < currentScore) {
 					// Keep!
 					currentScore = newScore;
 					swaps = true;
+					if(countWords) { // We're in hard mode, so we can afford to be a bit more verbose
+						std::cout << "Hard Score improved to " << newScore << std::endl;
+					}
 				} else {
 					// Otherwise, set our matrix back
 					dp->updateKey(column, swapWith);

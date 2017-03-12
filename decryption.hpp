@@ -10,11 +10,11 @@
 class Decryptor {
 	public:
 	Decryptor(std::string&);
-	void performOneRound();
+	void performOneRound(bool countWords = false);
 	void decrypt();
 	std::vector<char>* currentCandidateKey();
 	std::string currentCandidatePlaintext();
-	uint32_t currentScore();
+	uint32_t currentScore(bool countWords = false);
 	void initialKey();
 	void randomizeKey();
 	void printKey();
@@ -29,6 +29,8 @@ class Decryptor {
 	std::vector<char>* putativeKey;
 	std::vector<char>* bestKey;
 	uint32_t bestScore;
+
+	std::set<std::string> dictionary;
 };
 
 #endif
