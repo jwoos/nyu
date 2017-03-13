@@ -48,7 +48,7 @@ void testRandomPermutations() {
 }
 
 std::string getPlaintext() {
-	string a = randomWords(500);
+	string a = randomWords(1000);
 	return a;
 }
 
