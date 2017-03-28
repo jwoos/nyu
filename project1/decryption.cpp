@@ -337,11 +337,11 @@ uint32_t CPADecryptor::tentativePlaintextByIdentifier() {
 }
 
 std::string CPADecryptor::getPlaintext(uint32_t index) {
-	return possiblePlaintexts[index];
+	return possiblePlaintexts[index - 1];
 }
 
 std::map<char, std::vector<uint32_t>> CPADecryptor::getIdentifier(uint32_t index) {
-	return identifiers[index];
+	return identifiers[index - 1];
 }
 
 // END CPADECRYPTOR

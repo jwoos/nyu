@@ -121,6 +121,8 @@ int main(int argc, char** argv) {
 				index = rng.randomNumber();
 			}
 
+
+			cout << index << endl;
 			cout << "PLAINTEXT: " << endl;
 			cout << cpaD.getPlaintext(index) << endl;
 		} else {
