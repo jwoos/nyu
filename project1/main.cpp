@@ -14,17 +14,23 @@
 using namespace std;
 
 int main(int argc, char** argv) {
-	if (argc == 1) {
+	if (argc < 3) {
 		cout << "Usage: main <ACTION>" << endl;
 		cout << "\tACTION: encrypt | decrypt" << endl;
-
+		cout << "\tTYPE: 1 | 2" << endl;
 		return 1;
 	}
 
 	string action = string(argv[1]);
+	int type = stoi(string(argv[2]));
 
 	if (!action.size()) {
 		cout << "ACTION cannot be empty" << endl;
+		return 1;
+	}
+
+	if (type != 1 && type != 2) {
+		cout << "TYPE cannot be empty" << endl;
 		return 1;
 	}
 
@@ -46,7 +52,8 @@ int main(int argc, char** argv) {
 
 		enc.printKeyMap();
 
-		enc.encrypt(text);
+		cout << "CIPHERTEXT:" << endl;
+		cout << enc.encrypt(text) << endl;
 	} else if (action == "decrypt") {
 		if (!text.size()) {
 			cout << "Detected empty input, defaulting to generating and encrypting a text of length 500" << endl;
@@ -79,22 +86,27 @@ int main(int argc, char** argv) {
 			text = enc.encrypt(plaintext);
 		}
 
-		Decryptor d(text);
-		d.decrypt();
+		Decryptor d(text, 0);
+		if (type == 1) {
+			uint32_t minScore = 100000;
+			uint32_t index = -1;
+			for (uint32_t i = 1; i < 6; i++) {
+				std::cout << "Trying plaintext " << i << std::endl;
+				Decryptor temp(text, i);
+				uint32_t tempScore = temp.decryptBruteForce();
 
-		cout << "FINAL KEY: ";
-		auto finalKey = *(d.currentCandidateKey());
-		for (char x : finalKey) {
-			if (x == ' ') {
-				cout << '_' << ' ';
-			} else {
-				cout << x << ' ';
+				if (tempScore < minScore) {
+					minScore = tempScore;
+					index = i;
+				}
 			}
-		}
-		flush();
+			cout << index << endl;
+		} else {
+			d.decrypt();
 
-		cout << "TEXT DECRYPTED WITH A SCORE OF " << d.currentScore() << " AND A HARD SCORE OF [" << d.currentScore(true) <<  "]: " << endl;
-		cout << d.currentCandidatePlaintext() << endl;
+			cout << "TEXT DECRYPTED WITH A SCORE OF " << d.currentScore() << " AND A HARD SCORE OF [" << d.currentScore(true) <<  "]: " << endl;
+			cout << d.currentCandidatePlaintext() << endl;
+		}
 	} else {
 		cout << "Invalid ACTION" << endl;
 		return 1;

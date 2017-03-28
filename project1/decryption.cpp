@@ -1,12 +1,18 @@
 #include "decryption.hpp"
 
-Decryptor::Decryptor(std::string& cipherText): cipherText(cipherText) {
+Decryptor::Decryptor(std::string& cipherText, uint32_t index): cipherText(cipherText) {
 	// Fill in our known quantities
 	frequencyMap = generateFrequencyMap();
 	e = new EMatrix(27, 27);
 	std::vector<std::string> splitVector = split(cipherText, ',');
-	e -> populateMatrix(generateEnglishWordsDigramFrequencyMap(), splitVector.size());
-	dictionary = loadDictionary("dictionary.txt");
+
+	if (index == 0) {
+		e -> populateMatrix(generateEnglishWordsDigramFrequencyMap(), splitVector.size());
+		dictionary = loadDictionary("other/dictionary.txt");
+	} else {
+		e -> populateMatrix(generateTestOneDigramFrequencyMatrix(index), 1);
+		dictionary = loadDictionary("other/" + std::to_string(index) + ".txt");
+	}
 
 	// Initialize and wire up our matrices
 	dc = new DCipherMatrix(106, 106);
@@ -47,35 +53,35 @@ void Decryptor::initialKey() {
 	//std::sort(symbols->begin(), symbols->end(), comp);
 
 	float symbolTotal = 0.0f;
-	for(auto it = symbols->begin(); it != symbols->end(); it++) {
+	for(auto it = symbols -> begin(); it != symbols -> end(); it++) {
 		symbolTotal += symbolFreq[*it];
 	}
 
 	// For each letter, grab the largest until either our freq exceeds, or our
 	putativeKey = new std::vector<char>(106);
-	for(uint32_t i = 0; i < 106; i++) { (*putativeKey)[i] = '*'; }
-	for(auto letter = descendingLetterFreq.begin(); letter != descendingLetterFreq.end(); letter++) {
+	for (uint32_t i = 0; i < 106; i++) { (*putativeKey)[i] = '*'; }
+	for (auto letter = descendingLetterFreq.begin(); letter != descendingLetterFreq.end(); letter++) {
 		uint32_t count = 0, targetCount = frequencyMap[*letter];
 		float remainingPercentage = targetCount / 106.0f;
-		while(count != targetCount) {
-			auto closestSymbol = symbols->end();
+		while (count != targetCount) {
+			auto closestSymbol = symbols -> end();
 			auto closestScore = 1.0f;
 
-			auto currentSymbol = symbols->begin();
-			while(currentSymbol != symbols->end()) {
-				if((*putativeKey)[*currentSymbol] != '*') { currentSymbol++; continue; }
+			auto currentSymbol = symbols -> begin();
+			while (currentSymbol != symbols -> end()) {
+				if ((*putativeKey)[*currentSymbol] != '*') { currentSymbol++; continue; }
 
 				auto currentPercentage = symbolFreq[*currentSymbol] / symbolTotal;
 				auto currentScore = std::abs(remainingPercentage - currentPercentage);
 
-				if(currentScore < closestScore) {
+				if (currentScore < closestScore) {
 					closestScore = currentScore;
 					closestSymbol = currentSymbol;
 				}
 				currentSymbol++;
 			}
 
-			if(closestSymbol != symbols->end()) {
+			if (closestSymbol != symbols -> end()) {
 				(*putativeKey)[*closestSymbol] = *letter;
 				remainingPercentage -= closestScore;
 				count++;
@@ -83,7 +89,7 @@ void Decryptor::initialKey() {
 		}
 	}
 
-	dp->setKey(putativeKey);
+	dp -> setKey(putativeKey);
 }
 
 std::vector<char>* Decryptor::currentCandidateKey() {
@@ -103,16 +109,16 @@ std::string Decryptor::currentCandidatePlaintext() {
 
 uint32_t Decryptor::currentScore(bool countWords) {
 	uint32_t nonWordLetters = 0;
-	if(countWords) {
-		std::string plaintext = this->currentCandidatePlaintext();
+	if (countWords) {
+		std::string plaintext = this -> currentCandidatePlaintext();
 		std::vector<std::string> tokens = split(plaintext, ' ');
-		for(uint32_t i = 0; i < tokens.size(); i++) {
-			if(dictionary.find(tokens[i]) == dictionary.end()) {
+		for (uint32_t i = 0; i < tokens.size(); i++) {
+			if (dictionary.find(tokens[i]) == dictionary.end()) {
 				nonWordLetters += 2 * tokens[i].length();
 			}
 		}
 	}
-	return dp->computeScore() + nonWordLetters;
+	return dp -> computeScore() + nonWordLetters;
 }
 
 
@@ -128,7 +134,8 @@ void Decryptor::printKey() {
 }
 
 void Decryptor::decrypt() {
-	uint32_t rounds = 5;
+	uint32_t rounds = 20;
+
 	for (uint32_t i = 0; i < rounds; i++) {
 		std::cout << "Rounds remaining: " << rounds - i << std::endl;
 		performOneRound();
@@ -141,7 +148,7 @@ void Decryptor::decrypt() {
 			printKey();
 		}
 		// If we converged super early, we can just do the final hill climb
-		if (bestScore < 1000) {
+		if (bestScore < 100) {
 			std::cout << "Converged early, skipping to the final hill climb." << std::endl;
 			break;
 		}
@@ -150,10 +157,47 @@ void Decryptor::decrypt() {
 	}
 	delete putativeKey;
 	putativeKey = bestKey;
-	dp->setKey(putativeKey);
+	dp -> setKey(putativeKey);
+
 	std::cout << "Doing a final hill climb with hard scoring turned on." << std::endl;
 	std::cout << "Current hard score: " << currentScore(true) << std::endl;
 	performOneRound(true);
+}
+
+uint32_t Decryptor::decryptBruteForce() {
+	uint32_t rounds = 10;
+
+
+	for (uint32_t i = 0; i < rounds; i++) {
+		std::cout << "Rounds remaining: " << rounds - i << std::endl;
+		performOneRound();
+		uint32_t score = currentScore();
+
+		if (score < bestScore) {
+			bestScore = score;
+			delete bestKey;
+			bestKey = new std::vector<char>(*putativeKey);
+			std::cout << "Better key found, with score " << bestScore << std::endl;
+			printKey();
+		}
+
+		// If we converged super early, we can just do the final hill climb
+		if (bestScore < 100) {
+			std::cout << "Converged early, skipping to the final hill climb." << std::endl;
+			break;
+		}
+
+		randomizeKey();
+	}
+
+	delete putativeKey;
+	putativeKey = bestKey;
+	dp -> setKey(putativeKey);
+	std::cout << "Doing a final hill climb with hard scoring turned on." << std::endl;
+	std::cout << "Current hard score: " << currentScore(true) << std::endl;
+	performOneRound(true);
+
+	return currentScore(true);
 }
 
 void Decryptor::performOneRound(bool countWords) {
@@ -166,22 +210,18 @@ void Decryptor::performOneRound(bool countWords) {
 	do {
 		swaps = false;
 		uint32_t currentScore = this -> currentScore(countWords);
-		for (uint32_t gapSize = 1; gapSize < 106; gapSize++) {
-			for (uint32_t column = 0; column < 106 - gapSize; column++) {
-				uint32_t swapWith = column + gapSize;
+		for (uint32_t gapSize = 1; gapSize < 105; gapSize++) {
+			for (uint32_t column = 0; column < 106; column++) {
+				uint32_t swapWith = (column + gapSize) % 105;
 
 				dp -> updateKey(column, swapWith);
 				uint32_t newScore = this -> currentScore(countWords);
+
 				// If we improved, use this new key as the putative key
 				if (newScore < currentScore) {
 					// Keep!
 					currentScore = newScore;
 					swaps = true;
-
-					if (countWords) {
-						// We're in hard mode, so we can afford to be a bit more verbose
-						std::cout << "Hard Score improved to " << newScore << std::endl;
-					}
 				} else {
 					// Otherwise, set our matrix back
 					dp -> updateKey(column, swapWith);

@@ -13,4 +13,6 @@ std::vector<std::vector<float>> generatePlaintextDictionaryDigramFrequencyMatrix
 
 std::vector<std::vector<float>> generateEnglishWordsDigramFrequencyMap();
 
+std::vector<std::vector<float>> generateTestOneDigramFrequencyMatrix(uint32_t);
+
 #endif

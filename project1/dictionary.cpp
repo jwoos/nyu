@@ -25,11 +25,3 @@ std::string randomWords(uint32_t numWords) {
 
 	return output;
 }
-
-std::set<std::string> loadWords(uint32_t index) {
-	switch (index) {
-		case 0: {
-			return 
-		}
-	}
-}

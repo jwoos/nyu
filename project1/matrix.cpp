@@ -226,7 +226,7 @@ void DPlainMatrix::updateKey(uint32_t x, uint32_t y) {
 		// Skip swapping the corners, because we already swapped them diagonally
 		if(element == x || element == y) {
 			continue;
-		} 
+		}
 
 		// I use two variables here for clarity, even though they're the same value
 		uint32_t oldKeyElement = getIndexForChar((*key)[element]);
@@ -263,7 +263,11 @@ EMatrix::EMatrix(uint32_t rowCount, uint32_t columnCount) : DigramFreqMatrix(row
 void EMatrix::populateMatrix(std::vector<std::vector<float>> percentage, uint32_t normalizer) {
 	for (uint32_t i = 0; i < rows; i++) {
 		for (uint32_t j = 0; j < columns; j++) {
-			matrix[i][j] = round(percentage[i][j] * normalizer);
+			if (normalizer == 1) {
+				matrix[i][j] = percentage[i][j];
+			} else {
+				matrix[i][j] = round(percentage[i][j] * normalizer);
+			}
 		}
 	}
 }

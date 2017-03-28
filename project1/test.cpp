@@ -128,7 +128,7 @@ void fullTest() {
 	printKey(&realKey);
 	std::string ciphertext = enc.encrypt(plaintext);
 
-	Decryptor d(ciphertext);
+	Decryptor d(ciphertext, 0);
 
 /*
  *    cout << "Actual Plain: " << plaintext.substr(0, 100) << endl;
