@@ -10,7 +10,7 @@ Decryptor::Decryptor(std::string& cipherText): cipherText(cipherText) {
 
 	// Initialize and wire up our matrices
 	dc = new DCipherMatrix(106, 106);
-	dc->populateMatrix(cipherText);
+	dc -> populateMatrix(cipherText);
 	dp = new DPlainMatrix(27, 27);
 	dp->setFrequencyMap(&frequencyMap);
 	dp->setExpectedMatrix(e);

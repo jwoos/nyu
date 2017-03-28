@@ -1,5 +1,6 @@
-import sys
 from decimal import Decimal, ROUND_HALF_EVEN
+import sys
+import json
 
 # This will be the length of the text passed into the program
 NORMALIZE = 500
@@ -7,6 +8,7 @@ NORMALIZE = 500
 ROUND_DECIMAL = Decimal('.11111111')
 
 filename = sys.argv[1] or input('filename: ')
+type = sys.argv[2] or 'percent'
 
 freq_number = {}
 freq_percent = {}
@@ -41,6 +43,9 @@ for c in TEXT:
     temp = ''
 
     for h in TEXT:
+        if not freq_number.get(c + h):
+            freq_number[c + h] = 0
+
         test_sum += freq_percent[c + h] if freq_percent.get(c + h) else 0
 
         temp += '%s, ' % freq_percent[c + h] if freq_percent.get(c + h) else '0, '
@@ -49,5 +54,9 @@ for c in TEXT:
 
 print('Total sum of frequencies: %s' % test_sum)
 
-file.write(data)
+if type == 'percent':
+    file.write(data)
+else:
+    file.write(json.dumps(freq_number, sort_keys=True))
+
 print('Written to %s' % out_filename)

@@ -1,11 +1,9 @@
 #include "dictionary.hpp"
 
-using namespace std;
-
-set<string> loadDictionary(string filename) {
-	ifstream file(filename);
-	string currentLine;
-	set<string> allWords;
+std::set<std::string> loadDictionary(std::string filename) {
+	std::ifstream file(filename);
+	std::string currentLine;
+	std::set<std::string> allWords;
 	while(getline(file, currentLine)) {
 		allWords.insert(currentLine);
 	}
@@ -13,10 +11,10 @@ set<string> loadDictionary(string filename) {
 	return allWords;
 }
 
-string randomWords(uint32_t numWords) {
+std::string randomWords(uint32_t numWords) {
 	auto dictionary = loadDictionary("dictionary.txt");
-	
-	string output;
+
+	std::string output;
 	RNG rng(0, dictionary.size() - 1, "uniform");
 	for(uint32_t i = 0; i < numWords; i++) {
 		auto it = dictionary.begin();
@@ -24,6 +22,14 @@ string randomWords(uint32_t numWords) {
 		output += *it;
 		output += " ";
 	}
-	
+
 	return output;
+}
+
+std::set<std::string> loadWords(uint32_t index) {
+	switch (index) {
+		case 0: {
+			return 
+		}
+	}
 }

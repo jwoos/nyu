@@ -129,17 +129,19 @@ void fullTest() {
 	std::string ciphertext = enc.encrypt(plaintext);
 
 	Decryptor d(ciphertext);
+
 /*
-	cout << "Actual Plain: " << plaintext.substr(0, 100) << endl;
-	cout << "Before Plain: " << d.currentCandidatePlaintext().substr(0, 100) << endl;
-	cout << "Before Score: " << d.currentScore() << endl;
-	for(uint32_t i = 0; i < 1000; i++) {
-		d.performOneRound();
-		
-		cout << "Actual Plain: " << plaintext.substr(0, 100) << endl;
-		cout << "During Plain: " << d.currentCandidatePlaintext().substr(0, 100) << endl;
-		cout << "During Score: " << d.currentScore() << endl;
-	}*/
+ *    cout << "Actual Plain: " << plaintext.substr(0, 100) << endl;
+ *    cout << "Before Plain: " << d.currentCandidatePlaintext().substr(0, 100) << endl;
+ *    cout << "Before Score: " << d.currentScore() << endl;
+ *    for(uint32_t i = 0; i < 1000; i++) {
+ *        d.performOneRound();
+ *
+ *        cout << "Actual Plain: " << plaintext.substr(0, 100) << endl;
+ *        cout << "During Plain: " << d.currentCandidatePlaintext().substr(0, 100) << endl;
+ *        cout << "During Score: " << d.currentScore() << endl;
+ *    }
+ */
 
 	d.decrypt();
 
