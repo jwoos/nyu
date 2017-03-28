@@ -9,6 +9,7 @@
 #include "encryption.hpp"
 #include "decryption.hpp"
 #include "dictionary.hpp"
+#include "text.hpp"
 
 #include <iostream>
 #include <set>
@@ -262,6 +263,13 @@ void testSwapping() {
 	}
 }
 
+void testRandomNumers() {
+	RNG rng(1, 5, "uniform");
+	for (uint32_t i = 0; i < 100; i++) {
+		cout << rng.randomNumber() << endl;
+	}
+}
+
 int main() {
-	fullTest();
+	testRandomNumers();
 }

@@ -136,6 +136,7 @@ std::vector<std::vector<float>> generatePlaintextDictionaryDigramFrequencyMatrix
 
 std::vector<std::vector<float>> generateTestOneDigramFrequencyMatrix(uint32_t index) {
 	std::vector<std::vector<float>> literal;
+
 	switch (index) {
 		case 1: {
 			literal = {
@@ -237,6 +238,7 @@ std::vector<std::vector<float>> generateTestOneDigramFrequencyMatrix(uint32_t in
 			};
 			break;
 		}
+
 		case 4: {
 			literal = {
 				{0, 1, 0, 3, 0, 0, 0, 0, 1, 0, 0, 2, 1, 9, 0, 0, 0, 2, 3, 7, 1, 0, 1, 0, 0, 0, 0},
@@ -269,8 +271,9 @@ std::vector<std::vector<float>> generateTestOneDigramFrequencyMatrix(uint32_t in
 			};
 			break;
 		}
+
 		case 5: {
-			std::vector<std::vector<float>> literal = {
+			literal = {
 				{0, 4, 1, 3, 0, 0, 1, 1, 1, 0, 0, 6, 2, 5, 0, 2, 0, 2, 3, 6, 0, 0, 0, 0, 0, 0, 0},
 				{2, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0},
 				{4, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1, 1, 0, 0, 7, 0, 0, 2, 0, 0, 1, 0, 0, 0, 0, 0, 0},

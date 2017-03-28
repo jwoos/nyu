@@ -205,9 +205,9 @@ void DPlainMatrix::updateKey(uint32_t x, uint32_t y) {
 		uint32_t newKeyElement;
 		// The corners where x and y interesect need to swap diagonally,
 		// so we handle that carefully here
-		if(element == x) {
+		if (element == x) {
 			newKeyElement = getIndexForChar((*key)[y]); // X and Y swap
-		} else if(element == y) {
+		} else if (element == y) {
 			newKeyElement = getIndexForChar((*key)[x]); // X and Y swap
 		} else {
 			newKeyElement = oldKeyElement;
@@ -224,7 +224,7 @@ void DPlainMatrix::updateKey(uint32_t x, uint32_t y) {
 
 	for(uint32_t element = 0; element < cipherMatrix.size(); element++) {
 		// Skip swapping the corners, because we already swapped them diagonally
-		if(element == x || element == y) {
+		if (element == x || element == y) {
 			continue;
 		}
 

@@ -87,21 +87,44 @@ int main(int argc, char** argv) {
 		}
 
 		Decryptor d(text, 0);
-		if (type == 1) {
-			uint32_t minScore = 100000;
-			uint32_t index = -1;
-			for (uint32_t i = 1; i < 6; i++) {
-				std::cout << "Trying plaintext " << i << std::endl;
-				Decryptor temp(text, i);
-				uint32_t tempScore = temp.decryptBruteForce();
 
-				if (tempScore < minScore) {
-					minScore = tempScore;
-					index = i;
+		if (type == 1) {
+			// test 1
+
+			CPADecryptor cpaD(text);
+			uint32_t index = cpaD.tentativePlaintextByIdentifier();
+
+			if (index == 0) {
+				// couldn't determine from identifiers
+				cout << "Couldn't match by identifiers, falling back to bigram frequency analysis" << endl;
+				std::vector<char>* originalKey = new std::vector<char>(*d.currentCandidateKey());
+
+				uint32_t minScore = 100000;
+
+				for (uint32_t i = 1; i < 6; i++) {
+					std::cout << "Trying plaintext " << i << std::endl;
+					Decryptor temp(text, i);
+					temp.setKey(new std::vector<char>(*originalKey));
+					uint32_t tempScore = temp.decryptBruteForce();
+
+					if (tempScore < minScore) {
+						minScore = tempScore;
+						index = i;
+					}
 				}
+
+				cout << index << endl;
 			}
-			cout << index << endl;
+
+			if (index == 0) {
+				RNG rng(1, 5, "uniform");
+				index = rng.randomNumber();
+			}
+
+			cout << "PLAINTEXT: " << endl;
+			cout << cpaD.getPlaintext(index) << endl;
 		} else {
+			// test 2
 			d.decrypt();
 
 			cout << "TEXT DECRYPTED WITH A SCORE OF " << d.currentScore() << " AND A HARD SCORE OF [" << d.currentScore(true) <<  "]: " << endl;
