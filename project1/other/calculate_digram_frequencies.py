@@ -39,24 +39,21 @@ file = open(out_filename, 'w')
 test_sum = 0
 
 TEXT = 'abcdefghijklmnopqrstuvwxyz '
+data_source = freq_number if type == 'sum' else freq_percent
 for c in TEXT:
     temp = ''
 
     for h in TEXT:
-        if not freq_number.get(c + h):
-            freq_number[c + h] = 0
+        if not data_source.get(c + h):
+            data_source[c + h] = 0
 
-        test_sum += freq_percent[c + h] if freq_percent.get(c + h) else 0
-
-        temp += '%s, ' % freq_percent[c + h] if freq_percent.get(c + h) else '0, '
+        test_sum += data_source[c + h]
+        temp += '%s, ' % data_source[c + h]
 
     data += '{' + temp + '}\n'
 
 print('Total sum of frequencies: %s' % test_sum)
 
-if type == 'percent':
-    file.write(data)
-else:
-    file.write(json.dumps(freq_number, sort_keys=True))
+file.write(data)
 
 print('Written to %s' % out_filename)

@@ -4,6 +4,7 @@
 #include "utils.hpp"
 
 std::map<char, uint32_t> calculateCharFrequency(const std::string&);
+
 std::map<uint32_t, uint32_t> calculateSymbolFrequency(std::vector<uint32_t>);
 
 std::map<char, uint32_t> generateFrequencyMap();
@@ -11,4 +12,5 @@ std::map<char, uint32_t> generateFrequencyMap();
 std::vector<std::vector<float>> generatePlaintextDictionaryDigramFrequencyMatrix();
 
 std::vector<std::vector<float>> generateEnglishWordsDigramFrequencyMap();
+
 #endif

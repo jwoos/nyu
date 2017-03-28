@@ -5,24 +5,24 @@ Decryptor::Decryptor(std::string& cipherText): cipherText(cipherText) {
 	frequencyMap = generateFrequencyMap();
 	e = new EMatrix(27, 27);
 	std::vector<std::string> splitVector = split(cipherText, ',');
-	e->populateMatrix(generateEnglishWordsDigramFrequencyMap(), splitVector.size());
+	e -> populateMatrix(generateEnglishWordsDigramFrequencyMap(), splitVector.size());
 	dictionary = loadDictionary("dictionary.txt");
 
 	// Initialize and wire up our matrices
 	dc = new DCipherMatrix(106, 106);
 	dc -> populateMatrix(cipherText);
 	dp = new DPlainMatrix(27, 27);
-	dp->setFrequencyMap(&frequencyMap);
-	dp->setExpectedMatrix(e);
-	dp->setCipherMatrix(dc);
+	dp -> setFrequencyMap(&frequencyMap);
+	dp -> setExpectedMatrix(e);
+	dp -> setCipherMatrix(dc);
 	initialKey();
 
 	bestKey = new std::vector<char>(*putativeKey);
-	bestScore = this->currentScore();
+	bestScore = this -> currentScore();
 }
 
 struct FreqComparator {
-	FreqComparator(std::map<uint32_t, uint32_t> map): freq(map) {}
+	FreqComparator(std::map<uint32_t, uint32_t> m): freq(m) {}
 	std::map<uint32_t, uint32_t> freq;
 	bool operator() (int i, int j) {
 		return freq[i] > freq[j];
@@ -32,7 +32,7 @@ struct FreqComparator {
 void Decryptor::randomizeKey() {
 	delete putativeKey;
 	putativeKey = new std::vector<char>(generateKey(frequencyMap));
-	dp->setKey(putativeKey);
+	dp -> setKey(putativeKey);
 }
 
 void Decryptor::initialKey() {
@@ -51,7 +51,7 @@ void Decryptor::initialKey() {
 		symbolTotal += symbolFreq[*it];
 	}
 
-	// For each letter, grab the largest until either our freq exceeds, or our 
+	// For each letter, grab the largest until either our freq exceeds, or our
 	putativeKey = new std::vector<char>(106);
 	for(uint32_t i = 0; i < 106; i++) { (*putativeKey)[i] = '*'; }
 	for(auto letter = descendingLetterFreq.begin(); letter != descendingLetterFreq.end(); letter++) {
@@ -119,7 +119,7 @@ uint32_t Decryptor::currentScore(bool countWords) {
 void Decryptor::printKey() {
 	for (char x : *putativeKey) {
 		if (x == ' ') {
-			x = '!';
+			x = '_';
 		}
 
 		std::cout << x;
@@ -129,11 +129,11 @@ void Decryptor::printKey() {
 
 void Decryptor::decrypt() {
 	uint32_t rounds = 5;
-	for(uint32_t i = 0; i < rounds; i++) {
+	for (uint32_t i = 0; i < rounds; i++) {
 		std::cout << "Rounds remaining: " << rounds - i << std::endl;
 		performOneRound();
 		uint32_t score = currentScore();
-		if(score < bestScore) {
+		if (score < bestScore) {
 			bestScore = score;
 			delete bestKey;
 			bestKey = new std::vector<char>(*putativeKey);
@@ -141,10 +141,11 @@ void Decryptor::decrypt() {
 			printKey();
 		}
 		// If we converged super early, we can just do the final hill climb
-		if(bestScore < 1000) {
+		if (bestScore < 1000) {
 			std::cout << "Converged early, skipping to the final hill climb." << std::endl;
 			break;
 		}
+
 		randomizeKey();
 	}
 	delete putativeKey;
@@ -164,29 +165,26 @@ void Decryptor::performOneRound(bool countWords) {
 	bool swaps = false;
 	do {
 		swaps = false;
-		uint32_t currentScore = this->currentScore(countWords);
-		for(uint32_t gapSize = 1; gapSize < 106; gapSize++) {
-			for(uint32_t column = 0; column < 106 - gapSize; column++) {
+		uint32_t currentScore = this -> currentScore(countWords);
+		for (uint32_t gapSize = 1; gapSize < 106; gapSize++) {
+			for (uint32_t column = 0; column < 106 - gapSize; column++) {
 				uint32_t swapWith = column + gapSize;
-				// If the two letters of the key at j and j+i are the same,
-				char columnLetter = (*putativeKey)[column];
-				char swapLetter = (*putativeKey)[swapWith];
-				if(columnLetter == swapLetter) {
-					continue;
-				}
-				dp->updateKey(column, swapWith);
-				uint32_t newScore = this->currentScore(countWords);
+
+				dp -> updateKey(column, swapWith);
+				uint32_t newScore = this -> currentScore(countWords);
 				// If we improved, use this new key as the putative key
-				if(newScore < currentScore) {
+				if (newScore < currentScore) {
 					// Keep!
 					currentScore = newScore;
 					swaps = true;
-					if(countWords) { // We're in hard mode, so we can afford to be a bit more verbose
+
+					if (countWords) {
+						// We're in hard mode, so we can afford to be a bit more verbose
 						std::cout << "Hard Score improved to " << newScore << std::endl;
 					}
 				} else {
 					// Otherwise, set our matrix back
-					dp->updateKey(column, swapWith);
+					dp -> updateKey(column, swapWith);
 				}
 			}
 		}
