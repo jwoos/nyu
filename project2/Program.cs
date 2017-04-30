@@ -74,7 +74,12 @@ namespace Park
             Console.WriteLine($"Real hash, Other Key Sig,  Fake key: {Encryption.Verify(realHash, otherKeySig, "sample/publicFake")}  => Should Be True");
             Console.WriteLine($"Fake hash, Other Key Sig,  Real key: {Encryption.Verify(fakeHash, otherKeySig, "sample/publicReal")} => Should Be False");
             Console.WriteLine($"Fake hash, Other Key Sig,  Fake key: {Encryption.Verify(fakeHash, otherKeySig, "sample/publicFake")} => Should Be False");
+            Console.WriteLine();
 
+            var key = Encryption.GenerateKey();
+            Console.WriteLine($"Generated key: {key}");
+            File.WriteAllBytes("out", Encryption.CipherFile(true, "sample/fileReal.txt", key));
+            File.WriteAllBytes("dec", Encryption.CipherFile(false, "out", key));
 
             Console.ReadLine();
         }

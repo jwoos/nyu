@@ -4,6 +4,11 @@ using System.Linq;
 using System.Text;
 using Org.BouncyCastle.Bcpg;
 using Org.BouncyCastle.Bcpg.OpenPgp;
+using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Crypto.Engines;
+using Org.BouncyCastle.Crypto.Modes;
+using Org.BouncyCastle.Crypto.Paddings;
+using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Utilities.Encoders;
 
@@ -106,6 +111,41 @@ namespace Park {
             }
         }
 
+        public static string GenerateKey() {
+            var keyGenerator = Org.BouncyCastle.Security.GeneratorUtilities.GetKeyGenerator("AES");
+            var randomSource = new SecureRandom();
+            keyGenerator.Init(new Org.BouncyCastle.Crypto.KeyGenerationParameters(randomSource, 256));
+            return Hex.ToHexString(keyGenerator.GenerateKey());
+        }
+
+        public static byte[] CipherFile(bool encrypt, string filename, string key) {
+            var iv = new byte[16];
+            var inBytes = File.ReadAllBytes(filename);
+            if(encrypt) {
+                var secureRandom = new SecureRandom();
+                secureRandom.NextBytes(iv, 0, 16);
+            } else {
+                Array.Copy(inBytes, iv, 16);
+            }
+            var cipher = CipherUtilities.GetCipher("AES/CTR/NoPadding");
+            var keyParameter = new KeyParameter(Hex.Decode(key));
+            var keyAndIV = new ParametersWithIV(keyParameter, iv, 0, 16);
+            cipher.Init(encrypt, keyAndIV);
+            var result = new byte[cipher.GetOutputSize(inBytes.Length)];
+            var offset = encrypt ? 0 : 16;
+            int size1 = cipher.ProcessBytes(inBytes, offset, inBytes.Length - offset, result, 0);
+            int size2 = cipher.DoFinal(result, size1);
+            if(encrypt) {
+                var final = new byte[16 + size1 + size2];
+                Array.Copy(iv, final, 16);
+                Array.Copy(result, 0, final, 16, size1 + size2);
+                return final;
+            } else {
+                var final = new byte[size1 + size2];
+                Array.Copy(result, 0, final, 0, size1 + size2);
+                return final;
+            }
+        }
         private static PgpSecretKey ReadSigningKey(string keyFile) {
             var keyStream = File.OpenRead(keyFile);
             var decoderStream = PgpUtilities.GetDecoderStream(keyStream);
