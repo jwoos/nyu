@@ -39,3 +39,9 @@ test
 
 bin/
 obj/
+
+fileEncrypted
+fileEncrypted.meta
+fileDecrypted
+dec
+out
