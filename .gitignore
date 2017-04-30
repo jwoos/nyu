@@ -45,3 +45,5 @@ fileEncrypted.meta
 fileDecrypted
 dec
 out
+
+*.key
