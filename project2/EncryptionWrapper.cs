@@ -83,7 +83,7 @@ namespace Park {
 
                 PgpLiteralData              literalData = (PgpLiteralData) pgpObjectFactory.NextPgpObject();
                 Stream                      literalStream = literalData.GetInputStream();
-                FileStream                  keyFile = File.OpenRead(publicKey);
+                Stream                      keyFile = new MemoryStream(Encoding.ASCII.GetBytes(publicKey));
                 PgpPublicKeyRingBundle      pgpRing = new PgpPublicKeyRingBundle(PgpUtilities.GetDecoderStream(keyFile));
                 PgpPublicKey                key = pgpRing.GetPublicKey(onePassSignature.KeyId);
                 Stream                      outStream = new MemoryStream();

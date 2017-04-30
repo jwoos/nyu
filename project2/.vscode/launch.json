@@ -5,13 +5,27 @@
    "version": "0.2.0",
    "configurations": [
         {
-            "name": ".NET Core Launch (console)",
+            "name": ".NET Core Encrypt (console)",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceRoot}/bin/Debug/netcoreapp1.1/project2.dll",
-            "args": ["-i", "sample/fileReal.txt", "-o", "sample/fileEncrypted", "-u", "sampleuser", "-k", "sample/sampleUser.private.key", "-r", "martindevans", "-r", "jwooshin"],
+            "args": ["-i", "sample/fileReal.txt", "-o", "sample/fileEncrypted", "-u", "sampleuser", "-k", "sample/keybase.sampleUser.private.key", "-r", "martindevans", "-r", "jwooshin"],
+            "cwd": "${workspaceRoot}",
+            // For more information about the 'console' field, see https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md#console-terminal-window
+            "console": "externalTerminal",
+            "stopAtEntry": false,
+            "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
+            "name": ".NET Core Launch Decrypt (console)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            // If you have changed target frameworks, make sure to update the program path.
+            "program": "${workspaceRoot}/bin/Debug/netcoreapp1.1/project2.dll",
+            "args": ["-i", "sample/fileEncrypted", "-m", "sample/fileEncrypted.meta", "-o", "sample/fileDecrypted", "-u", "sampleuser", "-k", "sample/keybase.sampleUser.private.key"],
             "cwd": "${workspaceRoot}",
             // For more information about the 'console' field, see https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md#console-terminal-window
             "console": "externalTerminal",

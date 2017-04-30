@@ -21,6 +21,8 @@ namespace Park
     public class Options {
         [clipr.NamedArgument('i', "in", Description = "The file to encrypt")]
         public string inFile { get; set; }
+        [clipr.NamedArgument('m', "meta", Description = "The meta file for validation")]
+        public string metaFile { get; set; }
         [clipr.NamedArgument('o', "out", Description = "The output for the encrypted file")]
         public string outFile { get; set; }
         [clipr.NamedArgument('u', "username", Description = "Your Keybase Username")]
@@ -36,9 +38,48 @@ namespace Park
         static void Main(string[] args)
         {
             var options = CliParser.Parse<Options>(args);
-            
+            if(options.metaFile == null) {
+                EncryptFile(options);
+            } else {
+                DecryptFile(options);
+            }
+            Console.ReadLine();
+        }
+
+        public static void EncryptFile(Options options) 
+        {
+            // Check the required parameters
+            if(String.IsNullOrWhiteSpace(options.inFile) || !File.Exists(options.inFile)) {
+                Console.WriteLine("Must specify an input file which exists");
+                return;
+            }
+            if(String.IsNullOrWhiteSpace(options.keyFile) || !File.Exists(options.keyFile)) {
+                Console.WriteLine("Must specify a key file which exists");
+                return;
+            }
+            if(String.IsNullOrWhiteSpace(options.keybaseUsername)) {
+                Console.WriteLine("Must specify a valid keybase user");
+            }
+            if(String.IsNullOrWhiteSpace(options.outFile)) {
+                Console.WriteLine("Must specify an output file"); 
+                return;
+            }
+            if(File.Exists(options.outFile)) {
+                Console.WriteLine("Output file already exists!");
+                return;
+            }
+            if(File.Exists(options.outFile + ".meta")) {
+                Console.WriteLine("Metafile already exists!");
+                return;
+            }
+
             // Fetch keybase info
             var keybaseUser = Keybase.API.Lookup(options.keybaseUsername);
+            if(keybaseUser == null) {
+                Console.WriteLine("Must specify a valid keybase user");
+                return;
+            }
+
             var kbFingerprint = keybaseUser.them[0].public_keys.primary.key_fingerprint;
             var fileFingerprint = Encryption.GetKeyFingerprint(options.keyFile);
             if(kbFingerprint != fileFingerprint) {
@@ -101,6 +142,10 @@ namespace Park
                     signature = signatureForEncrypted
                 }
             };
+
+            if(payload.recipients.Count == 0) {
+                Console.WriteLine("Warning: No valid recipients");
+            }
             var payloadJSON = Newtonsoft.Json.JsonConvert.SerializeObject(payload, Formatting.None);
             var payloadHash = Encryption.ComputeSHA3(Encoding.ASCII.GetBytes(payloadJSON));
             var payloadSignature = Encryption.Sign(payloadHash, options.keyFile, keyPassword);
@@ -120,30 +165,103 @@ namespace Park
 
             var outputJSON = Newtonsoft.Json.JsonConvert.SerializeObject(output, Formatting.Indented);
             var outMeta = options.outFile + ".meta";
+            // Write out the meta file
             File.WriteAllText(outMeta, outputJSON);
-            // Write out the encrypted file
+        }
 
-            /*
-            Console.WriteLine();
-            Console.WriteLine(outputJSON);
-            Console.ReadLine();
+        public static void DecryptFile(Options options)
+        {
+            // Check the required parameters
+            if(String.IsNullOrWhiteSpace(options.inFile) || !File.Exists(options.inFile)) {
+                Console.WriteLine("Must specify an input encrypted file");
+                return;
+            }
+            if(String.IsNullOrWhiteSpace(options.metaFile) || !File.Exists(options.metaFile)) {
+                Console.WriteLine("Must specify a meta file which exists to decrypt");
+                return;
+            }
+            if(String.IsNullOrWhiteSpace(options.keyFile) || !File.Exists(options.keyFile)) {
+                Console.WriteLine("Must specify a key file which exists");
+                return;
+            }
+            if(String.IsNullOrWhiteSpace(options.keybaseUsername)) {
+                Console.WriteLine("Must specify a valid keybase user");
+            }
+            if(String.IsNullOrWhiteSpace(options.outFile)) {
+                Console.WriteLine("Must specify an output location for the decrypted file"); 
+                return;
+            }
+            if(File.Exists(options.outFile)) {
+                Console.WriteLine("Output file already exists!");
+                return;
+            }
 
-            var deserializedOutput = Newtonsoft.Json.JsonConvert.DeserializeObject<Output>(outputJSON);
-            var serializedpayload = Newtonsoft.Json.JsonConvert.SerializeObject(deserializedOutput.payload, Formatting.None);
-            var payloadHashAfter = Encryption.ComputeSHA3(Encoding.ASCII.GetBytes(serializedpayload));
-            var sigVerify = Encryption.Verify(payloadHashAfter, deserializedOutput.payloadSignature.signature, "sample/publicReal");
-            Console.WriteLine($"Payload Signature verified? {sigVerify}");
+            // Fetch my keybase user
+            var keybaseUser = Keybase.API.Lookup(options.keybaseUsername);
+            if(keybaseUser == null) {
+                Console.WriteLine("Must specify a valid keybase user");
+                return;
+            }
+
+            // Parse in the JSON from the meta
+            var metaFile = Newtonsoft.Json.JsonConvert.DeserializeObject<Output>(File.ReadAllText(options.metaFile));
             
-            var encFileHash = Encryption.ComputeSHA3(encryptedFile);
-            var postVerify = Encryption.Verify(encFileHash, deserializedOutput.payload.postSignature.signature, "sample/publicReal");
-            var decryptedKey = Encryption.DecryptKey(encKey, "sample/privateReal", "sample_password");
-            var decryptedFileAfter = Encryption.CipherFile(false, encryptedFile, decryptedKey);
-            var decryptedHash = Encryption.ComputeSHA3(decryptedFileAfter);
-            var preVerify = Encryption.Verify(decryptedHash, payload.preSignature.signature, "sample/publicReal");
-            Console.WriteLine($"Post signature verified? {postVerify}");
-            Console.WriteLine($"Pre signature verified? {preVerify}");
-            Console.ReadLine();
-            */
+            // Fetch the sender keybase
+            var sender = Keybase.API.Lookup(metaFile.payload.sender.keybaseUsername);
+            if(sender == null || sender.them.Count == 0) {
+                Console.WriteLine($"Metafile references sender {metaFile.payload.sender.keybaseUsername}, but no such user exists");
+                return;
+            }
+            var senderKey = sender.them[0].public_keys.primary.bundle;
+
+            var payloadSerialized = Newtonsoft.Json.JsonConvert.SerializeObject(metaFile.payload, Formatting.None);
+            var payloadHash = Encryption.ComputeSHA3(Encoding.ASCII.GetBytes(payloadSerialized));
+
+            // Validate the meta signature
+            var payloadValidates = Encryption.Verify(payloadHash, metaFile.payloadSignature.signature, senderKey);
+            if(!payloadValidates) {
+                Console.WriteLine("Payload didn't validate correctly!  metafile may have been tampered with!");
+                return;
+            }
+
+            // Check to make sure we're in the list of recipients
+            Output.Payload.Party myPartyEntry;
+            if(metaFile.payload.sender.keybaseUsername == options.keybaseUsername) {
+                myPartyEntry = metaFile.payload.sender;
+            } else {
+                myPartyEntry = metaFile.payload.recipients.FirstOrDefault(kb => kb.keybaseUsername == options.keybaseUsername);
+                if(myPartyEntry == null) {
+                    Console.WriteLine($"The keybase username you specified ({options.keybaseUsername}) isn't the sender, nor in the list of recipients");
+                    return;
+                }
+            }
+
+            // Validate the encrypted file with the postSignature
+            var encryptedBytes = File.ReadAllBytes(options.inFile);
+            var encryptedHash = Encryption.ComputeSHA3(encryptedBytes);
+
+            var encryptedValidates = Encryption.Verify(encryptedHash, metaFile.payload.postSignature.signature, senderKey);
+            if(!encryptedValidates) {
+                Console.WriteLine("Encrypted file didn't validate! It may have been tampered with, or you may have the incorrect file!");
+                return;
+            }
+
+            // Decrypt the key
+            var decryptedKey = Encryption.DecryptKey(myPartyEntry.encryptedKey, options.keyFile, ReadPassword(options.keyFile));
+            
+            // Decrypt the file
+            var decryptedFile = Encryption.CipherFile(false, encryptedBytes, decryptedKey);
+            
+            // Validate the decrypted file
+            var decryptedHash = Encryption.ComputeSHA3(decryptedFile);
+            var decryptedValidates = Encryption.Verify(decryptedHash, metaFile.payload.preSignature.signature, senderKey);
+            if(!decryptedValidates) {
+                Console.WriteLine("Decrypted file didn't validate! It may have been tampered with!");
+                return;
+            }
+
+            // Everything validated! Save the file to disk
+            File.WriteAllBytes(options.outFile, decryptedFile);
         }
 
         static Keybase.DiscoverResponse.Match SelectUser(string user) {
