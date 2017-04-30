@@ -81,6 +81,11 @@ namespace Park
             File.WriteAllBytes("out", Encryption.CipherFile(true, "sample/fileReal.txt", key));
             File.WriteAllBytes("dec", Encryption.CipherFile(false, "out", key));
 
+            var encKey = Encryption.EncryptKeyFor(key, File.ReadAllText("sample/publicReal"));
+            var decKey = Encryption.DecryptKey(encKey, "sample/privateReal", "sample_password");
+
+            Console.WriteLine($"key == decrypt(encrypt(key))?  {key == decKey}");
+            
             Console.ReadLine();
         }
 

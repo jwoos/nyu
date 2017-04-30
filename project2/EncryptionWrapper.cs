@@ -34,13 +34,13 @@ namespace Park {
                 sigGen.SetHashedSubpackets(subpacketGenerator.Generate());
                 break;
             }
-            var encryptedStream = new BcpgOutputStream(armoredStream);
-            sigGen.GenerateOnePassVersion(false).Encode(encryptedStream);
+            var signedStream = new BcpgOutputStream(armoredStream);
+            sigGen.GenerateOnePassVersion(false).Encode(signedStream );
 
             var inStream = new MemoryStream(Encoding.ASCII.GetBytes(hash));
 
             var literalGenerator = new PgpLiteralDataGenerator();
-            var literalOut = literalGenerator.Open(encryptedStream, PgpLiteralData.Binary, "hash", hash.Length, DateTime.Now);
+            var literalOut = literalGenerator.Open(signedStream , PgpLiteralData.Binary, "hash", hash.Length, DateTime.Now);
 
             int ch;
             while((ch = inStream.ReadByte()) >= 0) {
@@ -51,7 +51,7 @@ namespace Park {
             inStream.Dispose();
             literalGenerator.Close();
 
-            sigGen.Generate().Encode(encryptedStream);
+            sigGen.Generate().Encode(signedStream);
 
             armoredStream.Dispose();
 
@@ -145,6 +145,158 @@ namespace Park {
                 Array.Copy(result, 0, final, 0, size1 + size2);
                 return final;
             }
+        }
+
+        public static string EncryptKeyFor(string aesKeyToEncrypt, string publicKeyText) {
+            var publicKey = ReadPublicKey(publicKeyText);
+            var literalByteStream = new MemoryStream();
+
+            var literalDataGenerator = new PgpLiteralDataGenerator();
+
+            var pOut = literalDataGenerator.Open(
+                literalByteStream,      // A stream for all the literal data
+                PgpLiteralData.Binary,
+                "key",                  // "filename" to store
+                aesKeyToEncrypt.Length, // length of clear data
+                DateTime.UtcNow         // current time
+            );
+
+            pOut.Write(Encoding.ASCII.GetBytes(aesKeyToEncrypt), 0, aesKeyToEncrypt.Length);
+
+            literalDataGenerator.Close();
+
+            var encryptedDataGenerator = new PgpEncryptedDataGenerator(SymmetricKeyAlgorithmTag.Cast5, new SecureRandom());
+
+            encryptedDataGenerator.AddMethod(publicKey);
+
+            byte[] literalBytes = literalByteStream.ToArray();
+
+            MemoryStream encryptedStream = new MemoryStream();
+            var armoredStream = new ArmoredOutputStream(encryptedStream);
+
+            Stream cOut = encryptedDataGenerator.Open(armoredStream, literalBytes.Length);
+            cOut.Write(literalBytes, 0, literalBytes.Length);  // obtain the actual bytes from the compressed stream
+            cOut.Dispose();
+            armoredStream.Dispose();
+
+            return Encoding.ASCII.GetString(encryptedStream.ToArray());
+        }
+
+        public static string DecryptKey(string encryptedAESKey, string privateKeyFilename, string passPhrase) {
+            var inputStream = new MemoryStream(Encoding.ASCII.GetBytes(encryptedAESKey));
+            var armoredStream = new ArmoredInputStream(inputStream);
+            //var decoderStream = PgpUtilities.GetDecoderStream(inputStream);
+
+            try
+            {
+                PgpObjectFactory pgpF = new PgpObjectFactory(armoredStream);
+                PgpEncryptedDataList enc;
+
+                PgpObject o = pgpF.NextPgpObject();
+                //
+                // the first object might be a PGP marker packet.
+                //
+                if (o is PgpEncryptedDataList)
+                {
+                    enc = (PgpEncryptedDataList)o;
+                }
+                else
+                {
+                    enc = (PgpEncryptedDataList)pgpF.NextPgpObject();
+                }
+
+                //
+                // find the secret key
+                //
+                PgpPrivateKey sKey = ReadPrivateKey(privateKeyFilename, passPhrase);
+
+                if (sKey == null)
+                {
+                    throw new ArgumentException("secret key for message not found.");
+                }
+                
+                PgpPublicKeyEncryptedData pbe = null;
+                foreach(var pked in enc.GetEncryptedDataObjects().Cast<PgpPublicKeyEncryptedData>()) {
+                    if(pked.KeyId == sKey.KeyId) {
+                        pbe = pked;
+                        break;
+                    }
+                }
+                if(pbe == null) {
+                    Console.WriteLine("Invalid Key");
+                    return "";
+                }
+                var cleartextStream = pbe.GetDataStream(sKey);
+
+                var plainObjectFactory = new PgpObjectFactory(cleartextStream);
+
+                var message = plainObjectFactory.NextPgpObject();
+                var result = "";
+                if (message is PgpLiteralData)
+                {
+                    PgpLiteralData ld = (PgpLiteralData)message;
+
+                    var output = new MemoryStream();
+                    var decrypted = ld.GetInputStream();
+                    decrypted.CopyTo(output);
+                    result = Encoding.ASCII.GetString(output.ToArray());
+                }
+                else
+                {
+                    throw new PgpException("message is not a simple encrypted file - type unknown.");
+                }
+
+                if (pbe.IsIntegrityProtected())
+                {
+                    if (!pbe.Verify())
+                    {
+                        Console.Error.WriteLine("message failed integrity check");
+                    }
+                    else
+                    {
+                        Console.Error.WriteLine("message integrity check passed");
+                    }
+                }
+                return result;
+            }
+            catch (PgpException e)
+            {
+                Console.Error.WriteLine(e);
+
+                Exception underlyingException = e.InnerException;
+                if (underlyingException != null)
+                {
+                    Console.Error.WriteLine(underlyingException.Message);
+                    Console.Error.WriteLine(underlyingException.StackTrace);
+                }
+            }
+            return "";
+        }
+        private static PgpPublicKey ReadPublicKey(string publicKey) {
+            var keyStream = new MemoryStream(Encoding.ASCII.GetBytes(publicKey));
+            var decoderStream = PgpUtilities.GetDecoderStream(keyStream);
+            var keyBundle = new PgpPublicKeyRingBundle(decoderStream);
+            foreach(var keyRing in keyBundle.GetKeyRings().Cast<PgpPublicKeyRing>()) {
+                foreach(var key in keyRing.GetPublicKeys().Cast<PgpPublicKey>()) {
+                    if(key.IsEncryptionKey) {
+                        return key;
+                    }
+                }
+            }
+            return null;
+        }
+        private static PgpPrivateKey ReadPrivateKey(string keyFile, string passPhrase) {
+            var keyStream = File.OpenRead(keyFile);
+            var decoderStream = PgpUtilities.GetDecoderStream(keyStream);
+            var keyBundle = new PgpSecretKeyRingBundle(decoderStream);
+            foreach(var keyRing in keyBundle.GetKeyRings().Cast<PgpSecretKeyRing>()) {
+                foreach(var key in keyRing.GetSecretKeys().Cast<PgpSecretKey>()) {
+                    if(!key.IsPrivateKeyEmpty) {
+                        return key.ExtractPrivateKey(passPhrase.ToCharArray());
+                    }
+                }
+            }
+            return null;
         }
         private static PgpSecretKey ReadSigningKey(string keyFile) {
             var keyStream = File.OpenRead(keyFile);
