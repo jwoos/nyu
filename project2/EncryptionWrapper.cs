@@ -14,9 +14,8 @@ using Org.BouncyCastle.Utilities.Encoders;
 
 namespace Park {
     public static class Encryption {
-        public static string ComputeSHA3(string filename) {
-            var fileBytes = File.ReadAllBytes(filename);
-            var hashRaw = DigestUtilities.CalculateDigest("SHA3-384", fileBytes);
+        public static string ComputeSHA3(byte[] data) {
+            var hashRaw = DigestUtilities.CalculateDigest("SHA3-384", data);
             var hash = Hex.ToHexString(hashRaw);
             return hash;
         }
@@ -118,9 +117,8 @@ namespace Park {
             return Hex.ToHexString(keyGenerator.GenerateKey());
         }
 
-        public static byte[] CipherFile(bool encrypt, string filename, string key) {
+        public static byte[] CipherFile(bool encrypt, byte[] inBytes, string key) {
             var iv = new byte[16];
-            var inBytes = File.ReadAllBytes(filename);
             if(encrypt) {
                 var secureRandom = new SecureRandom();
                 secureRandom.NextBytes(iv, 0, 16);
@@ -165,7 +163,7 @@ namespace Park {
 
             literalDataGenerator.Close();
 
-            var encryptedDataGenerator = new PgpEncryptedDataGenerator(SymmetricKeyAlgorithmTag.Cast5, new SecureRandom());
+            var encryptedDataGenerator = new PgpEncryptedDataGenerator(SymmetricKeyAlgorithmTag.Aes256, new SecureRandom());
 
             encryptedDataGenerator.AddMethod(publicKey);
 

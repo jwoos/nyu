@@ -13,6 +13,7 @@ using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Utilities.IO;
 using Org.BouncyCastle.Utilities.Encoders;
 using Org.BouncyCastle.Bcpg;
+using System.Text;
 
 namespace Park
 {
@@ -44,10 +45,12 @@ namespace Park
             
             var serialized = Newtonsoft.Json.JsonConvert.SerializeObject(options, Formatting.Indented);
             Console.WriteLine(serialized);
-            
 
-            var realHash = Encryption.ComputeSHA3("sample/fileReal.txt");
-            var fakeHash = Encryption.ComputeSHA3("sample/fileFake.txt");
+            var realFile = File.ReadAllBytes("sample/fileReal.txt");
+            var fakeFile = File.ReadAllBytes("sample/fileFake.txt");
+            
+            var realHash = Encryption.ComputeSHA3(realFile);
+            var fakeHash = Encryption.ComputeSHA3(fakeFile);
 
             var realSignature = Encryption.Sign(realHash, "sample/privateReal", "sample_password");
             var modifiedHashSig = Encryption.Sign(fakeHash, "sample/privateReal", "sample_password");
@@ -76,16 +79,95 @@ namespace Park
             Console.WriteLine($"Fake hash, Other Key Sig,  Fake key: {Encryption.Verify(fakeHash, otherKeySig, "sample/publicFake")} => Should Be False");
             Console.WriteLine();
 
-            var key = Encryption.GenerateKey();
+            var key = "a648b47619bea69a8ae7c8075f8c82018213c67a675431f12b02a608f52753a9"; //Encryption.GenerateKey();
             Console.WriteLine($"Generated key: {key}");
-            File.WriteAllBytes("out", Encryption.CipherFile(true, "sample/fileReal.txt", key));
-            File.WriteAllBytes("dec", Encryption.CipherFile(false, "out", key));
+            var encryptedFile = Encryption.CipherFile(true, realFile, key);
+            var decryptedFile = Encryption.CipherFile(false, encryptedFile, key);
+
+            var hashOfEncrypted = Encryption.ComputeSHA3(encryptedFile);
+            var signatureForEncrypted = Encryption.Sign(hashOfEncrypted, "sample/privateReal", "sample_password");
+
+            Console.WriteLine($"file == decrypt(encrypt(file))? {realFile.SequenceEqual(decryptedFile)}");
 
             var encKey = Encryption.EncryptKeyFor(key, File.ReadAllText("sample/publicReal"));
             var decKey = Encryption.DecryptKey(encKey, "sample/privateReal", "sample_password");
 
+            var encKeyOther = Encryption.EncryptKeyFor(key, File.ReadAllText("sample/publicFake"));
+
             Console.WriteLine($"key == decrypt(encrypt(key))?  {key == decKey}");
             
+            Console.ReadLine();
+
+            var keybaseMe = Keybase.API.Lookup(options.me);
+
+            var keybaseUsers = options.recipients.Select(u => Keybase.API.Lookup(u))
+                .Where(u => u.them.Count > 0 && u.them[0].public_keys?.primary?.bundle != null);
+            var recipients = keybaseUsers.Select(u => {
+                var encrypted = Encryption.EncryptKeyFor(key, u.them[0].public_keys.primary.bundle);
+                Console.WriteLine($"{u.them[0].basics.username}\n{encrypted}");
+                return new Output.Payload.Party {
+                    keybaseUsername = u.them[0].basics.username,
+                    keyFingerprint = u.them[0].public_keys.primary.key_fingerprint,
+                    encryptionAlgorithm = "PGP RsaGeneral",
+                    encryptedKey = encrypted,
+                };
+            });
+
+            var payload = new Output.Payload {
+                sender = new Output.Payload.Party {
+                    keybaseUsername = options.me,
+                    keyFingerprint = keybaseMe.them[0].public_keys.primary.key_fingerprint,
+                    encryptionAlgorithm = "PGP RsaGeneral",
+                    encryptedKey = Encryption.EncryptKeyFor(key, keybaseMe.them[0].public_keys.primary.bundle),
+                },
+                recipients = recipients.ToList(),
+                preSignature = new Output.Signature {
+                    hashAlgorithm = "SHA3-384",
+                    signatureAlgorithm = "PGP RsaGeneral Sha384",
+                    signature = realSignature,
+                },
+                postSignature = new Output.Signature {
+                    hashAlgorithm = "SHA3-384",
+                    signatureAlgorithm = "PGP RsaGeneral Sha384",
+                    signature = signatureForEncrypted
+                }
+            };
+            var payloadJSON = Newtonsoft.Json.JsonConvert.SerializeObject(payload, Formatting.None);
+            var payloadHash = Encryption.ComputeSHA3(Encoding.ASCII.GetBytes(payloadJSON));
+            var payloadSignature = Encryption.Sign(payloadHash, "sample/privateReal", "sample_password");
+            var output = new Output {
+                payload = payload,
+                
+                payloadSignature = new Output.Signature {
+                    hashAlgorithm = "SHA3-384",
+                    signatureAlgorithm = "PGP RsaGeneral Sha384",
+                    signature = payloadSignature
+                },
+                fileMeta = new Output.File {
+                    encryptionAlgorithm = "AES/CTR/NoPadding",
+                    link = "Unhosted",
+                }
+            };
+
+            var outputJSON = Newtonsoft.Json.JsonConvert.SerializeObject(output, Formatting.Indented);
+            Console.WriteLine();
+            Console.WriteLine(outputJSON);
+            Console.ReadLine();
+
+            var deserializedOutput = Newtonsoft.Json.JsonConvert.DeserializeObject<Output>(outputJSON);
+            var serializedpayload = Newtonsoft.Json.JsonConvert.SerializeObject(deserializedOutput.payload, Formatting.None);
+            var payloadHashAfter = Encryption.ComputeSHA3(Encoding.ASCII.GetBytes(serializedpayload));
+            var sigVerify = Encryption.Verify(payloadHashAfter, deserializedOutput.payloadSignature.signature, "sample/publicReal");
+            Console.WriteLine($"Payload Signature verified? {sigVerify}");
+            
+            var encFileHash = Encryption.ComputeSHA3(encryptedFile);
+            var postVerify = Encryption.Verify(encFileHash, deserializedOutput.payload.postSignature.signature, "sample/publicReal");
+            var decryptedKey = Encryption.DecryptKey(encKey, "sample/privateReal", "sample_password");
+            var decryptedFileAfter = Encryption.CipherFile(false, encryptedFile, decryptedKey);
+            var decryptedHash = Encryption.ComputeSHA3(decryptedFileAfter);
+            var preVerify = Encryption.Verify(decryptedHash, payload.preSignature.signature, "sample/publicReal");
+            Console.WriteLine($"Post signature verified? {postVerify}");
+            Console.WriteLine($"Pre signature verified? {preVerify}");
             Console.ReadLine();
         }
 
