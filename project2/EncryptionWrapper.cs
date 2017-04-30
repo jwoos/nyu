@@ -19,6 +19,20 @@ namespace Park {
             var hash = Hex.ToHexString(hashRaw);
             return hash;
         }
+        public static string GetKeyFingerprint(string keyFile) {
+            var keyStream = File.OpenRead(keyFile);
+            var decoderStream = PgpUtilities.GetDecoderStream(keyStream);
+            var keyBundle = new PgpSecretKeyRingBundle(decoderStream);
+            foreach(var keyRing in keyBundle.GetKeyRings().Cast<PgpSecretKeyRing>()) {
+                foreach(var key in keyRing.GetSecretKeys().Cast<PgpSecretKey>()) {
+                    if(key.IsMasterKey) {
+                        return Hex.ToHexString(key.PublicKey.GetFingerprint());
+                    }
+                }
+            }
+            return null;
+        }
+
         public static string Sign(string hash, string keyFile, string keyPass) {
             var outStream = new MemoryStream();
             var armoredStream = new ArmoredOutputStream(outStream);

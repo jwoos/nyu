@@ -21,18 +21,13 @@ namespace Park
     public class Options {
         [clipr.NamedArgument('i', "in", Description = "The file to encrypt")]
         public string inFile { get; set; }
-        [clipr.NamedArgument('e', "encrypted", Description = "The file, in encrypted form")]
-        public string encryptedFile { get; set; }
-        [clipr.NamedArgument('l', "link", Description = "Link to the publicly hosted / encrypted file")]
-        public string link { get; set; }
-        [clipr.NamedArgument('m', "me", Description = "My own keybase username")]
-        public string me { get; set; }
+        [clipr.NamedArgument('o', "out", Description = "The output for the encrypted file")]
+        public string outFile { get; set; }
+        [clipr.NamedArgument('u', "username", Description = "Your Keybase Username")]
+        public string keybaseUsername { get; set; }
         [clipr.NamedArgument('k', "key", Description = "The private key used for signing")]
         public string keyFile { get; set; }
-        [PromptIfValueMissing(MaskInput = true)]
-        [clipr.NamedArgument('p', "passphrase", Description = "Passphrase for the chosen key")]
-        public string keyPassword { get; set; }
-        [clipr.NamedArgument('r', "recipient", Description = "Any recipients who should be able to access the file", Action = clipr.ParseAction.Append)]
+        [clipr.NamedArgument('r', "recipient", Description = "Keybase usernames of any recipients who should be able to access the file", Action = clipr.ParseAction.Append)]
         public List<string> recipients { get; set; }
     }
 
@@ -40,91 +35,65 @@ namespace Park
     {
         static void Main(string[] args)
         {
-            
             var options = CliParser.Parse<Options>(args);
             
-            var serialized = Newtonsoft.Json.JsonConvert.SerializeObject(options, Formatting.Indented);
-            Console.WriteLine(serialized);
+            // Fetch keybase info
+            var keybaseUser = Keybase.API.Lookup(options.keybaseUsername);
+            var kbFingerprint = keybaseUser.them[0].public_keys.primary.key_fingerprint;
+            var fileFingerprint = Encryption.GetKeyFingerprint(options.keyFile);
+            if(kbFingerprint != fileFingerprint) {
+                Console.WriteLine($"Invalid! {options.keyFile} is not the private key for keybase user {options.keybaseUsername}!");
+                Console.WriteLine($"Fingerprints don't match.  Keybase: {kbFingerprint} vs File: {fileFingerprint}");
+                Console.ReadLine();
+                return;
+            }
 
-            var realFile = File.ReadAllBytes("sample/fileReal.txt");
-            var fakeFile = File.ReadAllBytes("sample/fileFake.txt");
-            
-            var realHash = Encryption.ComputeSHA3(realFile);
-            var fakeHash = Encryption.ComputeSHA3(fakeFile);
+            var recipients = 
+                from recipient in options.recipients
+                let kb = SelectUser(recipient)
+                where kb != null
+                select Keybase.API.Lookup(kb.username);
 
-            var realSignature = Encryption.Sign(realHash, "sample/privateReal", "sample_password");
-            var modifiedHashSig = Encryption.Sign(fakeHash, "sample/privateReal", "sample_password");
-            var otherKeySig = Encryption.Sign(realHash, "sample/privateFake", "attacker_password");
+            // Read in the file
+            var fileBytes = File.ReadAllBytes(options.inFile);
+            var fileHash = Encryption.ComputeSHA3(fileBytes);
 
-            Console.WriteLine($"Hash of real file: {realHash}");            
-            Console.WriteLine($"Signature of real file:\n{realSignature}");
+            var keyPassword = ReadPassword(options.keyFile);
+            var preSignature = Encryption.Sign(fileHash, options.keyFile, keyPassword);
 
-            Console.WriteLine($"Hash of fake file: {fakeHash}");
-            Console.WriteLine($"Signature of fake file with real key:\n{modifiedHashSig}");
+            // Generate the encryption key and encrypt the file
+            var key = Encryption.GenerateKey();
+            var encryptedFile = Encryption.CipherFile(true, fileBytes, key);
+            File.WriteAllBytes(options.outFile, encryptedFile);
 
-            Console.WriteLine($"Signature of real file with fake key:\n{otherKeySig}");
-
-            Console.WriteLine("Verifications: ");
-            Console.WriteLine($"Real hash, Real signature, Real key: {Encryption.Verify(realHash, realSignature, "sample/publicReal")}  => Should Be True");
-            Console.WriteLine($"Real hash, Real signature, Fake key: {Encryption.Verify(realHash, realSignature, "sample/publicFake")} => Should Be False");
-            Console.WriteLine($"Real hash, Modified Sig,   Real key: {Encryption.Verify(realHash, modifiedHashSig, "sample/publicReal")} => Should Be False");
-            Console.WriteLine($"Real hash, Modified Sig,   Fake key: {Encryption.Verify(realHash, modifiedHashSig, "sample/publicFake")} => Should Be False");
-            Console.WriteLine($"Fake hash, Real signature, Real key: {Encryption.Verify(fakeHash, realSignature, "sample/publicReal")} => Should Be False");
-            Console.WriteLine($"Fake hash, Real signature, Fake key: {Encryption.Verify(fakeHash, realSignature, "sample/publicFake")} => Should Be False");
-            Console.WriteLine($"Fake hash, Modified Sig,   Real key: {Encryption.Verify(fakeHash, modifiedHashSig, "sample/publicReal")}  => Should Be True");
-            Console.WriteLine($"Fake hash, Modified Sig,   Fake key: {Encryption.Verify(fakeHash, modifiedHashSig, "sample/publicFake")} => Should Be False");
-            Console.WriteLine($"Real hash, Other Key Sig,  Real key: {Encryption.Verify(realHash, otherKeySig, "sample/publicReal")} => Should Be False");
-            Console.WriteLine($"Real hash, Other Key Sig,  Fake key: {Encryption.Verify(realHash, otherKeySig, "sample/publicFake")}  => Should Be True");
-            Console.WriteLine($"Fake hash, Other Key Sig,  Real key: {Encryption.Verify(fakeHash, otherKeySig, "sample/publicReal")} => Should Be False");
-            Console.WriteLine($"Fake hash, Other Key Sig,  Fake key: {Encryption.Verify(fakeHash, otherKeySig, "sample/publicFake")} => Should Be False");
-            Console.WriteLine();
-
-            var key = "a648b47619bea69a8ae7c8075f8c82018213c67a675431f12b02a608f52753a9"; //Encryption.GenerateKey();
-            Console.WriteLine($"Generated key: {key}");
-            var encryptedFile = Encryption.CipherFile(true, realFile, key);
-            var decryptedFile = Encryption.CipherFile(false, encryptedFile, key);
-
+            // Sign the encrypted file as well
             var hashOfEncrypted = Encryption.ComputeSHA3(encryptedFile);
-            var signatureForEncrypted = Encryption.Sign(hashOfEncrypted, "sample/privateReal", "sample_password");
+            var signatureForEncrypted = Encryption.Sign(hashOfEncrypted, options.keyFile, keyPassword);
 
-            Console.WriteLine($"file == decrypt(encrypt(file))? {realFile.SequenceEqual(decryptedFile)}");
+            var keyEncryptedForSelf = Encryption.EncryptKeyFor(key, keybaseUser.them[0].public_keys.primary.bundle);
 
-            var encKey = Encryption.EncryptKeyFor(key, File.ReadAllText("sample/publicReal"));
-            var decKey = Encryption.DecryptKey(encKey, "sample/privateReal", "sample_password");
-
-            var encKeyOther = Encryption.EncryptKeyFor(key, File.ReadAllText("sample/publicFake"));
-
-            Console.WriteLine($"key == decrypt(encrypt(key))?  {key == decKey}");
-            
-            Console.ReadLine();
-
-            var keybaseMe = Keybase.API.Lookup(options.me);
-
-            var keybaseUsers = options.recipients.Select(u => Keybase.API.Lookup(u))
-                .Where(u => u.them.Count > 0 && u.them[0].public_keys?.primary?.bundle != null);
-            var recipients = keybaseUsers.Select(u => {
-                var encrypted = Encryption.EncryptKeyFor(key, u.them[0].public_keys.primary.bundle);
-                Console.WriteLine($"{u.them[0].basics.username}\n{encrypted}");
-                return new Output.Payload.Party {
-                    keybaseUsername = u.them[0].basics.username,
-                    keyFingerprint = u.them[0].public_keys.primary.key_fingerprint,
+            var partyObjects = 
+                from recipient in recipients
+                let encryptedKey = Encryption.EncryptKeyFor(key, recipient.them[0].public_keys.primary.bundle)
+                select new Output.Payload.Party { 
+                    keybaseUsername = recipient.them[0].basics.username,
+                    keyFingerprint = recipient.them[0].public_keys.primary.key_fingerprint,
                     encryptionAlgorithm = "PGP RsaGeneral",
-                    encryptedKey = encrypted,
-                };
-            });
+                    encryptedKey = encryptedKey 
+                  };
 
             var payload = new Output.Payload {
                 sender = new Output.Payload.Party {
-                    keybaseUsername = options.me,
-                    keyFingerprint = keybaseMe.them[0].public_keys.primary.key_fingerprint,
+                    keybaseUsername = options.keybaseUsername,
+                    keyFingerprint = keybaseUser.them[0].public_keys.primary.key_fingerprint,
                     encryptionAlgorithm = "PGP RsaGeneral",
-                    encryptedKey = Encryption.EncryptKeyFor(key, keybaseMe.them[0].public_keys.primary.bundle),
+                    encryptedKey = keyEncryptedForSelf,
                 },
-                recipients = recipients.ToList(),
+                recipients = partyObjects.ToList(),
                 preSignature = new Output.Signature {
                     hashAlgorithm = "SHA3-384",
                     signatureAlgorithm = "PGP RsaGeneral Sha384",
-                    signature = realSignature,
+                    signature = preSignature,
                 },
                 postSignature = new Output.Signature {
                     hashAlgorithm = "SHA3-384",
@@ -134,7 +103,7 @@ namespace Park
             };
             var payloadJSON = Newtonsoft.Json.JsonConvert.SerializeObject(payload, Formatting.None);
             var payloadHash = Encryption.ComputeSHA3(Encoding.ASCII.GetBytes(payloadJSON));
-            var payloadSignature = Encryption.Sign(payloadHash, "sample/privateReal", "sample_password");
+            var payloadSignature = Encryption.Sign(payloadHash, options.keyFile, keyPassword);
             var output = new Output {
                 payload = payload,
                 
@@ -145,11 +114,16 @@ namespace Park
                 },
                 fileMeta = new Output.File {
                     encryptionAlgorithm = "AES/CTR/NoPadding",
-                    link = "Unhosted",
+                    link = "Unhosted (Update when uploaded)",
                 }
             };
 
             var outputJSON = Newtonsoft.Json.JsonConvert.SerializeObject(output, Formatting.Indented);
+            var outMeta = options.outFile + ".meta";
+            File.WriteAllText(outMeta, outputJSON);
+            // Write out the encrypted file
+
+            /*
             Console.WriteLine();
             Console.WriteLine(outputJSON);
             Console.ReadLine();
@@ -169,13 +143,18 @@ namespace Park
             Console.WriteLine($"Post signature verified? {postVerify}");
             Console.WriteLine($"Pre signature verified? {preVerify}");
             Console.ReadLine();
+            */
         }
 
         static Keybase.DiscoverResponse.Match SelectUser(string user) {
             var response = Keybase.API.Discover(user);
             if(response.status.code != 0) { return null; }
+            var validMatches = 
+                from match in response.matches
+                where match.public_key != null
+                select match;
             if(response.matches.Count == 0) {
-                Console.WriteLine($"Unable to find {user}!");
+                Console.WriteLine($"Unable to find {user} with a valid public key!");
                 return null;
             } else if(response.matches.Count == 1) {
                 Console.WriteLine($"One match found for {user}");
