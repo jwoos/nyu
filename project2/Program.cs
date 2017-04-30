@@ -43,7 +43,6 @@ namespace Park
             } else {
                 DecryptFile(options);
             }
-            Console.ReadLine();
         }
 
         public static void EncryptFile(Options options) 
@@ -65,12 +64,20 @@ namespace Park
                 return;
             }
             if(File.Exists(options.outFile)) {
-                Console.WriteLine("Output file already exists!");
-                return;
+                Console.WriteLine("Output file already exists!  Overwrite [yN]?");
+                if(ynPrompt()) {
+                    File.Delete(options.outFile);
+                } else {
+                    return;
+                }
             }
             if(File.Exists(options.outFile + ".meta")) {
-                Console.WriteLine("Metafile already exists!");
-                return;
+                Console.WriteLine("Metafile already exists!  Overwrite [yN]?");
+                if(ynPrompt()) {
+                    File.Delete(options.outFile + ".meta");
+                } else {
+                    return;
+                }
             }
 
             // Fetch keybase info
@@ -192,8 +199,12 @@ namespace Park
                 return;
             }
             if(File.Exists(options.outFile)) {
-                Console.WriteLine("Output file already exists!");
-                return;
+                Console.WriteLine("Output file already exists!  Overwrite? [yN]");
+                if(ynPrompt()) {
+                    File.Delete(options.outFile);
+                } else {
+                    return;
+                }
             }
 
             // Fetch my keybase user
@@ -278,9 +289,7 @@ namespace Park
                 Console.WriteLine($"One match found for {user}");
                 Console.WriteLine(response.matches.First());
                 Console.WriteLine("Is this correct? [yN]");
-                var isCorrect = Console.ReadLine();
-                if(isCorrect == "") { isCorrect = "n"; }
-                if(isCorrect == "y") {
+                if(ynPrompt()) {
                     return response.matches.First();
                 } else {
                     return null;
@@ -334,6 +343,16 @@ namespace Park
             while (key.Key != ConsoleKey.Enter);
             Console.WriteLine();
             return pass;
+        }
+
+        private static bool ynPrompt() {
+            var promptResponse = Console.ReadLine();
+            if(String.IsNullOrWhiteSpace(promptResponse)) { promptResponse = "n"; }
+            if(promptResponse.ToLower().Trim() == "y") {
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 }
