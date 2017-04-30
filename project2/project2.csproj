@@ -6,5 +6,8 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="RestSharp.CoreNet" Version="105.2.4-rc4-24214-03"/>
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.2"/>
+    <PackageReference Include="clipr" Version="1.6.0"/>
+    <PackageReference Include="BouncyCastle.NetCore" Version="1.8.1.2"/>
   </ItemGroup>
 </Project>
