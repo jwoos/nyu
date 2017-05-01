@@ -11,4 +11,7 @@ RUN apt-add-repository 'deb http://shaggytwodope.github.io/repo ./' -y && \
 RUN apt-get install -y drive && \
 	rm -rf /var/lib/apt/lists/*
 
+COPY . /csproj
 WORKDIR /csproj
+
+RUN dotnet restore && dotnet publish -c Release
