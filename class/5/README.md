@@ -1,0 +1,2 @@
+- Data Hiding
+- Encapsulation

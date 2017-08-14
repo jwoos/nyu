@@ -1,0 +1,21 @@
+PrintReport
+AddCourse CS101.001
+PrintReport
+AddStudent FritzTheCat
+PrintReport
+AddCourse CS102.001
+PrintReport
+EnrollStudentInCourse FritzTheCat CS102.001
+PrintReport
+EnrollStudentInCourse Bullwinkle CS101.001
+PrintReport
+CancelCourse CS102.001
+EnrollStudentInCourse FritzTheCat
+ChangeStudentName FritzTheCat MightyMouse
+PrintReport
+DropStudentFromCourse MightyMouse CS101.001
+PrintReport
+RemoveStudent FritzTheCat
+PrintReport
+PrintReport
+Purge
