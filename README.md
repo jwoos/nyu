@@ -1,4 +1,4 @@
-# Applied Cryptography
-## Project 1
-Cracking homophonic substitution cipher.
+# NYU
+Class files from various classes.
 
+- Applied Cryptography (C++/C#)
