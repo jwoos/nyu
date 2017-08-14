@@ -1,0 +1,17 @@
+html
+	head
+		link(rel="stylesheet", href="static/bower_components/bootstrap/dist/css/bootstrap.min.css")
+		link(rel="stylesheet", href="static/main.css")
+	body.fullbleed#login
+		div.container-fluid
+			div.row
+				div.col-md-12.horizontal.layout.center-center
+					form.input-container.vertical.layout.center-center
+						div
+							label(for="username") username
+							input#username(type="text")
+							label(for="password") password
+							input#password(type="password")
+							button log in
+		script(src="static/bower_components/jquery/dist/jquery.min.js")
+		script(src="static/main.js")

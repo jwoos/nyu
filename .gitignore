@@ -1,49 +1,35 @@
-# Compiled Object files
-*.slo
+*.a
+*.app
+*.dll
+*.dylib
+*.exe
+*.gch
+*.key
+*.la
+*.lai
+*.lib
 *.lo
+*.mod
 *.o
 *.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
 *.out
-*.app
-
-# files
-encryption
-main
-test
-
-# vim swap files
-*.swp
+*.pch
+*.pyc
+*.slo
+*.smod
+*.so
+*.swn
 *.swo
-
+*.swp
+__pycache__/
 bin/
-obj/
-
+dec
+encryption
+fileDecrypted
 fileEncrypted
 fileEncrypted.meta
-fileDecrypted
-dec
+main
+numbers/
+obj/
 out
-
-*.key
+test
