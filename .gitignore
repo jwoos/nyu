@@ -21,6 +21,7 @@
 *.swn
 *.swo
 *.swp
+*.cache
 __pycache__/
 bin/
 dec
