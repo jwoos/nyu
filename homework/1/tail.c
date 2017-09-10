@@ -1,6 +1,7 @@
 #include "types.h"
 #include "user.h"
 
+
 void tail(int fd, char* name) {
 	int linesSize = 10;
 	int bufferSize = 512;
@@ -16,9 +17,6 @@ void tail(int fd, char* name) {
 
 	while ((bytesRead = read(fd, buffer, sizeof(buffer))) > 0) {
 		for (int i = 0; i < bytesRead; i++) {
-			// separate index to keep track of line
-			charIndex += 1;
-
 			// exceeded current buffer size
 			if (charIndex == bufferSize - 1) {
 				int oldBufferSize = bufferSize;
@@ -33,14 +31,15 @@ void tail(int fd, char* name) {
 				lines[lineIndex] = temp;
 			}
 
-			lines[lineIndex][i] = buffer[i];
+			// put it in lines
+			lines[lineIndex][charIndex] = buffer[i];
 
 			// new line
 			if (buffer[i] == '\n') {
 				// exceeded current lines size
 				if (lineIndex == linesSize - 1) {
 					int oldLinesSize = linesSize;
-					lineIndex *= 2;
+					linesSize *= 2;
 					char** tempLines = malloc(sizeof(char*) * linesSize);
 					int* tempSizes = malloc(sizeof(int) * linesSize);
 
@@ -55,11 +54,17 @@ void tail(int fd, char* name) {
 					lines = tempLines;
 					sizes = tempSizes;
 				}
+
 				sizes[i] = charIndex + 1;
 				lineIndex += 1;
 				charIndex = 0;
 				bufferSize = 512;
+
+				lines[lineIndex] = malloc(sizeof(char) * bufferSize);
 			}
+
+			// separate index to keep track of line
+			charIndex += 1;
 		}
 	}
 
