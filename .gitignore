@@ -16,3 +16,4 @@ mkfs
 .gdbinit
 *.swo
 *.swp
+*.out
