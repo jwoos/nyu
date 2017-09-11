@@ -55,7 +55,7 @@ void tail(int fd, char* name) {
 					sizes = tempSizes;
 				}
 
-				sizes[i] = charIndex + 1;
+				sizes[lineIndex] = charIndex + 1;
 				lineIndex += 1;
 				charIndex = 0;
 				bufferSize = 512;

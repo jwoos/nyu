@@ -39,7 +39,6 @@ void tail(int fd, char* name) {
 
 			// new line
 			if (buffer[i] == '\n') {
-				/*printf("lineIndex: %d, linesSize: %d\n\n", lineIndex, linesSize);*/
 				// exceeded current lines size
 				if (lineIndex == linesSize - 1) {
 					int oldLinesSize = linesSize;
@@ -50,7 +49,6 @@ void tail(int fd, char* name) {
 					for (int j = 0; j < oldLinesSize; j++) {
 						tempLines[j] = lines[j];
 						tempSizes[j] = sizes[j];
-						printf("tempSize: %d, size: %d\n\n", tempSizes[j], sizes[j]);
 					}
 
 					free(lines);
