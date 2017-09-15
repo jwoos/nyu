@@ -5,13 +5,13 @@
 #include <unistd.h>
 
 
-void tail(int fd, char* name) {
+void tail(int fd, char* name, int lineCount) {
 	int linesSize = 10;
 	int bufferSize = 512;
 
 	char** lines = malloc(sizeof(char*) * linesSize);
-	lines[0] = malloc(sizeof(char) * bufferSize);
 	int* sizes = malloc(sizeof(int) * linesSize);
+	lines[0] = malloc(sizeof(char) * bufferSize);
 	char buffer[bufferSize];
 
 	int bytesRead;
@@ -75,7 +75,7 @@ void tail(int fd, char* name) {
 		printf("tail: read error\n");
 	}
 
-	int startIndex = lineIndex - 10;;
+	int startIndex = lineIndex - lineCount;
 	if (startIndex < 0) {
 		startIndex = 0;
 	}
@@ -92,19 +92,36 @@ void tail(int fd, char* name) {
 	free(sizes);
 }
 
+int openAndValidate(char* filename) {
+	int fd = open(filename, 0);
+
+	if (fd < 0) {
+		printf("tail: cannot open %s\n", filename);
+	}
+
+	return fd;
+}
+
 int main(int argc, char* argv[]) {
 	int fd = 0;
+	int lines = 10;
+	char* filename = "";
 
-	if (argc <= 1) {
-		tail(fd, "");
-	} else {
-		fd = open(argv[1], 0);
+	// there are arguments
+	if (argc > 1) {
+		// the first is the line count argument
+		if (argv[1][0] == '-') {
+			lines = atoi(argv[1] + 1);
 
-		if (fd < 0) {
-			printf("tail: cannot open %s\n", argv[1]);
+			if (argc > 2) {
+				fd = openAndValidate(argv[2]);
+			}
+		} else {
+			fd = openAndValidate(argv[1]);
 		}
 
-		tail(fd, argv[1]);
-		close(fd);
 	}
+
+	tail(fd, filename, lines);
+	close(fd);
 }
