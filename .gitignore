@@ -17,3 +17,4 @@ mkfs
 *.swo
 *.swp
 *.out
+*.dSYM
