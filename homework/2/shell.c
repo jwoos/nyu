@@ -62,14 +62,31 @@ void runcmd(struct cmd* cmd) {
 				exit(0);
 			}
 
-			fprintf(stderr, "exec not implemented\n");
-			// Your code here ...
+			if (execvp(ecmd -> argv[0], ecmd -> argv) < 0) {
+				perror("exec");
+			}
+
 			break;
 
 		case '>':
 		case '<':
 			rcmd = (struct redircmd*) cmd;
-			fprintf(stderr, "redir not implemented\n");
+			int fd;
+
+			if (rcmd -> type == '>') {
+				fd = open(rcmd -> file, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+			} else {
+				fd = open(rcmd -> file, O_RDWR);
+			}
+			if (fd < 0) {
+				perror("open");
+			}
+
+			if (dup2(fd, rcmd -> fd) < 0) {
+				perror("dup2");
+			}
+			close(fd);
+
 			// Your code here ...
 			runcmd(rcmd -> cmd);
 			break;
@@ -188,9 +205,6 @@ int gettoken(char** ps, char* es, char** q, char** eq) {
 
 		case '|':
 		case '<':
-			s++;
-			break;
-
 		case '>':
 			s++;
 			break;
