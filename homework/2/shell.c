@@ -87,14 +87,47 @@ void runcmd(struct cmd* cmd) {
 			}
 			close(fd);
 
-			// Your code here ...
 			runcmd(rcmd -> cmd);
 			break;
 
 		case '|':
 			pcmd = (struct pipecmd*) cmd;
-			fprintf(stderr, "pipe not implemented\n");
-			// Your code here ...
+			int fdPipe[2];
+			int* in = &fdPipe[0];
+			int* out = &fdPipe[1];
+
+			if (pipe(fdPipe) < 0) {
+				perror("pipe error");
+			}
+
+			if (fork1() == 0) {
+				if (dup2(*out, STDOUT_FILENO) < 0) {
+					perror("dup2");
+				}
+
+				close(*out);
+				close(*in);
+
+				runcmd(pcmd -> left);
+			}
+
+			if (fork1() == 0) {
+				if (dup2(*in, STDIN_FILENO) < 0) {
+					perror("dup2");
+				}
+
+				close(*out);
+				close(*in);
+
+				runcmd(pcmd -> right);
+			}
+
+			// parent process
+			close(*in);
+			close(*out);
+			wait(NULL);
+			wait(NULL);
+
 			break;
 	}
 
@@ -165,7 +198,7 @@ struct cmd* redircmd(struct cmd* subcmd, char* file, int type) {
 	cmd -> cmd = subcmd;
 	cmd -> file = file;
 	cmd -> mode = (type == '<') ?  O_RDONLY : O_WRONLY | O_CREAT | O_TRUNC;
-	cmd -> fd = (type == '<') ? 0 : 1;
+	cmd -> fd = (type == '<') ? STDIN_FILENO : STDOUT_FILENO;
 	return (struct cmd*) cmd;
 }
 
