@@ -1,1 +1,0 @@
-../homework/1/hello.c
