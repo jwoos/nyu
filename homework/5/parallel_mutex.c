@@ -21,6 +21,8 @@ typedef struct _bucket_entry {
 
 bucket_entry* table[NUM_BUCKETS];
 pthread_mutex_t lock[NUM_BUCKETS];
+pthread_mutex_t readerLock[NUM_BUCKETS];
+int readers[NUM_BUCKETS];
 
 void panic(char *msg) {
 	printf("%s\n", msg);
@@ -59,18 +61,32 @@ void insert(int key, int val) {
 bucket_entry* retrieve(int key) {
 	bucket_entry *b;
 
-	/* ASSIGNMENT NOTE:
-	 * I refrained from adding a lock here as there are no accesses
-	 * while insertions are happening in this example. If there were
-	 * to be both reads and writes going on at the same time, this lock
-	 * would be necessary. However, since it isn't it's a waste of time
-	 * locking.
-	 */
-	for (b = table[key % NUM_BUCKETS]; b != NULL; b = b -> next) {
+	int i = key % NUM_BUCKETS;
+
+	pthread_mutex_lock(readerLock + i);
+
+	readers[i]++;
+	if (readers[i] == 1) {
+		pthread_mutex_lock(lock + i);
+	}
+
+	pthread_mutex_unlock(readerLock + i);
+
+	// read data
+	for (b = table[i]; b != NULL; b = b -> next) {
 		if (b -> key == key) {
 			return b;
 		}
 	}
+
+	pthread_mutex_lock(readerLock + i);
+
+	readers--;
+	if (readers[i] == 0) {
+		pthread_mutex_unlock(lock + i);
+	}
+
+	pthread_mutex_unlock(readerLock + i);
 
 	return NULL;
 }
@@ -108,7 +124,9 @@ int main(int argc, char **argv) {
 	long i;
 	// initialize mutex for each bucket
 	for (i = 0; i < NUM_BUCKETS; i++) {
-		pthread_mutex_init(lock + i, NULL);
+		pthread_mutex_init(lock + i, PTHREAD_PROCESS_PRIVATE);
+		pthread_mutex_init(readerLock + i, PTHREAD_PROCESS_PRIVATE);
+		readers[i] = 0;
 	}
 
 	pthread_t* threads;

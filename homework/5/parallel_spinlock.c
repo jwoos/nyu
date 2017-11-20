@@ -29,6 +29,8 @@ typedef struct _bucket_entry {
 
 bucket_entry* table[NUM_BUCKETS];
 pthread_spinlock_t lock;
+pthread_spinlock_t readerLock;
+int readers;
 
 void panic(char *msg) {
 	printf("%s\n", msg);
@@ -67,18 +69,25 @@ void insert(int key, int val) {
 bucket_entry * retrieve(int key) {
 	bucket_entry *b;
 
-	/* ASSIGNMENT NOTE:
-	 * I refrained from adding a lock here as there are no accesses
-	 * while insertions are happening in this example. If there were
-	 * to be both reads and writes going on at the same time, this lock
-	 * would be necessary. However, since it isn't it's a waste of time
-	 * locking.
-	 */
+	pthread_spin_lock(&readerLock);
+	readers++;
+	if (readers == 1) {
+		pthread_spin_lock(&lock);
+	}
+	pthread_spin_unlock(&readerLock);
+
 	for (b = table[key % NUM_BUCKETS]; b != NULL; b = b -> next) {
 		if (b -> key == key) {
 			return b;
 		}
 	}
+
+	pthread_spin_lock(&readerLock);
+	readers--;
+	if (readers == 0) {
+		pthread_spin_unlock(&lock);
+	}
+	pthread_spin_unlock(&readerLock);
 
 	return NULL;
 }
@@ -114,6 +123,8 @@ void* get_phase(void *arg) {
 int main(int argc, char **argv) {
 	// initialize spinlock
 	pthread_spin_init(&lock, PTHREAD_PROCESS_PRIVATE);
+	pthread_spin_init(&readerLock, PTHREAD_PROCESS_PRIVATE);
+	readers = 0;
 
 	long i;
 	pthread_t* threads;
