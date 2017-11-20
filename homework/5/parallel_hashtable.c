@@ -102,15 +102,15 @@ int main(int argc, char **argv) {
     for (i = 0; i < num_threads; i++) {
         pthread_create(&threads[i], NULL, put_phase, (void *)i);
     }
-    
+
     // Barrier
     for (i = 0; i < num_threads; i++) {
         pthread_join(threads[i], NULL);
     }
     end = now();
-    
+
     printf("[main] Inserted %d keys in %f seconds\n", NUM_KEYS, end - start);
-    
+
     // Reset the thread array
     memset(threads, 0, sizeof(pthread_t)*num_threads);
 

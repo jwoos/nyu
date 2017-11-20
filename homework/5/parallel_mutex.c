@@ -81,7 +81,7 @@ bucket_entry* retrieve(int key) {
 
 	pthread_mutex_lock(readerLock + i);
 
-	readers--;
+	readers[i]--;
 	if (readers[i] == 0) {
 		pthread_mutex_unlock(lock + i);
 	}
