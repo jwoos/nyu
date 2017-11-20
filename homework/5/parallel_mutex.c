@@ -124,8 +124,8 @@ int main(int argc, char **argv) {
 	long i;
 	// initialize mutex for each bucket
 	for (i = 0; i < NUM_BUCKETS; i++) {
-		pthread_mutex_init(lock + i, PTHREAD_PROCESS_PRIVATE);
-		pthread_mutex_init(readerLock + i, PTHREAD_PROCESS_PRIVATE);
+		pthread_mutex_init(lock + i, NULL);
+		pthread_mutex_init(readerLock + i, NULL);
 		readers[i] = 0;
 	}
 
