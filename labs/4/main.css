@@ -1,0 +1,20 @@
+body {
+	text-align: center;
+}
+
+svg {
+	border: solid 1px #000;
+}
+
+.graticule {
+	fill: none;
+	stroke: #777;
+	stroke-width: 1px;
+	stroke-opacity: .5;
+}
+
+#sphere {
+	fill: none;
+	stroke-width: 2px;
+	stroke: black;
+}
