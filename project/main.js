@@ -2,8 +2,8 @@ const DIMENSION = {
 	width: 1900,
 	height: 950,
 	margin: {
-		left: 75,
-		right: 25,
+		left: 50,
+		right: 225,
 		top: 100,
 		bottom: 75
 	}
@@ -18,7 +18,6 @@ const monthQuarterMap = {
 	7: 3,
 	10: 4
 };
-window.monthQuarterMap = monthQuarterMap;
 
 const CONTAINER = '#chart';
 
@@ -96,21 +95,27 @@ loadData().then(([data]) => {
 
 	const transformed = transformData(data);
 
-	window.transformed = transformed;
 	window.data = data;
 
 	const container = d3.select(CONTAINER);
+
+	container.append('text')
+		.text('Change in Restaurant Rating Over Time')
+		.attr('dx', DIMENSION.trueWidth / 2)
+		.attr('dy', 30)
+		.attr('text-anchor', 'middle')
+		.attr('fill', 'black')
+		.attr('font-size', 24);
+
+	const tooltip = d3.select('body')
+		.append('div')
+		.attr('class', 'tooltip')
+		.style('visibility', 'hidden');
 
 	const colorScale = d3.scaleOrdinal()
 		.range(d3.schemeCategory20)
 		.domain(Object.keys(transformed.categories));
 
-	const axisYearScale = d3.scaleBand();
-	const axisQuarterScale = d3.scaleBand();
-
-	const xYearScale = d3.scaleLinear()
-		.range([0, DIMENSION.trueWidth])
-		.domain(d3.extent(transformed.years, d => d));
 	const xScale = d3.scaleTime()
 		.range([0, DIMENSION.trueWidth])
 		.domain([transformed.dates[0], transformed.dates[transformed.dates.length - 1]]);
@@ -119,13 +124,18 @@ loadData().then(([data]) => {
 		.domain([1, 5]);
 
 	const linesContainer = {};
+	const state = {};
+
 	for (let k of Object.keys(transformed.categories)) {
+		state[k] = true;
 		linesContainer[k] = container.append('g')
 			.attr('transform', `translate(${DIMENSION.margin.left}, ${DIMENSION.margin.top})`)
-			.attr('class', `category-${k}`);
+			.attr('class', `category-${k.split(' ')}`);
 	}
 
-	for (let restaurant of data) {
+	for (let i = 0; i < data.length; i++) {
+		const restaurant = data[i];
+
 		const line = d3.line()
 			.x(d => xScale(d.quarter))
 			.y(d => yScale(d.rating));
@@ -134,8 +144,70 @@ loadData().then(([data]) => {
 			.datum(restaurant.quarters)
 			.attr('fill', 'none')
 			.attr('stroke', colorScale(restaurant.category))
-			.attr('d', line);
+			.attr('d', line)
+			.on('mouseover', (d, i, self) => {
+				self[i].setAttribute('stroke-width', 10);
+
+				const [tooltipX, tooltipY] = d3.mouse(self[i]);
+				tooltip.style('visibility', 'visible');
+
+				tooltip.html(`Restaurant: ${restaurant.business_name}`)
+					.style('left', `${tooltipX}px`)
+					.style('top',  `${tooltipY + 60}px`);
+			})
+			.on('mouseout', (d, i, self) => {
+				self[i].setAttribute('stroke-width', 1);
+				tooltip.style('visibility', 'hidden');
+			});
+
+		linesContainer[restaurant.category].selectAll(`.${restaurant.category[0] + i}`)
+			.data(restaurant.quarters)
+			.enter()
+			.append('circle')
+			.attr('r', 3)
+			.attr('cy', d => yScale(d.rating))
+			.attr('cx', d => xScale(d.quarter))
+			.on('mouseover', (d, i, self) => {
+				self[i].setAttribute('r', 5);
+
+				const [tooltipX, tooltipY] = d3.mouse(self[i]);
+				tooltip.style('visibility', 'visible');
+
+				tooltip.html(`Restaurant: ${restaurant.business_name}<br>Time: ${d.quarter.getFullYear()} Q${monthQuarterMap[d.quarter.getMonth() + 1]}<br>Rating: ${d.rating}<br>Total Reviews: ${d.count}`)
+					.style('left', `${tooltipX}px`)
+					.style('top',  `${tooltipY}px`);
+			})
+			.on('mouseout', (d, i, self) => {
+				self[i].setAttribute('r', 3);
+				tooltip.style('visibility', 'hidden');
+			});
 	}
+
+	const legend = container.append('g')
+		.attr('transform', `translate(${DIMENSION.trueWidth + 75 }, 300)`)
+		.append('g')
+		.selectAll('g')
+		.data(Object.keys(linesContainer))
+		.enter()
+		.append('g')
+		.attr('transform', (d, i) => `translate(0, ${30 * i})`)
+
+	legend.append('rect')
+		.attr('width', 20)
+		.attr('height', 20)
+		.attr('class', 'legend-color')
+		.attr('stroke', 'black')
+		.attr('fill', d => colorScale(d))
+		.on('click', (d, i, self) => {
+			state[d] = state[d] ^ true;
+			self[i].setAttribute('fill', state[d] ? colorScale(d) : 'white');
+			linesContainer[d].style('visibility', state[d] ? 'visible' : 'hidden');
+		});
+
+	legend.append('text')
+		.attr('x', 10 + 15)
+		.attr('y', 10 + 5)
+		.text(d => d);
 
 	const xAxis = d3.axisLeft(yScale)
 		.ticks(10);
@@ -165,7 +237,7 @@ loadData().then(([data]) => {
 	axesY.call(yAxis)
 		.selectAll('text')
 		.attr('transform', 'rotate(-90, 0, 13)')
-		.attr('text-anchor', 'end')
+		.attr('text-anchor', 'end');
 
 	axesY.append('text')
 		.text('Quarter')

@@ -16,3 +16,13 @@ svg {
 	margin: 15px auto;
 	border: black 1px solid;
 }
+
+.tooltip {
+	position: absolute;
+	padding: 15px;
+	background: #1abc9c
+}
+
+.legend-color {
+	cursor: pointer;
+}
