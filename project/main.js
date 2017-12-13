@@ -3,7 +3,7 @@ const DIMENSION = {
 	height: 950,
 	margin: {
 		left: 50,
-		right: 225,
+		right: 250,
 		top: 100,
 		bottom: 75
 	}
@@ -53,10 +53,19 @@ const transformData = (data) => {
 	const dates = new Set();
 	transformed.dates = dates;
 
+	const stats = {
+		count: 0,
+		sum: 0,
+	};
+	transformed.stats = stats;
+
 	for (let restaurant of data) {
 		const category = restaurant.category;
 
 		for (let q of restaurant.quarters) {
+			stats.count++;
+			stats.sum += q.rating;
+
 			const date = new Date(`${q.quarter} EST`);
 
 			years.add(date.getFullYear());
@@ -84,6 +93,8 @@ const transformData = (data) => {
 		});
 	}
 
+	stats.average = stats.sum / stats.count;
+
 	transformed.years = Array.from(transformed.years).sort();
 	transformed.dates = Array.from(transformed.dates).sort().map(d => new Date(`${d} EST`));
 
@@ -94,8 +105,6 @@ loadData().then(([data]) => {
 	init(CONTAINER);
 
 	const transformed = transformData(data);
-
-	window.data = data;
 
 	const container = d3.select(CONTAINER);
 
@@ -123,6 +132,12 @@ loadData().then(([data]) => {
 		.range([DIMENSION.trueHeight, 0])
 		.domain([1, 5]);
 
+	const averageBox = container.append('rect')
+		.attr('transform', `translate(${DIMENSION.margin.left}, ${DIMENSION.margin.top + (DIMENSION.trueHeight / 2)})`)
+		.attr('width', DIMENSION.trueWidth)
+		.attr('height', DIMENSION.trueHeight / 2)
+		.attr('fill', '#ffeaea');
+
 	const linesContainer = {};
 	const state = {};
 
@@ -142,6 +157,7 @@ loadData().then(([data]) => {
 
 		linesContainer[restaurant.category].append('path')
 			.datum(restaurant.quarters)
+			.attr('id', `restaurant-${restaurant.business_id}`)
 			.attr('fill', 'none')
 			.attr('stroke', colorScale(restaurant.category))
 			.attr('d', line)
@@ -207,7 +223,7 @@ loadData().then(([data]) => {
 	legend.append('text')
 		.attr('x', 10 + 15)
 		.attr('y', 10 + 5)
-		.text(d => d);
+		.text(d => `${d} (${transformed.categories[d].length})`);
 
 	const xAxis = d3.axisLeft(yScale)
 		.ticks(10);
