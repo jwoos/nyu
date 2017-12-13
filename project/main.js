@@ -139,10 +139,33 @@ loadData().then(([data]) => {
 		.attr('fill', '#ffeaea');
 
 	const linesContainer = {};
+	const filtersContainer = {};
 	const state = {};
+	const filterState = {};
 
 	for (let k of Object.keys(transformed.categories)) {
 		state[k] = true;
+		filterState[k] = true;
+		filtersContainer[k] = d3.select('body')
+			.append('div')
+			.attr('class', 'filter')
+			.append('form');
+		filtersContainer[k].append('input')
+			.attr('id', `toggle-${k}`)
+			.attr('type', 'checkbox')
+			.attr('value', k)
+			.attr('checked', true)
+			.on('click', (_, __, [target]) => {
+				const val = target.value;
+				filterState[val] = filterState[val] ^ true;
+				d3.selectAll(`.category-${val}`)
+					.style('visibility', filterState[val] ? '' : 'hidden');
+				d3.selectAll(`.toggle-${val}`)
+					.property('checked', filterState[val] ? true : false);
+			});
+		filtersContainer[k].append('label')
+			.attr('for', `toggle-${k}`)
+			.text('ALL');
 		linesContainer[k] = container.append('g')
 			.attr('transform', `translate(${DIMENSION.margin.left}, ${DIMENSION.margin.top})`)
 			.attr('class', `category-${k.split(' ')}`);
@@ -150,14 +173,37 @@ loadData().then(([data]) => {
 
 	for (let i = 0; i < data.length; i++) {
 		const restaurant = data[i];
+		state[restaurant.business_id] = true;
 
 		const line = d3.line()
 			.x(d => xScale(d.quarter))
 			.y(d => yScale(d.rating));
 
+		const div = filtersContainer[restaurant.category].append('div');
+
+		filtersContainer[restaurant.category].append('input')
+			.attr('type', 'checkbox')
+			.attr('id', `toggle-${restaurant.business_id}`)
+			.attr('class', `toggle-${restaurant.category}`)
+			.attr('value', restaurant.business_id)
+			.attr('checked', true)
+			.on('click', (_, __, [target]) => {
+				const val = target.value;
+				state[val] = state[val] ^ true;
+				d3.select(`#restaurant-${val}`)
+					.style('visibility', state[val] ? '' : 'hidden');
+				d3.selectAll(`.restaurant-${val}`)
+					.style('visibility', state[val] ? '' : 'hidden');
+			});
+
+		filtersContainer[restaurant.category].append('label')
+			.attr('for', `toggle-${restaurant.business_id}`)
+			.text(restaurant.business_name);
+
 		linesContainer[restaurant.category].append('path')
 			.datum(restaurant.quarters)
 			.attr('id', `restaurant-${restaurant.business_id}`)
+			.attr('class', `category-${restaurant.category}`)
 			.attr('fill', 'none')
 			.attr('stroke', colorScale(restaurant.category))
 			.attr('d', line)
@@ -180,6 +226,7 @@ loadData().then(([data]) => {
 			.data(restaurant.quarters)
 			.enter()
 			.append('circle')
+			.attr('class', `restaurant-${restaurant.business_id} category-${restaurant.category}`)
 			.attr('r', 3)
 			.attr('cy', d => yScale(d.rating))
 			.attr('cx', d => xScale(d.quarter))

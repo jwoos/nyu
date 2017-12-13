@@ -26,3 +26,9 @@ svg {
 .legend-color {
 	cursor: pointer;
 }
+
+.filter {
+	display: block;
+	overflow-y: scroll;
+	/*position: absolute;*/
+}
