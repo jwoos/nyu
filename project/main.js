@@ -53,24 +53,60 @@ const transformData = (data) => {
 	const dates = new Set();
 	transformed.dates = dates;
 
+	const negative = new Set();
+	transformed.negative = negative;
+
+	const greatChange = new Set();
+	transformed.greatChange = greatChange;
+
 	const stats = {
 		count: 0,
 		sum: 0,
+		changeSum: 0,
+		changeCount: 0
 	};
 	transformed.stats = stats;
 
 	for (let restaurant of data) {
 		const category = restaurant.category;
 
+		const threshold = 3;
+		let belowThreshold = 0;
+		const changeTreshold = 1.5;
+		let aboveChangeThreshold = 0;
+
+		let prev = null;
 		for (let q of restaurant.quarters) {
+			if (prev) {
+				const diff = Math.abs(q.rating - prev);
+
+				if (diff >= changeTreshold) {
+					aboveChangeThreshold += 1;
+					greatChange.add(restaurant);
+				}
+
+				stats.changeCount++;
+				stats.changeSum += diff;
+			} else {
+				prev = q.rating;
+			}
+
 			stats.count++;
 			stats.sum += q.rating;
+
+			if (q.rating <= threshold) {
+				belowThreshold += 1;
+			}
 
 			const date = new Date(`${q.quarter} EST`);
 
 			years.add(date.getFullYear());
 			dates.add(q.quarter);
 			q.quarter = date;
+		}
+
+		if (belowThreshold >= (0.75 * restaurant.quarters.length)) {
+			negative.add(restaurant);
 		}
 
 		if (!categories[category]) {
@@ -161,11 +197,11 @@ loadData().then(([data]) => {
 
 		filtersContainer[k].append('button')
 			.attr('value', k)
-			.text('RESET')
+			.text('ALL ON')
 			.on('click', (_, __, [target]) => {
 				d3.event.preventDefault();
 
-				const val = target.value;
+				const val = target.value.split(' ')[0];
 				d3.selectAll(`.category-${val}`)
 					.style('visibility', '');
 				d3.selectAll(`.toggle-${val}`)
@@ -173,6 +209,24 @@ loadData().then(([data]) => {
 
 				for (let node of d3.selectAll(`.toggle-${val}`).nodes()) {
 					state[node.value] = true;
+				}
+			});
+
+		filtersContainer[k].append('button')
+			.attr('value', k)
+			.text('ALL OFF')
+			.on('click', (_, __, [target]) => {
+				d3.event.preventDefault();
+
+				const val = target.value.split(' ')[0];
+
+				d3.selectAll(`.category-${val}`)
+					.style('visibility', 'hidden');
+				d3.selectAll(`.toggle-${val}`)
+					.property('checked', false);
+
+				for (let node of d3.selectAll(`.toggle-${val}`).nodes()) {
+					state[node.value] = false;
 				}
 			});
 
@@ -275,6 +329,7 @@ loadData().then(([data]) => {
 	legend.append('rect')
 		.attr('width', 20)
 		.attr('height', 20)
+		.attr('id', d => `color-${d.split(' ')[0]}`)
 		.attr('class', 'legend-color')
 		.attr('stroke', 'black')
 		.attr('fill', d => colorScale(d))

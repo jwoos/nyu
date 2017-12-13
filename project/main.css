@@ -34,4 +34,5 @@ svg {
 	background: white;
 	padding: 10px;
 	border: 1px solid black;
+	-webkit-backface-visibility: hidden;
 }
