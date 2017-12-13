@@ -141,31 +141,41 @@ loadData().then(([data]) => {
 	const linesContainer = {};
 	const filtersContainer = {};
 	const state = {};
-	const filterState = {};
+	const legendState = {};
 
+	let i = 0;
 	for (let k of Object.keys(transformed.categories)) {
+		i++;
 		state[k] = true;
-		filterState[k] = true;
+		legendState[k] = false;
+
 		filtersContainer[k] = d3.select('body')
 			.append('div')
+			.attr('id', `filter-${k.split(' ')[0]}`)
 			.attr('class', 'filter')
+			.style('top', 305 + (30 * i))
+			.style('left', DIMENSION.trueWidth + 100)
+			.style('height', 150)
+			.style('visibility', 'hidden')
 			.append('form');
-		filtersContainer[k].append('input')
-			.attr('id', `toggle-${k}`)
-			.attr('type', 'checkbox')
+
+		filtersContainer[k].append('button')
 			.attr('value', k)
-			.attr('checked', true)
+			.text('RESET')
 			.on('click', (_, __, [target]) => {
+				d3.event.preventDefault();
+
 				const val = target.value;
-				filterState[val] = filterState[val] ^ true;
 				d3.selectAll(`.category-${val}`)
-					.style('visibility', filterState[val] ? '' : 'hidden');
+					.style('visibility', '');
 				d3.selectAll(`.toggle-${val}`)
-					.property('checked', filterState[val] ? true : false);
+					.property('checked', true);
+
+				for (let node of d3.selectAll(`.toggle-${val}`).nodes()) {
+					state[node.value] = true;
+				}
 			});
-		filtersContainer[k].append('label')
-			.attr('for', `toggle-${k}`)
-			.text('ALL');
+
 		linesContainer[k] = container.append('g')
 			.attr('transform', `translate(${DIMENSION.margin.left}, ${DIMENSION.margin.top})`)
 			.attr('class', `category-${k.split(' ')}`);
@@ -181,7 +191,7 @@ loadData().then(([data]) => {
 
 		const div = filtersContainer[restaurant.category].append('div');
 
-		filtersContainer[restaurant.category].append('input')
+		div.append('input')
 			.attr('type', 'checkbox')
 			.attr('id', `toggle-${restaurant.business_id}`)
 			.attr('class', `toggle-${restaurant.category}`)
@@ -196,7 +206,7 @@ loadData().then(([data]) => {
 					.style('visibility', state[val] ? '' : 'hidden');
 			});
 
-		filtersContainer[restaurant.category].append('label')
+		div.append('label')
 			.attr('for', `toggle-${restaurant.business_id}`)
 			.text(restaurant.business_name);
 
@@ -212,6 +222,13 @@ loadData().then(([data]) => {
 
 				const [tooltipX, tooltipY] = d3.mouse(self[i]);
 				tooltip.style('visibility', 'visible');
+
+				tooltip.html(`Restaurant: ${restaurant.business_name}`)
+					.style('left', `${tooltipX}px`)
+					.style('top',  `${tooltipY + 60}px`);
+			})
+			.on('mousemove', (d, i, self)=> {
+				const [tooltipX, tooltipY] = d3.mouse(self[i]);
 
 				tooltip.html(`Restaurant: ${restaurant.business_name}`)
 					.style('left', `${tooltipX}px`)
@@ -270,6 +287,12 @@ loadData().then(([data]) => {
 	legend.append('text')
 		.attr('x', 10 + 15)
 		.attr('y', 10 + 5)
+		.style('cursor', 'pointer')
+		.on('click', (d, _, __) => {
+			legendState[d] = legendState[d] ^ true;
+			d3.select(`#filter-${d.split(' ')[0]}`)
+				.style('visibility', legendState[d] ? 'visible' : 'hidden')
+		})
 		.text(d => `${d} (${transformed.categories[d].length})`);
 
 	const xAxis = d3.axisLeft(yScale)

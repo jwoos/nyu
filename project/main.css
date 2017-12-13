@@ -30,5 +30,8 @@ svg {
 .filter {
 	display: block;
 	overflow-y: scroll;
-	/*position: absolute;*/
+	position: absolute;
+	background: white;
+	padding: 10px;
+	border: 1px solid black;
 }
