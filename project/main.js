@@ -75,24 +75,7 @@ const transformData = (data) => {
 		const changeTreshold = -2;
 		let aboveChangeThreshold = 0;
 
-		let prev = null;
 		for (let q of restaurant.quarters) {
-			if (prev) {
-				const diff = q.rating - prev;
-
-				if (diff <= changeTreshold) {
-					aboveChangeThreshold += 1;
-					greatChange.add(restaurant);
-				}
-
-				stats.changeCount++;
-				stats.changeSum += diff;
-
-				prev = q.rating;
-			} else {
-				prev = q.rating;
-			}
-
 			stats.count++;
 			stats.sum += q.rating;
 
@@ -129,6 +112,26 @@ const transformData = (data) => {
 				return 0;
 			}
 		});
+
+		let prev = null;
+		for (let q of restaurant.quarters) {
+			if (prev) {
+				const diff = q.rating - prev;
+
+				if (diff <= changeTreshold) {
+					aboveChangeThreshold += 1;
+					greatChange.add(restaurant);
+				}
+
+				stats.changeCount++;
+				stats.changeSum += diff;
+
+				prev = q.rating;
+			} else {
+				prev = q.rating;
+			}
+
+		}
 	}
 
 	stats.average = stats.sum / stats.count;
