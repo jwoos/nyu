@@ -72,21 +72,23 @@ const transformData = (data) => {
 
 		const threshold = 3;
 		let belowThreshold = 0;
-		const changeTreshold = 2;
+		const changeTreshold = -2;
 		let aboveChangeThreshold = 0;
 
 		let prev = null;
 		for (let q of restaurant.quarters) {
 			if (prev) {
-				const diff = Math.abs(q.rating - prev);
+				const diff = q.rating - prev;
 
-				if (diff >= changeTreshold) {
+				if (diff <= changeTreshold) {
 					aboveChangeThreshold += 1;
 					greatChange.add(restaurant);
 				}
 
 				stats.changeCount++;
 				stats.changeSum += diff;
+
+				prev = q.rating;
 			} else {
 				prev = q.rating;
 			}
@@ -327,6 +329,7 @@ loadData().then(([data]) => {
 
 	const legend = container.append('g')
 		.attr('transform', `translate(${DIMENSION.trueWidth + 75 }, 300)`)
+		.attr('id', 'legend')
 		.append('g')
 		.selectAll('g')
 		.data(Object.keys(linesContainer))
@@ -396,6 +399,7 @@ loadData().then(([data]) => {
 		.attr('fill', 'black')
 		.attr('font-size', 14);
 
+	const analysisTitles = {};
 	const selectContainer = d3.select('body')
 		.append('select')
 		.attr('class', 'version-choice')
@@ -410,6 +414,11 @@ loadData().then(([data]) => {
 							.style('visibility', '');
 					}
 
+					for (let k of Object.keys(analysisTitles)) {
+						analysisTitles[k].remove();
+						delete analysisTitles[k];
+					}
+
 					for (let category of Object.keys(transformed.categories)) {
 						state[category] = true;
 						d3.select(`#color-${category.split(' ')[0]}`)
@@ -417,9 +426,15 @@ loadData().then(([data]) => {
 						linesContainer[category]
 							.style('visibility', 'visible');
 					}
+
 					break;
 
 				case 'Analysis 1':
+					for (let k of Object.keys(analysisTitles)) {
+						analysisTitles[k].remove();
+						delete analysisTitles[k];
+					}
+
 					d3.selectAll('.line')
 						.style('visibility', 'hidden');
 					d3.selectAll('.circle')
@@ -430,10 +445,22 @@ loadData().then(([data]) => {
 							.style('visibility', 'visible');
 						d3.selectAll(`.restaurant-${restaurant.business_id}`)
 							.style('visibility', 'visible');
+						analysisTitles[restaurant.business_id] = container
+							.append('text')
+							.attr('dx', xScale(restaurant.quarters[0].quarter) + 50)
+							.attr('dy', yScale(restaurant.quarters[0].rating) + 90)
+							.attr('font-size', 11)
+							.text(restaurant.business_name);
 					}
+
 					break;
 
 				case 'Analysis 2':
+					for (let k of Object.keys(analysisTitles)) {
+						analysisTitles[k].remove();
+						delete analysisTitles[k];
+					}
+
 					d3.selectAll('.line')
 						.style('visibility', 'hidden');
 					d3.selectAll('.circle')
@@ -444,6 +471,13 @@ loadData().then(([data]) => {
 							.style('visibility', 'visible');
 						d3.selectAll(`.restaurant-${restaurant.business_id}`)
 							.style('visibility', 'visible');
+						analysisTitles[restaurant.business_id] = container
+							.append('text')
+							.attr('dx', xScale(restaurant.quarters[0].quarter) + 50)
+							.attr('dy', yScale(restaurant.quarters[0].rating) + 90)
+							.attr('text-anchor', 'start')
+							.attr('font-size', 11)
+							.text(restaurant.business_name);
 					}
 					break;
 			}
