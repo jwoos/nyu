@@ -34,4 +34,12 @@ svg {
 	background: white;
 	padding: 10px;
 	border: 1px solid black;
+	-webkit-backface-visibility: hidden;
+}
+
+.version-choice {
+	display: block;
+	position: absolute;
+	top: 30;
+	left: 30;
 }

@@ -53,24 +53,45 @@ const transformData = (data) => {
 	const dates = new Set();
 	transformed.dates = dates;
 
+	const negative = new Set();
+	transformed.negative = negative;
+
+	const greatChange = new Set();
+	transformed.greatChange = greatChange;
+
 	const stats = {
 		count: 0,
 		sum: 0,
+		changeSum: 0,
+		changeCount: 0
 	};
 	transformed.stats = stats;
 
 	for (let restaurant of data) {
 		const category = restaurant.category;
 
+		const threshold = 3;
+		let belowThreshold = 0;
+		const changeTreshold = -2;
+		let aboveChangeThreshold = 0;
+
 		for (let q of restaurant.quarters) {
 			stats.count++;
 			stats.sum += q.rating;
+
+			if (q.rating <= threshold) {
+				belowThreshold += 1;
+			}
 
 			const date = new Date(`${q.quarter} EST`);
 
 			years.add(date.getFullYear());
 			dates.add(q.quarter);
 			q.quarter = date;
+		}
+
+		if (belowThreshold >= (0.75 * restaurant.quarters.length)) {
+			negative.add(restaurant);
 		}
 
 		if (!categories[category]) {
@@ -91,9 +112,30 @@ const transformData = (data) => {
 				return 0;
 			}
 		});
+
+		let prev = null;
+		for (let q of restaurant.quarters) {
+			if (prev) {
+				const diff = q.rating - prev;
+
+				if (diff <= changeTreshold) {
+					aboveChangeThreshold += 1;
+					greatChange.add(restaurant);
+				}
+
+				stats.changeCount++;
+				stats.changeSum += diff;
+
+				prev = q.rating;
+			} else {
+				prev = q.rating;
+			}
+
+		}
 	}
 
 	stats.average = stats.sum / stats.count;
+	stats.changeAverage = stats.changeSum / stats.changeCount;
 
 	transformed.years = Array.from(transformed.years).sort();
 	transformed.dates = Array.from(transformed.dates).sort().map(d => new Date(`${d} EST`));
@@ -105,6 +147,9 @@ loadData().then(([data]) => {
 	init(CONTAINER);
 
 	const transformed = transformData(data);
+
+	window.data = data;
+	window.transformed = transformed;
 
 	const container = d3.select(CONTAINER);
 
@@ -161,18 +206,40 @@ loadData().then(([data]) => {
 
 		filtersContainer[k].append('button')
 			.attr('value', k)
-			.text('RESET')
+			.text('ALL ON')
 			.on('click', (_, __, [target]) => {
 				d3.event.preventDefault();
 
-				const val = target.value;
-				d3.selectAll(`.category-${val}`)
+				const val = target.value.split(' ')[0];
+				d3.selectAll(`.category-${val}.line`)
+					.style('visibility', '');
+				d3.selectAll(`.category-${val}.circle`)
 					.style('visibility', '');
 				d3.selectAll(`.toggle-${val}`)
 					.property('checked', true);
 
 				for (let node of d3.selectAll(`.toggle-${val}`).nodes()) {
 					state[node.value] = true;
+				}
+			});
+
+		filtersContainer[k].append('button')
+			.attr('value', k)
+			.text('ALL OFF')
+			.on('click', (_, __, [target]) => {
+				d3.event.preventDefault();
+
+				const val = target.value.split(' ')[0];
+
+				d3.selectAll(`.category-${val}.line`)
+					.style('visibility', 'hidden');
+				d3.selectAll(`.category-${val}.circle`)
+					.style('visibility', 'hidden');
+				d3.selectAll(`.toggle-${val}`)
+					.property('checked', false);
+
+				for (let node of d3.selectAll(`.toggle-${val}`).nodes()) {
+					state[node.value] = false;
 				}
 			});
 
@@ -194,7 +261,7 @@ loadData().then(([data]) => {
 		div.append('input')
 			.attr('type', 'checkbox')
 			.attr('id', `toggle-${restaurant.business_id}`)
-			.attr('class', `toggle-${restaurant.category}`)
+			.attr('class', `toggle-${restaurant.category} toggle`)
 			.attr('value', restaurant.business_id)
 			.attr('checked', true)
 			.on('click', (_, __, [target]) => {
@@ -213,7 +280,7 @@ loadData().then(([data]) => {
 		linesContainer[restaurant.category].append('path')
 			.datum(restaurant.quarters)
 			.attr('id', `restaurant-${restaurant.business_id}`)
-			.attr('class', `category-${restaurant.category}`)
+			.attr('class', `category-${restaurant.category} line`)
 			.attr('fill', 'none')
 			.attr('stroke', colorScale(restaurant.category))
 			.attr('d', line)
@@ -243,7 +310,7 @@ loadData().then(([data]) => {
 			.data(restaurant.quarters)
 			.enter()
 			.append('circle')
-			.attr('class', `restaurant-${restaurant.business_id} category-${restaurant.category}`)
+			.attr('class', `restaurant-${restaurant.business_id} category-${restaurant.category} circle`)
 			.attr('r', 3)
 			.attr('cy', d => yScale(d.rating))
 			.attr('cx', d => xScale(d.quarter))
@@ -265,6 +332,7 @@ loadData().then(([data]) => {
 
 	const legend = container.append('g')
 		.attr('transform', `translate(${DIMENSION.trueWidth + 75 }, 300)`)
+		.attr('id', 'legend')
 		.append('g')
 		.selectAll('g')
 		.data(Object.keys(linesContainer))
@@ -275,6 +343,7 @@ loadData().then(([data]) => {
 	legend.append('rect')
 		.attr('width', 20)
 		.attr('height', 20)
+		.attr('id', d => `color-${d.split(' ')[0]}`)
 		.attr('class', 'legend-color')
 		.attr('stroke', 'black')
 		.attr('fill', d => colorScale(d))
@@ -332,4 +401,101 @@ loadData().then(([data]) => {
 		.attr('text-anchor', 'middle')
 		.attr('fill', 'black')
 		.attr('font-size', 14);
+
+	const analysisTitles = {};
+	const selectContainer = d3.select('body')
+		.append('select')
+		.attr('class', 'version-choice')
+		.on('change', (_, __, [target]) => {
+			switch (target.value) {
+				case 'DEFAULT':
+					for (let node of d3.selectAll('.toggle').nodes()) {
+						state[node.value] = true;
+						d3.select(`#restaurant-${node.value}`)
+							.style('visibility', '');
+						d3.selectAll(`.restaurant-${node.value}`)
+							.style('visibility', '');
+					}
+
+					for (let k of Object.keys(analysisTitles)) {
+						analysisTitles[k].remove();
+						delete analysisTitles[k];
+					}
+
+					for (let category of Object.keys(transformed.categories)) {
+						state[category] = true;
+						d3.select(`#color-${category.split(' ')[0]}`)
+							.attr('fill', colorScale(category));
+						linesContainer[category]
+							.style('visibility', 'visible');
+					}
+
+					break;
+
+				case 'Analysis 1':
+					for (let k of Object.keys(analysisTitles)) {
+						analysisTitles[k].remove();
+						delete analysisTitles[k];
+					}
+
+					d3.selectAll('.line')
+						.style('visibility', 'hidden');
+					d3.selectAll('.circle')
+						.style('visibility', 'hidden');
+
+					for (let restaurant of transformed.negative) {
+						d3.select(`#restaurant-${restaurant.business_id}`)
+							.style('visibility', 'visible');
+						d3.selectAll(`.restaurant-${restaurant.business_id}`)
+							.style('visibility', 'visible');
+						analysisTitles[restaurant.business_id] = container
+							.append('text')
+							.attr('dx', xScale(restaurant.quarters[0].quarter) + 50)
+							.attr('dy', yScale(restaurant.quarters[0].rating) + 90)
+							.attr('font-size', 11)
+							.text(restaurant.business_name);
+					}
+
+					break;
+
+				case 'Analysis 2':
+					for (let k of Object.keys(analysisTitles)) {
+						analysisTitles[k].remove();
+						delete analysisTitles[k];
+					}
+
+					d3.selectAll('.line')
+						.style('visibility', 'hidden');
+					d3.selectAll('.circle')
+						.style('visibility', 'hidden');
+
+					for (let restaurant of transformed.greatChange) {
+						d3.select(`#restaurant-${restaurant.business_id}`)
+							.style('visibility', 'visible');
+						d3.selectAll(`.restaurant-${restaurant.business_id}`)
+							.style('visibility', 'visible');
+						analysisTitles[restaurant.business_id] = container
+							.append('text')
+							.attr('dx', xScale(restaurant.quarters[0].quarter) + 50)
+							.attr('dy', yScale(restaurant.quarters[0].rating) + 90)
+							.attr('text-anchor', 'start')
+							.attr('font-size', 11)
+							.text(restaurant.business_name);
+					}
+					break;
+			}
+		});
+
+	selectContainer.append('option')
+		.attr('value', 'DEFAULT')
+		.attr('selected', true)
+		.text('DEFAULT');
+	selectContainer.append('option')
+		.attr('value', 'Analysis 1')
+		.property('selected', false)
+		.text('Analysis 1');
+	selectContainer.append('option')
+		.attr('value', 'Analysis 2')
+		.property('selected', false)
+		.text('Analysis 2');
 });
