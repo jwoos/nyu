@@ -1,0 +1,305 @@
+From 89bd59883bc4a8ad1204c487c78107c07a6a427e Mon Sep 17 00:00:00 2001
+From: Jun Woo Shin <shin.junwoo97@gmail.com>
+Date: Tue, 5 Dec 2017 00:18:01 -0500
+Subject: [PATCH] Timestamp in FS
+
+---
+ Makefile  |  2 +-
+ file.h    | 30 +++++++++++++++++++-----------
+ fs.c      | 48 ++++++++++++++++++++++++------------------------
+ fs.h      | 28 ++++++++++++++++++++++------
+ ls.c      |  4 ++--
+ mkfs.c    | 14 ++++++++++++++
+ stat.h    | 10 ++++++++++
+ sysfile.c |  4 ++++
+ 8 files changed, 96 insertions(+), 44 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index b4fd9a2..1891079 100644
+--- a/Makefile
++++ b/Makefile
+@@ -210,7 +210,7 @@ QEMUGDB = $(shell if $(QEMU) -help | grep -q '^-gdb'; \
+ ifndef CPUS
+ CPUS := 2
+ endif
+-QEMUOPTS = -hdb fs.img xv6.img -smp $(CPUS) -m 512 $(QEMUEXTRA)
++QEMUOPTS = -hdb fs.img xv6.img -smp $(CPUS) -m 512 $(QEMUEXTRA) -display none
+ 
+ qemu: fs.img xv6.img
+ 	$(QEMU) -serial mon:stdio $(QEMUOPTS)
+diff --git a/file.h b/file.h
+index 5a4a463..dcc4865 100644
+--- a/file.h
++++ b/file.h
+@@ -1,3 +1,10 @@
++#include "date.h"
++/* Yes, I know this breaks the convention of the
++ * source code. But it sure beats going into every
++ * .c file and including it. Also it's not used
++ * anywhere else so we should be okay
++ */
++
+ struct file {
+   enum { FD_NONE, FD_PIPE, FD_INODE } type;
+   int ref; // reference count
+@@ -11,17 +18,18 @@ struct file {
+ 
+ // in-memory copy of an inode
+ struct inode {
+-  uint dev;           // Device number
+-  uint inum;          // Inode number
+-  int ref;            // Reference count
+-  int flags;          // I_BUSY, I_VALID
+-
+-  short type;         // copy of disk inode
+-  short major;
+-  short minor;
+-  short nlink;
+-  uint size;
+-  uint addrs[NDIRECT+1];
++	uint dev;           // Device number
++	uint inum;          // Inode number
++	int ref;            // Reference count
++	int flags;          // I_BUSY, I_VALID
++
++	short type;         // copy of disk inode
++	short major;
++	short minor;
++	short nlink;
++	uint size;
++	uint addrs[NDIRECT+11];
++	struct rtcdate datetime;
+ };
+ #define I_BUSY 0x1
+ #define I_VALID 0x2
+diff --git a/fs.c b/fs.c
+index 025b326..c87fde1 100644
+--- a/fs.c
++++ b/fs.c
+@@ -10,6 +10,7 @@
+ // are in sysfile.c.
+ 
+ #include "types.h"
++#include "date.h"
+ #include "defs.h"
+ #include "param.h"
+ #include "stat.h"
+@@ -196,22 +197,21 @@ ialloc(uint dev, short type)
+ }
+ 
+ // Copy a modified in-memory inode to disk.
+-void
+-iupdate(struct inode *ip)
+-{
+-  struct buf *bp;
+-  struct dinode *dip;
+-
+-  bp = bread(ip->dev, IBLOCK(ip->inum, sb));
+-  dip = (struct dinode*)bp->data + ip->inum%IPB;
+-  dip->type = ip->type;
+-  dip->major = ip->major;
+-  dip->minor = ip->minor;
+-  dip->nlink = ip->nlink;
+-  dip->size = ip->size;
+-  memmove(dip->addrs, ip->addrs, sizeof(ip->addrs));
+-  log_write(bp);
+-  brelse(bp);
++void iupdate(struct inode* ip) {
++	struct buf* bp;
++	struct dinode* dip;
++
++	bp = bread(ip->dev, IBLOCK(ip->inum, sb));
++	dip = (struct dinode*)bp->data + ip->inum%IPB;
++	dip -> type = ip -> type;
++	dip -> major = ip -> major;
++	dip -> minor = ip -> minor;
++	dip -> nlink = ip -> nlink;
++	dip -> size = ip -> size;
++	dip -> datetime = ip -> datetime;
++	memmove(dip->addrs, ip->addrs, sizeof(ip->addrs));
++	log_write(bp);
++	brelse(bp);
+ }
+ 
+ // Find the inode with number inum on device dev
+@@ -286,6 +286,7 @@ ilock(struct inode *ip)
+     ip->minor = dip->minor;
+     ip->nlink = dip->nlink;
+     ip->size = dip->size;
++	ip -> datetime = dip-> datetime;
+     memmove(ip->addrs, dip->addrs, sizeof(ip->addrs));
+     brelse(bp);
+     ip->flags |= I_VALID;
+@@ -419,14 +420,13 @@ itrunc(struct inode *ip)
+ }
+ 
+ // Copy stat information from inode.
+-void
+-stati(struct inode *ip, struct stat *st)
+-{
+-  st->dev = ip->dev;
+-  st->ino = ip->inum;
+-  st->type = ip->type;
+-  st->nlink = ip->nlink;
+-  st->size = ip->size;
++void stati(struct inode *ip, struct stat *st) {
++	st->dev = ip->dev;
++	st->ino = ip->inum;
++	st->type = ip->type;
++	st->nlink = ip->nlink;
++	st->size = ip->size;
++	st->datetime = ip -> datetime;
+ }
+ 
+ //PAGEBREAK!
+diff --git a/fs.h b/fs.h
+index e1d7d09..8a1d402 100644
+--- a/fs.h
++++ b/fs.h
+@@ -1,3 +1,10 @@
++#include "date.h"
++/* Yes, I know this breaks the convention of the
++ * source code. But it sure beats going into every
++ * .c file and including it. Also it's not used
++ * anywhere else so we should be okay
++ */
++
+ // On-disk file system format. 
+ // Both the kernel and user programs use this header file.
+ 
+@@ -26,12 +33,21 @@ struct superblock {
+ 
+ // On-disk inode structure
+ struct dinode {
+-  short type;           // File type
+-  short major;          // Major device number (T_DEV only)
+-  short minor;          // Minor device number (T_DEV only)
+-  short nlink;          // Number of links to inode in file system
+-  uint size;            // Size of file (bytes)
+-  uint addrs[NDIRECT+1];   // Data block addresses
++	/* short -> 2 bytes
++	 * unsigned int -> 4 bytes
++	 * struct rtcdate -> 4 * 6 = 32 bytes
++	 * padding -> 4 bytes
++	 *
++	 * 512 / (short * 4 + uint * 13 + padding * 1) = 8
++	 * 512 / (short * 4 + uint * 13 + struct rtcdate + padding * 11) = 4
++	 */
++	short type;           // File type
++	short major;          // Major device number (T_DEV only)
++	short minor;          // Minor device number (T_DEV only)
++	short nlink;          // Number of links to inode in file system
++	uint size;            // Size of file (bytes)
++	uint addrs[NDIRECT+11];   // Data block addresses
++	struct rtcdate datetime; // datetime created
+ };
+ 
+ // Inodes per block.
+diff --git a/ls.c b/ls.c
+index b6ddd7f..64a4f5c 100644
+--- a/ls.c
++++ b/ls.c
+@@ -43,7 +43,7 @@ ls(char *path)
+   
+   switch(st.type){
+   case T_FILE:
+-    printf(1, "%s %d %d %d\n", fmtname(path), st.type, st.ino, st.size);
++	printf(1, "%s %d %d %d %d/%d/%d %d:%d:%d\n", fmtname(path), st.type, st.ino, st.size, st.datetime.month, st.datetime.day, st.datetime.year, st.datetime.hour, st.datetime.minute, st.datetime.second);
+     break;
+   
+   case T_DIR:
+@@ -63,7 +63,7 @@ ls(char *path)
+         printf(1, "ls: cannot stat %s\n", buf);
+         continue;
+       }
+-      printf(1, "%s %d %d %d\n", fmtname(buf), st.type, st.ino, st.size);
++	printf(1, "%s %d %d %d %d/%d/%d %d:%d:%d\n", fmtname(buf), st.type, st.ino, st.size, st.datetime.month, st.datetime.day, st.datetime.year, st.datetime.hour, st.datetime.minute, st.datetime.second);
+     }
+     break;
+   }
+diff --git a/mkfs.c b/mkfs.c
+index 0a10754..02beae2 100644
+--- a/mkfs.c
++++ b/mkfs.c
+@@ -4,9 +4,11 @@
+ #include <string.h>
+ #include <fcntl.h>
+ #include <assert.h>
++#include <time.h>
+ 
+ #define stat xv6_stat  // avoid clash with host struct stat
+ #include "types.h"
++#include "date.h"
+ #include "fs.h"
+ #include "stat.h"
+ #include "param.h"
+@@ -230,6 +232,18 @@ ialloc(ushort type)
+   din.type = xshort(type);
+   din.nlink = xshort(1);
+   din.size = xint(0);
++
++  time_t epochSeconds;
++  time(&epochSeconds);
++  struct tm* date = gmtime(&epochSeconds);
++
++  din.datetime.year = date -> tm_year + 1900;
++  din.datetime.month = date -> tm_mon;
++  din.datetime.day = date -> tm_mday;
++  din.datetime.hour = date -> tm_hour;
++  din.datetime.minute = date -> tm_min;
++  din.datetime.second = date -> tm_sec;
++
+   winode(inum, &din);
+   return inum;
+ }
+diff --git a/stat.h b/stat.h
+index 8a80933..812427b 100644
+--- a/stat.h
++++ b/stat.h
+@@ -1,11 +1,21 @@
++#include "date.h"
++/* Yes, I know this breaks the convention of the
++ * source code. But it sure beats going into every
++ * .c file and including it. Also it's not used
++ * anywhere else so we should be okay
++ */
++
+ #define T_DIR  1   // Directory
+ #define T_FILE 2   // File
+ #define T_DEV  3   // Device
+ 
++extern struct rtcdate datetime;
++
+ struct stat {
+   short type;  // Type of file
+   int dev;     // File system's disk device
+   uint ino;    // Inode number
+   short nlink; // Number of links to file
+   uint size;   // Size of file in bytes
++  struct rtcdate datetime;
+ };
+diff --git a/sysfile.c b/sysfile.c
+index 2209f6e..dc540f6 100644
+--- a/sysfile.c
++++ b/sysfile.c
+@@ -5,6 +5,7 @@
+ //
+ 
+ #include "types.h"
++#include "date.h"
+ #include "defs.h"
+ #include "param.h"
+ #include "stat.h"
+@@ -262,6 +263,9 @@ create(char *path, short type, short major, short minor)
+   ip->major = major;
+   ip->minor = minor;
+   ip->nlink = 1;
++
++	cmostime(&(ip -> datetime));
++
+   iupdate(ip);
+ 
+   if(type == T_DIR){  // Create . and .. entries.
+-- 
+2.15.1
+

@@ -1,0 +1,129 @@
+From c9099c8b0ff4980be7eec2049b188dc8bb6c7d39 Mon Sep 17 00:00:00 2001
+From: Jun Woo Shin <shin.junwoo97@gmail.com>
+Date: Sat, 11 Nov 2017 15:26:40 -0500
+Subject: [PATCH] Implement lazy allocation
+
+---
+ HW5.md    | 11 +++++++++++
+ Makefile  |  2 +-
+ defs.h    |  1 +
+ sysproc.c |  6 +++---
+ trap.c    | 17 +++++++++++++++++
+ vm.c      |  5 +++--
+ 6 files changed, 36 insertions(+), 6 deletions(-)
+ create mode 100644 HW5.md
+
+diff --git a/HW5.md b/HW5.md
+new file mode 100644
+index 0000000..9afbd70
+--- /dev/null
++++ b/HW5.md
+@@ -0,0 +1,11 @@
++# Part 1
++Size of n is 32678
++
++```
++#0 sys_sbreak () at sysproc.c:47
++#1 0x801056ab in syscall () at syscall.c:133
++#2 0x8010686e in trap (tf=0x8df23fb4) at trap.c:43
++#3 0x80106660 in alltraps () at trapasm.S:23
++#4 0x8df23fb4 in ?? ()
++Backtrace stopped: previous frame inner to this frame (corrupt stack?)
++```
+diff --git a/Makefile b/Makefile
+index b4fd9a2..1891079 100644
+--- a/Makefile
++++ b/Makefile
+@@ -210,7 +210,7 @@ QEMUGDB = $(shell if $(QEMU) -help | grep -q '^-gdb'; \
+ ifndef CPUS
+ CPUS := 2
+ endif
+-QEMUOPTS = -hdb fs.img xv6.img -smp $(CPUS) -m 512 $(QEMUEXTRA)
++QEMUOPTS = -hdb fs.img xv6.img -smp $(CPUS) -m 512 $(QEMUEXTRA) -display none
+ 
+ qemu: fs.img xv6.img
+ 	$(QEMU) -serial mon:stdio $(QEMUOPTS)
+diff --git a/defs.h b/defs.h
+index b47372b..203f59a 100644
+--- a/defs.h
++++ b/defs.h
+@@ -163,6 +163,7 @@ void            uartintr(void);
+ void            uartputc(int);
+ 
+ // vm.c
++int             mappages(pde_t*, void*, uint, uint, int);
+ void            seginit(void);
+ void            kvmalloc(void);
+ void            vmenable(void);
+diff --git a/sysproc.c b/sysproc.c
+index 027a5e5..368b33f 100644
+--- a/sysproc.c
++++ b/sysproc.c
+@@ -50,9 +50,9 @@ sys_sbrk(void)
+ 
+   if(argint(0, &n) < 0)
+     return -1;
+-  addr = proc->sz;
+-  if(growproc(n) < 0)
+-    return -1;
++  addr = proc -> sz;
++  proc -> sz += n;
++
+   return addr;
+ }
+ 
+diff --git a/trap.c b/trap.c
+index 3f80145..deb229f 100644
+--- a/trap.c
++++ b/trap.c
+@@ -46,6 +46,23 @@ trap(struct trapframe *tf)
+     return;
+   }
+ 
++  if (tf -> trapno == T_PGFLT) {
++	// malloc one page as necessary
++	char* mem;
++	mem = kalloc();
++	if (mem == 0) {
++		cprintf("lazy allocation out of memory\n");
++		return;
++	}
++
++	// initialize to 0
++	memset(mem, 0, PGSIZE);
++
++	uint va = PGROUNDDOWN(rcr2());
++	mappages(proc -> pgdir, (char*)va, PGSIZE, v2p(mem), PTE_W | PTE_U);
++	return;
++  }
++
+   switch(tf->trapno){
+   case T_IRQ0 + IRQ_TIMER:
+     if(cpu->id == 0){
+diff --git a/vm.c b/vm.c
+index 5326d14..876efad 100644
+--- a/vm.c
++++ b/vm.c
+@@ -67,7 +67,7 @@ walkpgdir(pde_t *pgdir, const void *va, int alloc)
+ // Create PTEs for virtual addresses starting at va that refer to
+ // physical addresses starting at pa. va and size might not
+ // be page-aligned.
+-static int
++int
+ mappages(pde_t *pgdir, void *va, uint size, uint pa, int perm)
+ {
+   char *a, *last;
+@@ -319,8 +319,9 @@ copyuvm(pde_t *pgdir, uint sz)
+   for(i = 0; i < sz; i += PGSIZE){
+     if((pte = walkpgdir(pgdir, (void *) i, 0)) == 0)
+       panic("copyuvm: pte should exist");
++	// due to lazy allocation, some parts might not be allocated yet
+     if(!(*pte & PTE_P))
+-      panic("copyuvm: page not present");
++      continue;
+     pa = PTE_ADDR(*pte);
+     flags = PTE_FLAGS(*pte);
+     if((mem = kalloc()) == 0)
+-- 
+2.7.4
+
