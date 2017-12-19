@@ -1,0 +1,18 @@
+* {
+	margin: 0;
+	padding: 0;
+
+	font-family: sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+	display: block;
+}
+
+svg {
+	display: block;
+	margin: 15px auto;
+	border: black 1px solid;
+}

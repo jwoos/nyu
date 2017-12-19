@@ -1,0 +1,20 @@
+.container {
+	display: flex;
+	flex-direction: row;
+	margin: 10px;
+}
+
+.inner-container {
+	display: inline-block;
+	margin: 0 10px;
+}
+
+#version, #records {
+	display: block;
+}
+
+#svg-play {
+	display: inline-block;
+}
+
+

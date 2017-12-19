@@ -1,0 +1,8 @@
+h1 {
+	text-align: center;
+}
+svg {
+	display: block;
+	border: 1px black solid;
+	margin: 15px auto;
+}

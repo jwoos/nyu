@@ -1,0 +1,45 @@
+* {
+	margin: 0;
+	padding: 0;
+
+	font-family: sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+	display: block;
+}
+
+svg {
+	display: block;
+	margin: 15px auto;
+	border: black 1px solid;
+}
+
+.tooltip {
+	position: absolute;
+	padding: 15px;
+	background: #1abc9c
+}
+
+.legend-color {
+	cursor: pointer;
+}
+
+.filter {
+	display: block;
+	overflow-y: scroll;
+	position: absolute;
+	background: white;
+	padding: 10px;
+	border: 1px solid black;
+	-webkit-backface-visibility: hidden;
+}
+
+.version-choice {
+	display: block;
+	position: absolute;
+	top: 30;
+	left: 30;
+}
