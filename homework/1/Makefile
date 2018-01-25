@@ -1,7 +1,7 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -std=gnu11 -ggdb -O0
-LDLIBS = $(LDLIBS)
-LDFLAGS = $(LDFLAGS)
+CFLAGS = -Wall -Wextra -std=c99 -ggdb -O0
+LDLIBS =
+LDFLAGS =
 
 OBJECTS =
 EXECUTABLES = life
@@ -18,7 +18,7 @@ debug-gdb: life
 # $(CC) $(CPPFLAGS) $(CFLAGS) -c $@
 
 life:
-	$(CC) life.c $^ $(LDFLAGS) $(LDLIBS) -o $@
+	$(CC) $(CFLAGS) life.c $^ $(LDFLAGS) $(LDLIBS) -o $@
 
 clean:
 	rm -f life
