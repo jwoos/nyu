@@ -11,11 +11,10 @@
 
 
 typedef struct GameState {
-	uint8_t** board;
+	bool** board;
 	uint32_t columns;
 	uint32_t rows;
 	uint32_t generation;
-	bool padding;
 } GameState;
 
 
@@ -33,9 +32,11 @@ void configurationDeinitialize(Configuration*);
 
 GameState* gameStateInitialize(Configuration*);
 
+uint8_t gameStateNeighborCount(GameState*, uint32_t y, uint32_t x);
+
 void gameStateNext(GameState*);
 
-void gameStatePrint(GameState*, uint32_t);
+void gameStatePrint(GameState*);
 
 void gameStateDeinitialize(GameState*);
 
@@ -43,19 +44,17 @@ void gameStateDeinitialize(GameState*);
 int main(int argc, char** argv) {
 	// setup
 	Configuration* config = configurationInitialize(argv, argc);
-	/*GameState* state = gameStateInitialize(config);*/
+	GameState* state = gameStateInitialize(config);
 
-	printf("%s\n", config -> filename);
-	/*
-	 *uint32_t i = 0;
-	 *do {
-	 *    gameStateNext(state);
-	 *    gameStatePrint(state);
-	 *} while (i < config -> generations);
-	 */
+	uint32_t i = 0;
+	do {
+		gameStatePrint(state);
+		gameStateNext(state);
+		i++;
+	} while (i <= config -> generations);
 
 	// teardown
-	/*gameStateDeinitialize(state);*/
+	gameStateDeinitialize(state);
 	configurationDeinitialize(config);
 
 	return EXIT_SUCCESS;
@@ -99,9 +98,163 @@ void configurationDeinitialize(Configuration* config) {
 
 GameState* gameStateInitialize(Configuration* config) {
 	GameState* state = malloc(sizeof(*state));
-	state -> board = malloc(sizeof(int**));
+	state -> generation = 0;
+
+	// padding on the edges to deal with cases where the edge is hit
+	state -> columns = config -> columns + 2;
+	state -> rows = config -> rows + 2;
+
+	/* Initialize the 2D gameboard
+	 * Using calloc to zero intialize the entire matrix
+	 */
+	state -> board = calloc(state -> rows, sizeof(int*));
+	for (uint32_t y = 0; y < state -> rows; y++) {
+		state -> board[y] = calloc(state -> columns, sizeof(int));
+	}
+
+	// read and parse file and use the data to populate state
+	FILE* inpuptFile = fopen(config -> filename, "r");
+	if (inpuptFile == NULL) {
+		printf("unable to open %s", config -> filename);
+		exit(EXIT_FAILURE);
+	}
+
+	/* Buffer should be columns + 1
+	 * but since columns is padded, we actually have to subtract 1
+	 */
+	char buffer[state -> columns - 1];
+	uint32_t rowIndex = 1;
+	uint32_t columnIndex = 1;
+	while (true) {
+		fgets(buffer, state -> columns - 1, inpuptFile);
+		if (feof(inpuptFile)) {
+			break;
+		}
+
+		bool* row = state -> board[rowIndex];
+
+		while (buffer[columnIndex - 1] != '\0' && buffer[columnIndex - 1] != '\n') {
+			if (buffer[columnIndex - 1] != ' ') {
+				row[columnIndex] = true;
+			}
+			columnIndex++;
+		}
+
+		rowIndex++;
+		columnIndex = 1;
+	}
+
+	fclose(inpuptFile);
 
 	return state;
+}
+
+void gameStatePrint(GameState* state) {
+	printf("Generation %d:\n", state -> generation);
+
+	for (uint32_t y = 1; y < state -> rows - 1; y++) {
+		for (uint32_t x = 1; x < state -> columns - 1; x++) {
+			printf("%c", state -> board[y][x] ? '*' : '-');
+		}
+		printf("\n");
+	}
+
+	printf("================================\n");
+}
+
+// return the number of live neighbors given a coordinate
+uint8_t gameStateNeighborCount(GameState* state, uint32_t y, uint32_t x) {
+	uint8_t count = 0;
+	/* we don't need to worry about out of bounds
+	 * access for the arrays since they're padded
+	 * on every side by 1 and we're only subtracting
+	 * and adding by 1
+	 */
+
+	bool** board = state -> board;
+
+	// top
+	if (board[y - 1][x]) {
+		count++;
+	}
+
+	// bottom
+	if (board[y + 1][x]) {
+		count++;
+	}
+
+
+	// left
+	if (board[y][x - 1]) {
+		count++;
+	}
+
+	// right
+	if (board[y][x + 1]) {
+		count++;
+	}
+
+	// top left
+	if (board[y - 1][x - 1]) {
+		count++;
+	}
+
+	// top right
+	if (board[y - 1][x + 1]) {
+		count++;
+	}
+
+	// bottom left
+	if (board[y + 1][x - 1]) {
+		count++;
+	}
+
+	// bottom right
+	if (board[y + 1][x + 1]) {
+		count++;
+	}
+
+	return count;
+}
+
+void gameStateNext(GameState* state) {
+	/* Any live cell with fewer than two live neighbours dies.
+	 * Any live cell with two or three live neighbours lives on to the next generation.
+	 * Any live cell with more than three live neighbours dies.
+	 * Any dead cell with exactly three live neighbours becomes a live cell.
+	 */
+	bool** localState = calloc(state -> rows, sizeof(int*));
+	for (uint32_t y = 0; y < state -> rows; y++) {
+		localState[y] = calloc(state -> columns, sizeof(int));
+		for (uint32_t x = 0; x < state -> columns; x++) {
+			localState[y][x] = state -> board[y][x];
+		}
+	}
+
+	for (uint32_t y = 1; y < state -> rows - 1; y++) {
+		for (uint32_t x = 1; x < state -> columns - 1; x++) {
+			uint8_t liveCount = gameStateNeighborCount(state, y, x);
+			bool current = state -> board[y][x];
+			/*printf("state %c %d %d live count %d\n", current ? 't' : 'f', x, y, liveCount);*/
+
+			if (liveCount < 2 || liveCount > 3) {
+				localState[y][x] = false;
+			} else if (current && (liveCount == 2 || liveCount == 3)) {
+				localState[y][x] = true;
+			} else if (liveCount == 3) {
+				localState[y][x] = true;
+			}
+		}
+	}
+
+	for (uint32_t y = 0; y < state -> rows; y++) {
+		free(state -> board[y]);
+	}
+	free(state -> board);
+
+	// next generation
+	state -> board = localState;
+	state -> generation++;
 }
 
 void gameStateDeinitialize(GameState* state) {
