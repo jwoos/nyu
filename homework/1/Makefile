@@ -6,6 +6,9 @@ EXECUTABLES = life
 life: .PHONY
 	$(CC) $(CFLAGS) life.c -o $@
 
+memcheck: life
+	valgrind --leak-check=full ./life
+
 clean:
 	rm -f $(EXECUTABLES)
 

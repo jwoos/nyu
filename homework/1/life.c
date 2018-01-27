@@ -26,6 +26,8 @@ typedef struct Configuration {
 } Configuration;
 
 
+void printUsage(void);
+
 Configuration* configurationInitialize(char**, int);
 
 void configurationDeinitialize(Configuration*);
@@ -42,6 +44,12 @@ void gameStateDeinitialize(GameState*);
 
 
 int main(int argc, char** argv) {
+	if (argc > 5) {
+		printf("Too many arguments provided\n");
+		printUsage();
+		exit(EXIT_FAILURE);
+	}
+
 	// setup
 	Configuration* config = configurationInitialize(argv, argc);
 	GameState* state = gameStateInitialize(config);
@@ -60,6 +68,13 @@ int main(int argc, char** argv) {
 	return EXIT_SUCCESS;
 }
 
+void printUsage(void) {
+	printf("Usage: life [rows] [columns] [filename] [generations]\n");
+	printf("\trows - the number of rows to work with\n");
+	printf("\tcolumns - the number of rows to work with\n");
+	printf("\tfilename - the file to use as starting state\n");
+	printf("\tgenerations - how many generations to show\n");
+}
 
 Configuration* configurationInitialize(char** argv, int argc) {
 	Configuration* config = malloc(sizeof(*config));
@@ -77,15 +92,30 @@ Configuration* configurationInitialize(char** argv, int argc) {
 	switch (argc) {
 		case 5:
 			config -> generations = strtol(argv[4], NULL, 10);
+			if (config -> generations <= 0) {
+				printf("Invalid generations - must be a positive integer\n");
+				printUsage();
+				exit(EXIT_FAILURE);
+			}
 
 		case 4:
 			config -> filename = argv[3];
 
 		case 3:
 			config -> columns = strtol(argv[2], NULL, 10);
+			if (config -> columns <= 0) {
+				printf("Invalid columns - must be a positive integer\n");
+				printUsage();
+				exit(EXIT_FAILURE);
+			}
 
 		case 2:
 			config -> rows = strtol(argv[1], NULL, 10);
+			if (config -> rows <= 0) {
+				printf("Invalid rows - must be a positive integer\n");
+				printUsage();
+				exit(EXIT_FAILURE);
+			}
 	}
 
 	return config;
@@ -116,24 +146,27 @@ GameState* gameStateInitialize(Configuration* config) {
 	FILE* inpuptFile = fopen(config -> filename, "r");
 	if (inpuptFile == NULL) {
 		printf("unable to open %s", config -> filename);
+		printUsage();
 		exit(EXIT_FAILURE);
 	}
 
 	/* Buffer should be columns + 1
 	 * but since columns is padded, we actually have to subtract 1
+	 *
+	 * command line arguements take precedence over what's in the file
 	 */
 	char buffer[state -> columns - 1];
 	uint32_t rowIndex = 1;
 	uint32_t columnIndex = 1;
 	while (true) {
 		fgets(buffer, state -> columns - 1, inpuptFile);
-		if (feof(inpuptFile)) {
+		if (feof(inpuptFile) || rowIndex >= state -> rows - 1) {
 			break;
 		}
 
 		bool* row = state -> board[rowIndex];
 
-		while (buffer[columnIndex - 1] != '\0' && buffer[columnIndex - 1] != '\n') {
+		while (buffer[columnIndex - 1] != '\0' && buffer[columnIndex - 1] != '\n' && columnIndex < state -> columns - 1) {
 			if (buffer[columnIndex - 1] != ' ') {
 				row[columnIndex] = true;
 			}
