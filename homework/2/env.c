@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 
 
@@ -14,7 +15,10 @@ typedef struct Process {
 	char** env;
 } Process;
 
-void usage(char*);
+void printUsage(char*);
+
+// find length of null terminated array
+int arrLength(void*);
 
 Process* processConstruct(int, char**);
 
@@ -38,29 +42,72 @@ int main(int argc, char** argv) {
 }
 
 
-void usage(char* msg) {
+void printUsage(char* msg) {
 	printf("%s\n", msg);
 	printf("Usage: ./env [-i] [NAME=VALUE]... [COMMAND [ARG]...]\n");
 	printf("-i: start with an empty environment\n");
-	exit(EXIT_FAILURE);
+}
+
+int arrLength(void* arr) {
+	int length = 0;
+
+	while (arr[length]) {
+		length++;
+	}
+
+	return length;
 }
 
 Process* processConstruct(int argc, char** argv) {
+	if (!argc) {
+		printUsage("A command must be present");
+		exit(EXIT_FAILURE);
+	}
 
+	int replace = false;
+	int index = 0;
+	int envIndex;
+	int commandIndex;
+	int argIndex;
+
+
+	// 0 when strings are equal
+	if (!strcmp(argv[index], "-i")) {
+		replace = true;
+		index++;
+	}
+
+	envIndex = index;
+	while (strchr(argv[index], '=')) {
+		index++;
+	}
+
+	commandIndex = index;
+	index++;
+
+	argIndex = index;
+
+	Process* proc = malloc(sizeof(*proc));
+	proc -> command = argv[commandIndex];
+
+	proc -> args = calloc(argIndex - envIndex + 1, sizeof(char*));
+	memcpy(proc -> args, argv[argIndex], argIndex - envIndex);
+
+	if (replace) {
+		proc -> env = calloc(commandIndex - envIndex + 1, sizeof(char*));
+		memcpy(proc -> env, argv[envIndex], commandIndex - envIndex);
+	} else {
+		int environLength = arrLength(environ);
+		proc -> env = calloc(environLength + (commandIndex - index + 1), char*);
+		memcpy(proc -> env, environ, environLength);
+		memcpy(proc -> env + environLength, argv[envIndex], commandIndex - envIndex);
+	}
+
+	return proc;
 }
 
 void processDeconstruct(Process* proc) {
-	int index;
-
-	index = 0;
-	while (proc -> args[index]) {
-		free(proc -> args[index]);
-		index++;
-	}
 	free(proc -> args);
-
-	index = 0;
-	while (proc -> env[index]) {
-		free(proc -> env[index]);
-	}
+	free(proc -> env);
+	free(proc);
 }
