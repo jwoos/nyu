@@ -18,7 +18,7 @@ typedef struct Process {
 void printUsage(char*);
 
 // find length of null terminated array
-int arrLength(void*);
+int arrLength(char**);
 
 Process* processConstruct(int, char**);
 
@@ -30,7 +30,9 @@ int main(int argc, char** argv) {
 	Process* proc = processConstruct(argc - 1, argv + 1);
 
 	// the GNU env command doesn't fork but exec's on the process itself
-	execvpe(proc.command, proc.args, proc.env);
+	execvpe(proc -> command, proc -> args, proc -> env);
+
+	perror("execvpe failed");
 
 	/* this is technically never reached as the process is replaced by the above program
 	 * the cleanup is done as if the process had terminated i.e. all memory
@@ -38,7 +40,8 @@ int main(int argc, char** argv) {
 	 */
 	processDeconstruct(proc);
 
-	return EXIT_SUCCESS;
+	// if it got here that means that it failed for some reason
+	return EXIT_FAILURE;
 }
 
 
@@ -48,10 +51,10 @@ void printUsage(char* msg) {
 	printf("-i: start with an empty environment\n");
 }
 
-int arrLength(void* arr) {
+int arrLength(char** arr) {
 	int length = 0;
 
-	while (arr[length]) {
+	while ((arr[length])) {
 		length++;
 	}
 
@@ -66,10 +69,6 @@ Process* processConstruct(int argc, char** argv) {
 
 	int replace = false;
 	int index = 0;
-	int envIndex;
-	int commandIndex;
-	int argIndex;
-
 
 	// 0 when strings are equal
 	if (!strcmp(argv[index], "-i")) {
@@ -77,30 +76,74 @@ Process* processConstruct(int argc, char** argv) {
 		index++;
 	}
 
-	envIndex = index;
-	while (strchr(argv[index], '=')) {
+	// get beginning env index and length of env vars
+	int envIndex = -1;
+	int envLength = 0;
+	if (argv[index] && strchr(argv[index], '=')) {
+		envIndex = index;
 		index++;
+		envLength++;
+
+		while (argv[index] && strchr(argv[index], '=')) {
+			index++;
+			envLength++;
+		}
 	}
 
-	commandIndex = index;
-	index++;
+	// get beginning arg index and length of args
+	int commandIndex = -1;
+	int argLength = 0;
+	if (argv[index]) {
+		commandIndex = index;
+		argLength++;
 
-	argIndex = index;
+		while (argv[index]) {
+			index++;
+			argLength++;
+		}
+	}
 
 	Process* proc = malloc(sizeof(*proc));
+	/* Just point to the address locations of the argv, there's no need
+	 * to manually copy everything out since the lifespan of argv will
+	 * be the whole program since it's a variable in main. This idea
+	 * also applies to the env values as well as the arguments.
+	 */
 	proc -> command = argv[commandIndex];
 
-	proc -> args = calloc(argIndex - envIndex + 1, sizeof(char*));
-	memcpy(proc -> args, argv[argIndex], argIndex - envIndex);
+	if (commandIndex != -1) {
+		proc -> args = calloc(argLength + 1, sizeof(char*));
 
-	if (replace) {
-		proc -> env = calloc(commandIndex - envIndex + 1, sizeof(char*));
-		memcpy(proc -> env, argv[envIndex], commandIndex - envIndex);
+		for (int i = 0; i < argLength; i++) {
+			proc -> args[i] = (argv + commandIndex)[i];
+		}
 	} else {
-		int environLength = arrLength(environ);
-		proc -> env = calloc(environLength + (commandIndex - index + 1), char*);
-		memcpy(proc -> env, environ, environLength);
-		memcpy(proc -> env + environLength, argv[envIndex], commandIndex - envIndex);
+		printUsage("A command must be present");
+		exit(EXIT_FAILURE);
+	}
+
+	if (envIndex != -1) {
+		if (replace) {
+			proc -> env = calloc(envLength + 1, sizeof(char*));
+
+			for (int i = 0; i < envLength; i++) {
+				proc -> env[i] = (argv + envIndex)[i];
+			}
+		} else {
+			int environLength = arrLength(environ);
+			proc -> env = calloc(environLength + envLength + 1, sizeof(char*));
+
+			for (int i = 0; i < environLength; i++) {
+				proc -> env[i] = environ[i];
+			}
+
+			for (int i = 0; i < envLength; i++) {
+				proc -> env[i + environLength] = (argv + envIndex)[i];
+			}
+		}
+	} else {
+		// passing in no env variables is a valid command - just use environ
+		proc -> env = environ;
 	}
 
 	return proc;
