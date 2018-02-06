@@ -13,12 +13,16 @@ typedef struct Process {
 	char* command;
 	char** args;
 	char** env;
+	bool print;
 } Process;
 
 void printUsage(char*);
 
 // find length of null terminated array
 int arrLength(char**);
+
+// return a cstring for a given value
+char* findEnv(char**, char*);
 
 Process* processConstruct(int, char**);
 
@@ -29,19 +33,30 @@ int main(int argc, char** argv) {
 	// first element is the name of the current program
 	Process* proc = processConstruct(argc - 1, argv + 1);
 
-	// the GNU env command doesn't fork but exec's on the process itself
-	execvpe(proc -> command, proc -> args, proc -> env);
+	if (proc -> print) {
+		char** env = proc -> env;
+		int index = 0;
 
-	perror("execvpe failed");
+		while (env[index] != NULL) {
+			printf("%s\n", env[index]);
+			index++;
+		}
+	} else {
+		/* replace environ with our version of the env since exec
+		 * has no variant that takes both env and considers the path
+		 */
+		environ = proc -> env;
+		// the GNU env command doesn't fork but exec's on the process itself
+		execvp(proc -> command, proc -> args);
 
-	/* this is technically never reached as the process is replaced by the above program
-	 * the cleanup is done as if the process had terminated i.e. all memory
-	 * on heap will be freed
-	 */
+		// if it got here that means that it failed for some reason
+		perror("execve failed");
+		return EXIT_FAILURE;
+	}
+
 	processDeconstruct(proc);
 
-	// if it got here that means that it failed for some reason
-	return EXIT_FAILURE;
+	return EXIT_SUCCESS;
 }
 
 
@@ -61,17 +76,29 @@ int arrLength(char** arr) {
 	return length;
 }
 
-Process* processConstruct(int argc, char** argv) {
-	if (!argc) {
-		printUsage("A command must be present");
-		exit(EXIT_FAILURE);
+char* findEnv(char** env, char* key) {
+	int index = 0;
+	int length;
+	char* val = NULL;
+
+	while (env[index] != NULL) {
+		length = strlen(key);
+		if (strncmp(env[index], key, length) && env[index][length] == '=') {
+			val = env[index];
+			break;
+		}
+		index++;
 	}
 
+	return val;
+}
+
+Process* processConstruct(int argc, char** argv) {
 	int replace = false;
 	int index = 0;
 
 	// 0 when strings are equal
-	if (!strcmp(argv[index], "-i")) {
+	if (argc && !strncmp(argv[index], "-i", 2)) {
 		replace = true;
 		index++;
 	}
@@ -118,8 +145,7 @@ Process* processConstruct(int argc, char** argv) {
 			proc -> args[i] = (argv + commandIndex)[i];
 		}
 	} else {
-		printUsage("A command must be present");
-		exit(EXIT_FAILURE);
+		proc -> print = true;
 	}
 
 	if (replace) {
@@ -129,20 +155,15 @@ Process* processConstruct(int argc, char** argv) {
 			proc -> env[i] = (argv + envIndex)[i];
 		}
 	} else {
-		if (envIndex != -1) {
-			int environLength = arrLength(environ);
-			proc -> env = calloc(environLength + envLength + 1, sizeof(char*));
+		int environLength = arrLength(environ);
+		proc -> env = calloc(environLength + envLength + 1, sizeof(char*));
 
-			for (int i = 0; i < environLength; i++) {
-				proc -> env[i] = environ[i];
-			}
+		for (int i = 0; i < environLength; i++) {
+			proc -> env[i] = environ[i];
+		}
 
-			for (int i = 0; i < envLength; i++) {
-				proc -> env[i + environLength] = (argv + envIndex)[i];
-			}
-		} else {
-			// passing in no env variables is a valid command - just use environ
-			proc -> env = environ;
+		for (int i = 0; i < envLength; i++) {
+			proc -> env[i + environLength] = (argv + envIndex)[i];
 		}
 	}
 

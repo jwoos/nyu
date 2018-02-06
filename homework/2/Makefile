@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c99 -ggdb -O0 -D_GNU_SOURCE
+CFLAGS = -Wall -Wextra -std=c99 -ggdb -O0
 
 EXECUTABLES = env
 

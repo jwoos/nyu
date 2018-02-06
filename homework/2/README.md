@@ -8,7 +8,7 @@ make
 or
 
 ```
-gcc env.c -Wall -Wextra -std=c99 -ggdb -O0 -o life
+gcc env.c -Wall -Wextra -std=c99 -ggdb -O0 -o env
 ```
 
 ---
