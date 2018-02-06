@@ -122,14 +122,14 @@ Process* processConstruct(int argc, char** argv) {
 		exit(EXIT_FAILURE);
 	}
 
-	if (envIndex != -1) {
-		if (replace) {
-			proc -> env = calloc(envLength + 1, sizeof(char*));
+	if (replace) {
+		proc -> env = calloc(envLength + 1, sizeof(char*));
 
-			for (int i = 0; i < envLength; i++) {
-				proc -> env[i] = (argv + envIndex)[i];
-			}
-		} else {
+		for (int i = 0; i < envLength; i++) {
+			proc -> env[i] = (argv + envIndex)[i];
+		}
+	} else {
+		if (envIndex != -1) {
 			int environLength = arrLength(environ);
 			proc -> env = calloc(environLength + envLength + 1, sizeof(char*));
 
@@ -140,10 +140,10 @@ Process* processConstruct(int argc, char** argv) {
 			for (int i = 0; i < envLength; i++) {
 				proc -> env[i + environLength] = (argv + envIndex)[i];
 			}
+		} else {
+			// passing in no env variables is a valid command - just use environ
+			proc -> env = environ;
 		}
-	} else {
-		// passing in no env variables is a valid command - just use environ
-		proc -> env = environ;
 	}
 
 	return proc;
