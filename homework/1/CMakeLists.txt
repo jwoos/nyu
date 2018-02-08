@@ -19,5 +19,5 @@ add_executable(sample sample.cpp)
 add_executable(hw1 hw1.c)
 
 # Link the executable to given libraries.
-target_link_libraries(sample ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
-target_link_libraries(hw1 ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
+target_link_libraries(sample ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} m)
+target_link_libraries(hw1 ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} m)
