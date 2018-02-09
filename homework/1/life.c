@@ -78,6 +78,9 @@ void printUsage(void) {
 
 Configuration* configurationInitialize(char** argv, int argc) {
 	Configuration* config = malloc(sizeof(*config));
+	if (!config) {
+		fprintf(stderr, "Error allocating memory\n");
+	}
 
 	config -> generations = DEFAULT_GENERATIONS;
 	config -> filename = DEFAULT_FILENAME;
@@ -128,6 +131,9 @@ void configurationDeinitialize(Configuration* config) {
 
 GameState* gameStateInitialize(Configuration* config) {
 	GameState* state = malloc(sizeof(*state));
+	if (!state) {
+		fprintf(stderr, "Error allocating memory\n");
+	}
 	state -> generation = 0;
 
 	// padding on the edges to deal with cases where the edge is hit
@@ -138,8 +144,14 @@ GameState* gameStateInitialize(Configuration* config) {
 	 * Using calloc to zero intialize the entire matrix
 	 */
 	state -> board = calloc(state -> rows, sizeof(int*));
+	if (!state -> board) {
+		fprintf(stderr, "Error allocating memory\n");
+	}
 	for (uint32_t y = 0; y < state -> rows; y++) {
 		state -> board[y] = calloc(state -> columns, sizeof(int));
+		if (!state -> board[y]) {
+			fprintf(stderr, "Error allocating memory\n");
+		}
 	}
 
 	// read and parse file and use the data to populate state
@@ -257,8 +269,14 @@ void gameStateNext(GameState* state) {
 	 * Any dead cell with exactly three live neighbours becomes a live cell.
 	 */
 	bool** localState = calloc(state -> rows, sizeof(int*));
+	if (!localState) {
+		fprintf(stderr, "Error allocating memory\n");
+	}
 	for (uint32_t y = 0; y < state -> rows; y++) {
 		localState[y] = calloc(state -> columns, sizeof(int));
+		if (!localState[y]) {
+			fprintf(stderr, "Error allocating memory\n");
+		}
 		for (uint32_t x = 0; x < state -> columns; x++) {
 			localState[y][x] = state -> board[y][x];
 		}

@@ -131,6 +131,9 @@ Process* processConstruct(int argc, char** argv) {
 	}
 
 	Process* proc = malloc(sizeof(*proc));
+	if (!proc) {
+		fprintf(stderr, "Error allocating memory\n");
+	}
 	/* Just point to the address locations of the argv, there's no need
 	 * to manually copy everything out since the lifespan of argv will
 	 * be the whole program since it's a variable in main. This idea
@@ -140,6 +143,9 @@ Process* processConstruct(int argc, char** argv) {
 
 	if (commandIndex != -1) {
 		proc -> args = calloc(argLength + 1, sizeof(char*));
+		if (!proc -> args) {
+			fprintf(stderr, "Error allocating memory\n");
+		}
 
 		for (int i = 0; i < argLength; i++) {
 			proc -> args[i] = (argv + commandIndex)[i];
@@ -150,6 +156,9 @@ Process* processConstruct(int argc, char** argv) {
 
 	if (replace) {
 		proc -> env = calloc(envLength + 1, sizeof(char*));
+		if (!proc -> env) {
+			fprintf(stderr, "Error allocating memory\n");
+		}
 
 		for (int i = 0; i < envLength; i++) {
 			proc -> env[i] = (argv + envIndex)[i];
@@ -157,6 +166,9 @@ Process* processConstruct(int argc, char** argv) {
 	} else {
 		int environLength = arrLength(environ);
 		proc -> env = calloc(environLength + envLength + 1, sizeof(char*));
+		if (!proc -> env) {
+			fprintf(stderr, "Error allocating memory\n");
+		}
 
 		for (int i = 0; i < environLength; i++) {
 			proc -> env[i] = environ[i];
