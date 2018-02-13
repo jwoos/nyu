@@ -15,9 +15,7 @@ include_directories(${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR})
 
 # Add an executable named Example using the specified source file(s).
 # Currently we only have one source file, you may want to add more here.
-add_executable(sample sample.cpp)
 add_executable(hw1 hw1.c)
 
 # Link the executable to given libraries.
-target_link_libraries(sample ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} m)
 target_link_libraries(hw1 ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} m)

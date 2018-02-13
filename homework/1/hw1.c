@@ -76,6 +76,8 @@ void draw_circle(int x, int y, int r) {
 		shiftedY = currentY + y;
 		shiftedYn = -currentY + y;
 
+		glPointSize(1.0);                     /* size of each point */
+
 		glVertex2i(shiftedX, shiftedY);
 		glVertex2i(shiftedXn, shiftedY);
 		glVertex2i(shiftedX, shiftedYn);
@@ -101,6 +103,18 @@ void display(void) {
 	glPointSize(4.0);                     /* size of each point */
 
 	glBegin(GL_POINTS);
+	switch (command) {
+		case 'c':
+			break;
+		case 'd':
+			break;
+		case 'e':
+			break;
+
+		default:
+			printf("NOPE");
+	}
+	glVertex2i(10, 10);
 	draw_circle(300, 300, 30);
 	glEnd();
 
