@@ -104,10 +104,14 @@ void draw_circle(int x, int y, int r) {
 	int shiftedXn = -x;
 	int shiftedY = y;
 	int shiftedYn = -y;
+	int shiftedXi = y;
+	int shiftedXni = -y;
+	int shiftedYi = x;
+	int shiftedYni = -x;
 	int d = 0;
 	int r2 = r * r;
 
-	while (2 * (currentY * currentY) <= r2) {
+	while (currentX >= currentY) {
 		// first try
 		if (!d) {
 			d = 4 * (currentX * currentX) - 4 * currentX + 1 + 4 * (currentY * currentY) + 8 * currentY + 4 - 4 * r2;
@@ -122,7 +126,7 @@ void draw_circle(int x, int y, int r) {
 			}
 		}
 
-		// shift by x and y to draw a line that is not centered on origin
+		// shift by x and y to draw a circle that is not centered on origin
 		shiftedX = currentX + x;
 		shiftedXn = -currentX + x;
 		shiftedY = currentY + y;
@@ -133,10 +137,19 @@ void draw_circle(int x, int y, int r) {
 		glVertex2i(shiftedX, shiftedYn);
 		glVertex2i(shiftedXn, shiftedYn);
 
-		glVertex2i(shiftedY, shiftedX);
-		glVertex2i(shiftedYn, shiftedX);
-		glVertex2i(shiftedY, shiftedXn);
-		glVertex2i(shiftedYn, shiftedXn);
+		/* can't just switch x and y since that's a flip over x=y
+		 * so instead use the y and add the x offset and use x and
+		 * add y offset
+		 */
+		shiftedXi = currentY + x;
+		shiftedXni = -currentY + x;
+		shiftedYi = currentX + y;
+		shiftedYni = -currentX + y;
+
+		glVertex2i(shiftedXi, shiftedYi);
+		glVertex2i(shiftedXni, shiftedYi);
+		glVertex2i(shiftedXi, shiftedYni);
+		glVertex2i(shiftedXni, shiftedYni);
 
 		currentY++;
 	}
@@ -201,8 +214,6 @@ float scaleFactor(int x, int y, int r) {
 	float widthScale = width / (float) maxX;
 	float heightScale = height / (float) maxY;
 
-	printf("widthScale: %f heightScale: %f\n", widthScale, heightScale);
-
 	return widthScale > heightScale ? widthScale : heightScale;
 }
 
@@ -214,14 +225,20 @@ void displayC(void) {
 	display(c);
 }
 
-int d_x = 0;
-int d_y = 0;
+int d_x = -100;
+int d_y = -100;
 int d_r = 50;
 void d(void) {
 	// find scale factor and scale from world coordinate to screen coordinate
 	float factor = scaleFactor(d_x, d_x, d_r);
-	int rad = round(d_r * factor / 2);
-	draw_circle(d_x + rad, d_y + rad, rad);
+	printf("%f\n", factor);
+	float radf = d_r * factor;
+	float halfradf = radf / 2;
+	int rad = round(radf);
+	int halfrad = round(halfradf);
+	printf("x: %d y: %d r: %d\n", d_x + rad, d_y+ rad, halfrad);
+	draw_circle(d_x + rad, d_y + rad, halfrad);
+	draw_circle(300, 100, 100);
 }
 
 void displayD(void) {
