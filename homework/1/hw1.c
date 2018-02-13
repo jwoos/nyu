@@ -2,11 +2,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#ifdef __APPLE__
 // #include <GL/glew.h>   // We don't need the GLEW library for now
+#ifdef __APPLE__
 #include <GLUT/glut.h>
 #else
-// #include <GL/glew.h>   // We don't need the GLEW library for now
 #include <GL/glut.h>
 #endif
 
@@ -24,6 +23,12 @@ void file_in(void);
 void display(void);
 
 void myinit(void);
+
+void c(void);
+
+void d(void);
+
+void e(void);
 
 int main(int argc, char** argv) {
 	glutInit(&argc, argv);
@@ -53,12 +58,12 @@ void draw_circle(int x, int y, int r) {
 	int shiftedY = y;
 	int shiftedYn = -y;
 	int d = 0;
-	int r2 = pow(r, 2);
+	int r2 = r * r;
 
-	while (2 * pow(currentY, 2) <= r2) {
+	while (2 * (currentY * currentY) <= r2) {
 		// first try
 		if (!d) {
-			d = 4 * pow(currentX, 2) - 4 * currentX + 1 + 4 * pow(currentY, 2) + 8 * currentY + 4 - 4 * r2;
+			d = 4 * (currentX * currentX) - 4 * currentX + 1 + 4 * (currentY * currentY) + 8 * currentY + 4 - 4 * r2;
 		} else {
 			if (d < 0) {
 				// N
@@ -75,8 +80,6 @@ void draw_circle(int x, int y, int r) {
 		shiftedXn = -currentX + x;
 		shiftedY = currentY + y;
 		shiftedYn = -currentY + y;
-
-		glPointSize(1.0);                     /* size of each point */
 
 		glVertex2i(shiftedX, shiftedY);
 		glVertex2i(shiftedXn, shiftedY);
@@ -100,11 +103,16 @@ void display(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glColor3f(1.0, 0.84, 0);              /* draw in golden yellow */
-	glPointSize(4.0);                     /* size of each point */
+	glPointSize(1.0);                     /* size of each point */
 
 	glBegin(GL_POINTS);
+
+	printf("Specify which part to run (c | d | e): ");
+	char command = getchar();
+
 	switch (command) {
 		case 'c':
+			c();
 			break;
 		case 'd':
 			break;
@@ -114,8 +122,6 @@ void display(void) {
 		default:
 			printf("NOPE");
 	}
-	glVertex2i(10, 10);
-	draw_circle(300, 300, 30);
 	glEnd();
 
 	glFlush();                            /* render graphics */
@@ -132,3 +138,18 @@ void myinit() {
 	gluOrtho2D(0.0, WINDOW_WIDTH, 0.0, WINDOW_HEIGHT);
 	glMatrixMode(GL_MODELVIEW);
 }
+
+void c(void) {
+	printf("Enter the cx, cy and r separated by spaces: ");
+	int x;
+	int y;
+	int r;
+	scanf("%d %d %d", &x, &y, &r);
+
+	printf("%d %d %d", x, y, r);
+	draw_circle(x, y, r);
+}
+
+void d(void) {}
+
+void e(void) {}
