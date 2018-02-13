@@ -1,4 +1,5 @@
 #include <math.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -20,15 +21,30 @@ void draw_circle(int, int, int);
 
 void file_in(void);
 
-void display(void);
+void display(void (*fn)(void));
 
 void myinit(void);
 
 void c(void);
 
+void displayC(void);
+
 void d(void);
 
+void displayD(void);
+
 void e(void);
+
+void displayE(void);
+
+
+// part c vars
+int c_x;
+int c_y;
+int c_r;
+
+// part d/e vars
+int** coords;
 
 int main(int argc, char** argv) {
 	glutInit(&argc, argv);
@@ -39,7 +55,35 @@ int main(int argc, char** argv) {
 	glutInitWindowPosition(XOFF, YOFF);
 	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	glutCreateWindow("CS6533/CS4533 Assignment 1");
-	glutDisplayFunc(display);
+
+	bool invalid = true;
+	void (*fn)(void);
+	while (invalid) {
+		printf("Specify which part to run (c | d | e): ");
+		char command = getchar();
+		switch (command) {
+			case 'c':
+				fn = displayC;
+				invalid = false;
+				printf("Enter the cx, cy and r separated by spaces: ");
+				scanf("%d %d %d", &c_x, &c_y, &c_r);
+				break;
+			case 'd':
+				fn = displayD;
+				invalid = false;
+				break;
+			case 'e':
+				fn = displayE;
+				invalid = false;
+				break;
+
+			default:
+				printf("Please enter a valid command\n");
+				break;
+		}
+	}
+
+	glutDisplayFunc(fn);
 
 	/* Function call to handle file input here */
 	file_in();
@@ -49,6 +93,7 @@ int main(int argc, char** argv) {
 
 	return 0;
 }
+
 
 void draw_circle(int x, int y, int r) {
 	int currentX = r;
@@ -96,10 +141,11 @@ void draw_circle(int x, int y, int r) {
 }
 
 void file_in(void) {
-
+	char* filename = "input_circles.txt";
 }
 
-void display(void) {
+// default display function
+void display(void (*fn)(void)) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glColor3f(1.0, 0.84, 0);              /* draw in golden yellow */
@@ -107,21 +153,8 @@ void display(void) {
 
 	glBegin(GL_POINTS);
 
-	printf("Specify which part to run (c | d | e): ");
-	char command = getchar();
+	(*fn)();
 
-	switch (command) {
-		case 'c':
-			c();
-			break;
-		case 'd':
-			break;
-		case 'e':
-			break;
-
-		default:
-			printf("NOPE");
-	}
 	glEnd();
 
 	glFlush();                            /* render graphics */
@@ -140,16 +173,24 @@ void myinit() {
 }
 
 void c(void) {
-	printf("Enter the cx, cy and r separated by spaces: ");
-	int x;
-	int y;
-	int r;
-	scanf("%d %d %d", &x, &y, &r);
-
-	printf("%d %d %d", x, y, r);
-	draw_circle(x, y, r);
+	draw_circle(c_x, c_y, c_r);
 }
 
-void d(void) {}
+void displayC(void) {
+	display(c);
+}
 
-void e(void) {}
+void d(void) {
+}
+
+void displayD(void) {
+	display(d);
+}
+
+void e(void) {
+
+}
+
+void displayE(void) {
+	display(e);
+}
