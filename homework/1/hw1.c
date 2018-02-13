@@ -25,6 +25,8 @@ void display(void (*fn)(void));
 
 void myinit(void);
 
+float scaleFactor(int, int, int);
+
 void c(void);
 
 void displayC(void);
@@ -86,7 +88,7 @@ int main(int argc, char** argv) {
 	glutDisplayFunc(fn);
 
 	/* Function call to handle file input here */
-	file_in();
+	/*file_in();*/
 
 	myinit();
 	glutMainLoop();
@@ -142,6 +144,24 @@ void draw_circle(int x, int y, int r) {
 
 void file_in(void) {
 	char* filename = "input_circles.txt";
+	FILE* f = fopen(filename, "r");
+	if (!f) {
+		printf("Error opening file\n");
+		exit(1);
+	}
+
+	char buffer[100];
+	// get first number
+	fgets(buffer, 100, f);
+	int num = strtol(buffer, NULL, 10);
+	int* numBuffer;
+	coords = malloc(sizeof(int*) * num);
+
+	for (int i = 0; i < num; i++) {
+		coords[i] = malloc(sizeof(int) * 3);
+		fgets(buffer, 100, f);
+		sscanf(buffer, "%d %d %d", coords[i], coords[i] + 1, coords[i] + 2);
+	}
 }
 
 // default display function
@@ -168,8 +188,22 @@ void myinit() {
 	/* set up viewing */
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluOrtho2D(0.0, WINDOW_WIDTH, 0.0, WINDOW_HEIGHT);
+	gluOrtho2D(0, WINDOW_WIDTH, 0, WINDOW_HEIGHT);
 	glMatrixMode(GL_MODELVIEW);
+}
+
+float scaleFactor(int x, int y, int r) {
+	int maxX = abs(x - r) > x + r ? abs(x - r) : x + r;
+	int maxY = abs(y - r) > y + r ? abs(y - r) : y + r;
+
+	float width = WINDOW_WIDTH;
+	float height = WINDOW_HEIGHT;
+	float widthScale = width / (float) maxX;
+	float heightScale = height / (float) maxY;
+
+	printf("widthScale: %f heightScale: %f\n", widthScale, heightScale);
+
+	return widthScale > heightScale ? widthScale : heightScale;
 }
 
 void c(void) {
@@ -180,7 +214,14 @@ void displayC(void) {
 	display(c);
 }
 
+int d_x = 0;
+int d_y = 0;
+int d_r = 50;
 void d(void) {
+	// find scale factor and scale from world coordinate to screen coordinate
+	float factor = scaleFactor(d_x, d_x, d_r);
+	int rad = round(d_r * factor / 2);
+	draw_circle(d_x + rad, d_y + rad, rad);
 }
 
 void displayD(void) {
