@@ -56,3 +56,5 @@ dkms.conf
 # executables
 life
 env
+du
+du_ntfw
