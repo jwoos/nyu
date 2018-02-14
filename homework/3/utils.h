@@ -5,6 +5,10 @@
 #include <unistd.h>
 
 
+void printUsage(char*);
 
+void perrorQuit(char*);
+
+int ftwHandler(const char*, const struct stat*, int, struct FTW*);
 
 #endif
