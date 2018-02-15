@@ -1,3 +1,4 @@
+#include <limits.h>
 #include <math.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -26,6 +27,8 @@ void display(void (*fn)(void));
 void myinit(void);
 
 void scaleFactor(int, int, int, float*);
+
+void scaleFactors(int**, float*);
 
 void c(void);
 
@@ -85,10 +88,11 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	glutDisplayFunc(fn);
 
 	/* Function call to handle file input here */
-	/*file_in();*/
+	file_in();
+
+	glutDisplayFunc(fn);
 
 	myinit();
 	glutMainLoop();
@@ -156,24 +160,48 @@ void draw_circle(int x, int y, int r) {
 }
 
 void file_in(void) {
-	char* filename = "input_circles.txt";
+	char* filename = "../input_circles.txt";
 	FILE* f = fopen(filename, "r");
 	if (!f) {
-		printf("Error opening file\n");
-		exit(1);
+		perror("Error opening file");
+		exit(EXIT_FAILURE);
 	}
 
 	char buffer[100];
+	char* endPointer;
 	// get first number
 	fgets(buffer, 100, f);
 	int num = strtol(buffer, NULL, 10);
 	int* numBuffer;
-	coords = malloc(sizeof(int*) * num);
+	coords = calloc(num + 1, sizeof(int*));
+
+	if (coords == NULL) {
+		perror("calloc failure");
+		exit(EXIT_FAILURE);
+	}
+	coords[num] = NULL;
 
 	for (int i = 0; i < num; i++) {
-		coords[i] = malloc(sizeof(int) * 3);
+		numBuffer = calloc(3, sizeof(int));
+		if (numBuffer == NULL) {
+			perror("calloc failure");
+			exit(EXIT_FAILURE);
+		}
+
 		fgets(buffer, 100, f);
-		sscanf(buffer, "%d %d %d", coords[i], coords[i] + 1, coords[i] + 2);
+		endPointer = buffer;
+		int index = 0;
+
+		char* curr = buffer;
+		do {
+			if (index != 0) {
+				endPointer++;
+			}
+			numBuffer[index] = strtol(endPointer, &endPointer, 10);
+			index++;
+		} while (*endPointer != '\n');
+
+		coords[i] = numBuffer;
 	}
 }
 
@@ -206,8 +234,8 @@ void myinit() {
 }
 
 void scaleFactor(int x, int y, int r, float* buf) {
-	int maxX = abs(x - r) > x + r ? abs(x - r) : x + r;
-	int maxY = abs(y - r) > y + r ? abs(y - r) : y + r;
+	int maxX = abs(x - r) > (x + r) ? abs(x - r) : x + r;
+	int maxY = abs(y - r) > (y + r) ? abs(y - r) : y + r;
 
 	float width = WINDOW_WIDTH;
 	float height = WINDOW_HEIGHT;
@@ -218,6 +246,29 @@ void scaleFactor(int x, int y, int r, float* buf) {
 	buf[1] = maxX > maxY ? maxX : maxY;
 }
 
+void scaleFactors(int** coordArr, float* buf) {
+	buf[0] = INT_MAX;
+	buf[1] = INT_MAX;
+
+	int index = 0;
+	int* current = coordArr[index];
+	float tempBuf[2] = {0, 0};
+
+	while (current != NULL) {
+		scaleFactor(current[0], current[1], current[2], tempBuf);
+		printf("%d %d %d\n", current[0], current[1], current[2]);
+		printf("factor: %f max: %f\n", tempBuf[0], tempBuf[1]);
+
+		if (tempBuf[0] < buf[0]) {
+			buf[0] = tempBuf[0];
+			buf[1] = tempBuf[1];
+		}
+
+		index++;
+		current = coordArr[index];
+	}
+}
+
 void c(void) {
 	draw_circle(c_x, c_y, c_r);
 }
@@ -226,23 +277,28 @@ void displayC(void) {
 	display(c);
 }
 
-int d_x = 600;
-int d_y = 0;
-int d_r = 50;
 void d(void) {
 	// find scale factor and scale from world coordinate to screen coordinate
 	float buffer[2];
-	scaleFactor(d_x, d_x, d_r, buffer);
+	scaleFactors(coords, buffer);
 
 	float factor = buffer[0];
 	float max = buffer[1];
 
-	float radf = d_r * factor;
-	int x = round((d_x + max) * factor);
-	int y = round((d_y + max) * factor);
-	int rad = round(radf);
+	printf("factor: %f max: %f\n", factor, max);
 
-	draw_circle(x, y, rad);
+	int index = 0;
+	int* current = coords[index];
+
+	while (current != NULL) {
+		int x = round((current[0] + max) * factor);
+		int y = round((current[1] + max) * factor);
+		int r = round(current[2] * factor);
+
+		draw_circle(x, y, r);
+		index++;
+		current = coords[index];
+	}
 }
 
 void displayD(void) {
