@@ -25,7 +25,7 @@ void display(void (*fn)(void));
 
 void myinit(void);
 
-float scaleFactor(int, int, int);
+void scaleFactor(int, int, int, float*);
 
 void c(void);
 
@@ -205,16 +205,17 @@ void myinit() {
 	glMatrixMode(GL_MODELVIEW);
 }
 
-float scaleFactor(int x, int y, int r) {
+void scaleFactor(int x, int y, int r, float* buf) {
 	int maxX = abs(x - r) > x + r ? abs(x - r) : x + r;
 	int maxY = abs(y - r) > y + r ? abs(y - r) : y + r;
 
 	float width = WINDOW_WIDTH;
 	float height = WINDOW_HEIGHT;
-	float widthScale = width / (float) maxX;
-	float heightScale = height / (float) maxY;
+	float widthScale = width / (float) (maxX * 2);
+	float heightScale = height / (float) (maxY * 2);
 
-	return widthScale > heightScale ? widthScale : heightScale;
+	buf[0] = widthScale > heightScale ? widthScale : heightScale;
+	buf[1] = maxX > maxY ? maxX : maxY;
 }
 
 void c(void) {
@@ -225,20 +226,23 @@ void displayC(void) {
 	display(c);
 }
 
-int d_x = -100;
-int d_y = -100;
+int d_x = 600;
+int d_y = 0;
 int d_r = 50;
 void d(void) {
 	// find scale factor and scale from world coordinate to screen coordinate
-	float factor = scaleFactor(d_x, d_x, d_r);
-	printf("%f\n", factor);
+	float buffer[2];
+	scaleFactor(d_x, d_x, d_r, buffer);
+
+	float factor = buffer[0];
+	float max = buffer[1];
+
 	float radf = d_r * factor;
-	float halfradf = radf / 2;
+	int x = round((d_x + max) * factor);
+	int y = round((d_y + max) * factor);
 	int rad = round(radf);
-	int halfrad = round(halfradf);
-	printf("x: %d y: %d r: %d\n", d_x + rad, d_y+ rad, halfrad);
-	draw_circle(d_x + rad, d_y + rad, halfrad);
-	draw_circle(300, 100, 100);
+
+	draw_circle(x, y, rad);
 }
 
 void displayD(void) {
