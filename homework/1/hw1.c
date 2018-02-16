@@ -16,6 +16,7 @@
 #define YOFF          50
 #define WINDOW_WIDTH  600
 #define WINDOW_HEIGHT 600
+#define FRAMES        150
 
 
 void draw_circle(int, int, int);
@@ -42,6 +43,8 @@ void e(void);
 
 void displayE(void);
 
+void idle(void);
+
 
 // part c vars
 int c_x;
@@ -50,6 +53,9 @@ int c_r;
 
 // part d/e vars
 int** coords;
+
+// part e
+int frame = 1;
 
 int main(int argc, char** argv) {
 	glutInit(&argc, argv);
@@ -61,6 +67,7 @@ int main(int argc, char** argv) {
 	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	glutCreateWindow("CS6533/CS4533 Assignment 1");
 
+	// choose which function to run
 	bool invalid = true;
 	void (*fn)(void);
 	while (invalid) {
@@ -92,7 +99,9 @@ int main(int argc, char** argv) {
 	/* Function call to handle file input here */
 	file_in();
 
+	// displayX function wraps display via a function pointer
 	glutDisplayFunc(fn);
+	glutIdleFunc(idle);
 
 	myinit();
 	glutMainLoop();
@@ -159,6 +168,7 @@ void draw_circle(int x, int y, int r) {
 	}
 }
 
+// read file into a null terminated array
 void file_in(void) {
 	char* filename = "../input_circles.txt";
 	FILE* f = fopen(filename, "r");
@@ -205,7 +215,7 @@ void file_in(void) {
 	}
 }
 
-// default display function
+// call display with actual drawing function
 void display(void (*fn)(void)) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -233,6 +243,7 @@ void myinit() {
 	glMatrixMode(GL_MODELVIEW);
 }
 
+// calculate scaling for a given circle
 void scaleFactor(int x, int y, int r, float* buf) {
 	int maxX = abs(x - r) > (x + r) ? abs(x - r) : x + r;
 	int maxY = abs(y - r) > (y + r) ? abs(y - r) : y + r;
@@ -251,6 +262,9 @@ void scaleFactor(int x, int y, int r, float* buf) {
 	}
 }
 
+/* given multiple circles, find the best
+ * scaling to apply to all of them
+ */
 void scaleFactors(int** coordArr, float* buf) {
 	buf[0] = INT_MAX;
 	buf[1] = INT_MAX;
@@ -288,8 +302,6 @@ void d(void) {
 	float factor = buffer[0];
 	float max = buffer[1];
 
-	printf("factor: %f max: %f\n", factor, max);
-
 	int index = 0;
 	int* current = coords[index];
 
@@ -297,9 +309,6 @@ void d(void) {
 		int x = round((current[0] + max) * factor);
 		int y = round((current[1] + max) * factor);
 		int r = round(current[2] * factor);
-		printf("x: %d y: %d r: %d\n", current[0], current[1], current[2]);
-		printf("x': %d y': %d r': %d\n", x, y, r);
-		printf("\n");
 
 		draw_circle(x, y, r);
 		index++;
@@ -312,9 +321,38 @@ void displayD(void) {
 }
 
 void e(void) {
+	float buffer[2];
+	scaleFactors(coords, buffer);
 
+	float factor = buffer[0];
+	float max = buffer[1];
+	float growthFactor = (float) frame / FRAMES;
+
+	int index = 0;
+	int* current = coords[index];
+
+	while (current != NULL) {
+		int x = round((current[0] + max) * factor);
+		int y = round((current[1] + max) * factor);
+		int r = round(current[2] * factor * growthFactor);
+
+		draw_circle(x, y, r);
+		index++;
+		current = coords[index];
+	}
+
+	glutPostRedisplay();
 }
 
 void displayE(void) {
 	display(e);
+}
+
+void idle(void) {
+	frame++;
+
+	if (frame > FRAMES) {
+		frame = 1;
+	}
+
 }
