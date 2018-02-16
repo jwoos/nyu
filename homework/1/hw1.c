@@ -242,8 +242,13 @@ void scaleFactor(int x, int y, int r, float* buf) {
 	float widthScale = width / (float) (maxX * 2);
 	float heightScale = height / (float) (maxY * 2);
 
-	buf[0] = widthScale > heightScale ? widthScale : heightScale;
-	buf[1] = maxX > maxY ? maxX : maxY;
+	if (maxX > maxY) {
+		buf[0] = widthScale;
+		buf[1] = maxX;
+	} else {
+		buf[0] = heightScale;
+		buf[1] = maxY;
+	}
 }
 
 void scaleFactors(int** coordArr, float* buf) {
@@ -256,8 +261,6 @@ void scaleFactors(int** coordArr, float* buf) {
 
 	while (current != NULL) {
 		scaleFactor(current[0], current[1], current[2], tempBuf);
-		printf("%d %d %d\n", current[0], current[1], current[2]);
-		printf("factor: %f max: %f\n", tempBuf[0], tempBuf[1]);
 
 		if (tempBuf[0] < buf[0]) {
 			buf[0] = tempBuf[0];
@@ -294,6 +297,9 @@ void d(void) {
 		int x = round((current[0] + max) * factor);
 		int y = round((current[1] + max) * factor);
 		int r = round(current[2] * factor);
+		printf("x: %d y: %d r: %d\n", current[0], current[1], current[2]);
+		printf("x': %d y': %d r': %d\n", x, y, r);
+		printf("\n");
 
 		draw_circle(x, y, r);
 		index++;
