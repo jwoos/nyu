@@ -2,16 +2,20 @@ CC = gcc
 CFLAGS = -Wall -Wextra -std=c99 -ggdb -O0
 
 EXECUTABLES = du
+OBJECTS = directory.o path.o utils.o vector.o
 
-all: $(EXECUTABLES)
+all: clean $(EXECUTABLES)
 
-du: .PHONY
-	$(CC) $(CFLAGS) du.c -o $@
+# implicit rule for %.o
+# $(CC) $(CPPFLAGS) $(CFLAGS) -c $@
+
+du: $(OBJECTS)
+	$(CC) $(CFLAGS) du.c $^ -o $@
 
 memcheck-du: du
 	valgrind --leak-check=full ./du
 
 clean:
-	rm -f $(EXECUTABLES)
+	touch $(EXECUTABLES) $(OBJECTS) && rm -f $(EXECUTABLES) $(OBJECTS)
 
 .PHONY:
