@@ -23,7 +23,6 @@ int main(int argc, char** argv) {
 	if (argc == 1) {
 		basePath = ".";
 	} else {
-		/*if ((argv[1][0] != '.' && argv[1][1] !='.') && argv[1][0] != '/')*/
 		basePath = join(".", argv[1], '/');
 	}
 
@@ -69,7 +68,7 @@ int main(int argc, char** argv) {
 		errno = 0;
 
 		char* fullname = join(relativePath, dp -> d_name, '/');
-		int statStatus = stat(fullname, &sbuf);
+		int statStatus = lstat(fullname, &sbuf);
 		free(fullname);
 
 		if (statStatus < 0) {
@@ -111,10 +110,12 @@ int main(int argc, char** argv) {
 						ino_t* inode = malloc(sizeof(*inode));
 						*inode = sbuf.st_ino;
 						vectorPush(path -> accounted, inode);
-						directory -> size += sbuf.st_size;
+						directory -> size += sbuf.st_blocks * 512;
 					}
-				} else {
+				} else if (S_ISLNK(mode)) {
 					directory -> size += sbuf.st_size;
+				} else {
+					directory -> size += sbuf.st_blocks * 512;
 				}
 			}
 		}
