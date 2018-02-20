@@ -23,7 +23,11 @@ int main(int argc, char** argv) {
 	if (argc == 1) {
 		basePath = ".";
 	} else {
-		basePath = join(".", argv[1], '/');
+		if (!strncmp(argv[1], ".", 2)) {
+			basePath = ".";
+		} else {
+			basePath = join(".", argv[1], '/');
+		}
 	}
 
 	Path* path = pathConstruct();
@@ -34,7 +38,20 @@ int main(int argc, char** argv) {
 
 	DIR* dir = opendir(basePath);
 	if (dir == NULL) {
-		perrorQuit(PERROR_DIRECTORY_OPEN);
+		// not a directory, handle it
+		if (errno == ENOTDIR) {
+			struct stat temp;
+
+			if (lstat(basePath, &temp) < 0) {
+				perrorQuit(PERROR_STAT);
+			}
+
+			printf("%d\t%s\n", (temp.st_blocks * 512) / 1024, basePath);
+
+			return 0;
+		} else {
+			perrorQuit(PERROR_DIRECTORY_OPEN);
+		}
 	}
 
 	directory = directoryConstruct(basePath, dir);

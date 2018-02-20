@@ -25,6 +25,4 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 ```
 
 ## Notes
-- It does not work with single files as the original command would
-	- .e.g `du dir1/file1` does not work as the current implementation stands
-- It doesn't deal well with directory names passed in such as `.` and `..`
+- It doesn't deal well with directory names passed in such as `.` and `..` - meaning that the formatting is a bit off but it works as it should
