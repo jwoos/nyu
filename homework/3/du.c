@@ -23,7 +23,8 @@ int main(int argc, char** argv) {
 	if (argc == 1) {
 		basePath = ".";
 	} else {
-		basePath = argv[1];
+		/*if ((argv[1][0] != '.' && argv[1][1] !='.') && argv[1][0] != '/')*/
+		basePath = join(".", argv[1], '/');
 	}
 
 	Path* path = pathConstruct();
@@ -40,22 +41,20 @@ int main(int argc, char** argv) {
 	directory = directoryConstruct(basePath, dir);
 	pathPush(path, directory);
 	relativePath = pathBuild(path);
+	dp = readdir(directory -> dir);
+	if (errno != 0) {
+		perrorQuit(PERROR_DIRECTORY_READ);
+	}
 
 	while (path -> directories -> size) {
-		dp = readdir(directory -> dir);
-		if (errno != 0) {
-			perrorQuit(PERROR_DIRECTORY_READ);
-		}
-
-		// end of directory
+		// end of directory, go to the next one
 		if (dp == NULL) {
 			Directory* popped = pathPop(path);
-			if (popped == NULL) {
-				break;
-			}
 
 			int size = popped -> size / 1024;
 			printf("%d\t%s\n", size, relativePath);
+
+			directoryDeconstruct(popped);
 
 			directory = pathCurrent(path);
 			if (directory == NULL) {
@@ -63,7 +62,7 @@ int main(int argc, char** argv) {
 			}
 			free(relativePath);
 			relativePath = pathBuild(path);
-			directory -> size += size;
+			directory -> size += popped -> size;
 			dp = readdir(directory -> dir);
 		}
 
@@ -72,22 +71,21 @@ int main(int argc, char** argv) {
 		char* fullname = join(relativePath, dp -> d_name, '/');
 		int statStatus = stat(fullname, &sbuf);
 		free(fullname);
-		if (statStatus != 0) {
+
+		if (statStatus < 0) {
 			perrorQuit(PERROR_STAT);
 		}
 
 		mode_t mode = sbuf.st_mode;
 		char* name = dp -> d_name;
 
-		// not . (current directory) or .. (parent directory)
-		if (strncmp(name, ".", 2) && strncmp(name, "..", 3)) {
-			if (S_ISDIR(mode)) {
+		// not .. (parent directory)
+		if (strncmp(name, "..", 3)) {
+			if (S_ISDIR(mode) && strncmp(name, ".", 3)) {
 				directory = directoryConstruct(dp -> d_name, NULL);
 				pathPush(path, directory);
 				free(relativePath);
 				relativePath = pathBuild(path);
-
-				printf("relativePath: %s\n", relativePath);
 
 				dir = opendir(relativePath);
 				if (dir == NULL) {
@@ -105,6 +103,7 @@ int main(int argc, char** argv) {
 
 						if (*expected == sbuf.st_ino) {
 							counted = true;
+							break;
 						}
 					}
 
@@ -112,14 +111,20 @@ int main(int argc, char** argv) {
 						ino_t* inode = malloc(sizeof(*inode));
 						*inode = sbuf.st_ino;
 						vectorPush(path -> accounted, inode);
+						directory -> size += sbuf.st_size;
 					}
+				} else {
+					directory -> size += sbuf.st_size;
 				}
-
-				directory -> size += sbuf.st_size;
 			}
 		}
 
 		directory = pathCurrent(path);
 		dp = readdir(directory -> dir);
+		if (errno != 0) {
+			perrorQuit(PERROR_DIRECTORY_READ);
+		}
 	}
+
+	return 0;
 }

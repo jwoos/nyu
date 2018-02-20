@@ -24,6 +24,9 @@ void pathPush(Path* path, Directory* dir) {
 }
 
 Directory* pathPop(Path* path) {
+	if (path -> directories -> size == 0) {
+		return NULL;
+	}
 	return vectorPop(path -> directories);
 }
 

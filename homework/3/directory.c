@@ -11,7 +11,7 @@ Directory* directoryConstruct(char* name, DIR* dir) {
 	}
 	strncpy(directory -> name, name, length);
 
-	directory -> size = 4096;
+	directory -> size = 0;
 	directory -> dir = dir;
 
 	return directory;
