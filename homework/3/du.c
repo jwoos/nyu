@@ -30,6 +30,7 @@ int main(int argc, char** argv) {
 		}
 	}
 
+	// construct a struct path to keep track
 	Path* path = pathConstruct();
 	struct stat sbuf;
 	struct dirent* dp;
@@ -62,9 +63,11 @@ int main(int argc, char** argv) {
 		perrorQuit(PERROR_DIRECTORY_READ);
 	}
 
+	// while the stack is not empty continue
 	while (path -> directories -> size) {
 		// end of directory, go to the next one
 		if (dp == NULL) {
+			// pop the directory off and add the size to the parent as necessary
 			Directory* popped = pathPop(path);
 
 			int size = popped -> size / 1024;
@@ -73,6 +76,7 @@ int main(int argc, char** argv) {
 			directoryDeconstruct(popped);
 
 			directory = pathCurrent(path);
+			// there is no more on the stack, we're done
 			if (directory == NULL) {
 				break;
 			}
@@ -84,6 +88,7 @@ int main(int argc, char** argv) {
 
 		errno = 0;
 
+		// join path and actual file name to stat properly
 		char* fullname = join(relativePath, dp -> d_name, '/');
 		int statStatus = lstat(fullname, &sbuf);
 		free(fullname);
@@ -111,6 +116,9 @@ int main(int argc, char** argv) {
 				directory -> dir = dir;
 			} else {
 				if (sbuf.st_nlink > 1) {
+					/* count . here but it gets logged in the accounted vector and doesn't
+					 * get double counted
+					 */
 					bool counted = false;
 
 					// linear search
@@ -130,14 +138,17 @@ int main(int argc, char** argv) {
 						directory -> size += sbuf.st_blocks * 512;
 					}
 				} else if (S_ISLNK(mode)) {
+					// if it's a symlink just add st_size
 					directory -> size += sbuf.st_size;
 				} else {
+					// st_blocks uses increments of 512
 					directory -> size += sbuf.st_blocks * 512;
 				}
 			}
 		}
 
 		directory = pathCurrent(path);
+		// get the next entry in the directory
 		dp = readdir(directory -> dir);
 		if (errno != 0) {
 			perrorQuit(PERROR_DIRECTORY_READ);

@@ -6,6 +6,9 @@
 #include "vector.h"
 
 
+/* A path holds a stack of directories as well as the hardlinks
+ * already counted
+ */
 typedef struct Path {
 	// vector of Directory*
 	Vector* directories;

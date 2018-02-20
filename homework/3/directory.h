@@ -8,6 +8,9 @@
 #include "vector.h"
 
 
+/* A directory is a wrapper for DIR* and holds
+ * the name and size
+ */
 typedef struct Directory {
 	char* name;
 	int size;

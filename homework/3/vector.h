@@ -13,6 +13,8 @@
 #define DU_DATA_DEFAULT_SIZE 16
 
 
+/* dynamic array
+ */
 typedef struct Vector {
 	uint64_t size;
 	uint64_t capacity;
