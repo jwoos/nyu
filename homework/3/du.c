@@ -49,6 +49,8 @@ int main(int argc, char** argv) {
 
 			printf("%d\t%s\n", (temp.st_blocks * 512) / 1024, basePath);
 
+			pathDeconstruct(path);
+
 			return 0;
 		} else {
 			perrorQuit(PERROR_DIRECTORY_OPEN);
@@ -154,6 +156,9 @@ int main(int argc, char** argv) {
 			perrorQuit(PERROR_DIRECTORY_READ);
 		}
 	}
+
+	pathDeconstruct(path);
+	free(relativePath);
 
 	return 0;
 }
