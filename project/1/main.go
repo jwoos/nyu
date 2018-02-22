@@ -21,8 +21,9 @@ func main() {
 	testString := input[0:]
 	table := initializeTable()
 	cache := make([][]int, len(table))
+	invalid := false
+	lineNumber := 1
 
-	// TODO line handling
 	for len(testString) > 0 {
 		found := false
 
@@ -33,6 +34,10 @@ func main() {
 			if indices != nil && indices[0] == 0 {
 				if !rule.skip || debug {
 					fmt.Printf("%d %s %s\n", rule.number, rule.name, testString[indices[0]:indices[1]])
+				}
+
+				if rule.name == "newline" {
+					lineNumber++
 				}
 
 				if len(testString) >= indices[1] {
@@ -46,6 +51,7 @@ func main() {
 		}
 
 		if !found {
+			invalid = true
 			x := len(testString)
 
 			for _, indices := range cache {
@@ -54,8 +60,13 @@ func main() {
 				}
 			}
 
-			fmt.Printf("Invalid token: %s\n", testString[:x])
+			fmt.Printf("Invalid token on line %d: %s\n", lineNumber, testString[:x])
 			testString = testString[x:]
 		}
+	}
+
+	// if there are any invalids, exit with error status
+	if invalid {
+		os.Exit(1)
 	}
 }
