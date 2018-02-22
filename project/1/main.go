@@ -20,12 +20,15 @@ func main() {
 
 	testString := input[0:]
 	table := initializeTable()
+	cache := make([][]int, len(table))
 
-	// TODO error handling
 	// TODO line handling
 	for len(testString) > 0 {
-		for _, rule := range table {
+		found := false
+
+		for i, rule := range table {
 			indices := rule.regex.FindStringIndex(testString)
+			cache[i] = indices
 
 			if indices != nil && indices[0] == 0 {
 				if !rule.skip || debug {
@@ -36,8 +39,23 @@ func main() {
 					testString = testString[indices[1]:]
 				}
 
+				found = true
+
 				break
 			}
+		}
+
+		if !found {
+			x := len(testString)
+
+			for _, indices := range cache {
+				if indices != nil {
+					x = min(x, indices[0])
+				}
+			}
+
+			fmt.Printf("Invalid token: %s\n", testString[:x])
+			testString = testString[x:]
 		}
 	}
 }

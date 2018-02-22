@@ -28,7 +28,7 @@ func initializeTable() []Rule {
 		{number: 49, name: "ID", regexLiteral: "[a-zA-Z][a-zA-Z0-9]*", skip: false},
 		{number: 99, name: "WS", regexLiteral: "[ \\t]", skip: true},
 		{number: 100, name: "newline", regexLiteral: "\\n", skip: true},
-		{number: 101, name: "end-of-file", regexLiteral: "", skip: true},
+		{number: 101, name: "end-of-file", regexLiteral: "$", skip: true},
 	}
 
 	for i := 0; i < len(table); i++ {
