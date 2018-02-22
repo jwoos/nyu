@@ -1,10 +1,14 @@
 package main
 
+
 import (
 	"log"
 	"net/http"
 )
 
+
 func main() {
-	log.Fatal(http.ListenAndServe(":8080", newRouter()))
+	port := ":8080"
+	log.Println("Serving on", port)
+	log.Fatal(http.ListenAndServe(port, newRouter()))
 }
