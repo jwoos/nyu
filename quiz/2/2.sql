@@ -32,6 +32,11 @@ SELECT itemid, name FROM items
 	GROUP BY itemid
 	WHERE COUNT(ingredientid) >= 3;
 
+SELECT items.itemid, items.name FROM items
+	INNER JOIN madewith ON items.itemid = madewith.itemid
+	GROUP BY itemid
+	HAVING COUNT(ingredientid) >= 3;
+
 -- 7
 SELECT vendorid, companyname FROM vendors
 	WHERE vendorid NOT IN (
@@ -44,6 +49,17 @@ SELECT mealid, name FROM meals
 		SELECT mealid FROM partof
 			INNER JOIN items on partof.itemid = items.itemid
 			WHERE items.ingredientid IN (
+				SELECT ingredientid FROM ingredients
+					WHERE foodgroup = 'Milk'
+			)
+	);
+
+SELECT mealid, name FROM meals
+	WHERE mealid IN (
+		SELECT mealid FROM partof
+			INNER JOIN items on partof.itemid = items.itemid
+			INNER JOIN madewith ON items.itemid = madewith.itemid
+			WHERE madewith.ingredientid IN (
 				SELECT ingredientid FROM ingredients
 					WHERE foodgroup = 'Milk'
 			)
