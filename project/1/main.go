@@ -2,7 +2,9 @@ package main
 
 import (
 	"flag"
+	"io/ioutil"
 	"fmt"
+	"log"
 	"os"
 )
 
@@ -14,12 +16,19 @@ func main() {
 	flag.UintVar(&tableNum, "table", 1, "Table number")
 
 	flag.Parse()
-	if len(flag.Args()) == 0 {
-		fmt.Println("Must provide an input")
-		os.Exit(1)
-	}
 
-	input := flag.Args()[0]
+	var input string
+
+	if len(flag.Args()) == 0 {
+		readData, err := ioutil.ReadAll(os.Stdin)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		input = string(readData)
+	} else {
+		input = flag.Args()[0]
+	}
 
 	testString := input[0:]
 	table := initializeTable(tableNum)
