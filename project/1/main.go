@@ -10,6 +10,9 @@ func main() {
 	var debug bool
 	flag.BoolVar(&debug, "debug", false, "Debug mode")
 
+	var tableNum uint
+	flag.UintVar(&tableNum, "table", 1, "Table number")
+
 	flag.Parse()
 	if len(flag.Args()) == 0 {
 		fmt.Println("Must provide an input")
@@ -19,7 +22,7 @@ func main() {
 	input := flag.Args()[0]
 
 	testString := input[0:]
-	table := initializeTable()
+	table := initializeTable(tableNum)
 	cache := make([][]int, len(table))
 	invalid := false
 	lineNumber := 1
