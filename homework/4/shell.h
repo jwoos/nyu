@@ -12,6 +12,7 @@
 
 
 int PID;
+int status;
 
 
 void prompt(void);

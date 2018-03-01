@@ -9,9 +9,10 @@
 
 
 extern int PID;
+extern int status;
 
 
-int main(int argc, char** argv) {
+int main(void) {
 	handleSignals();
 
 	char* input;
@@ -30,21 +31,31 @@ int main(int argc, char** argv) {
 		}
 
 		if (input[0] != '\0') {
-			token = constructToken(input);
+			token = tokenConstruct(input);
 			free(input);
 			input = NULL;
 
-			for (uint32_t i = 0; i < token -> size; i++) {
-				printf("%s\n", token -> tokens[i]);
+			tokenExpand(token);
+
+			PID = fork();
+			if (PID < 0) {
+				perrorQuit(PERROR_FORK);
 			}
 
-			deconstructToken(token);
+			if (PID == 0) {
+				if (execvp(token -> tokens[0], token -> tokens) < 0) {
+					perrorQuit(PERROR_EXEC);
+				}
+			} else {
+				wait(&status);
+			}
+
+			tokenDeconstruct(token);
 			token = NULL;
-
-			exit(EXIT_FAILURE);
+		} else {
+			free(input);
 		}
-
-
-		free(input);
 	}
+
+	return EXIT_SUCCESS;
 }

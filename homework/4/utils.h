@@ -14,6 +14,9 @@
 #define PERROR_MEMORY "Error allocating memory"
 #define PERROR_SIGNAL "Error registering signal handler"
 #define PERROR_WRITE "Error writing"
+#define PERROR_FORK "Error forking"
+#define PERROR_EXEC "Error execing"
+#define PERROR_PRINTF "Error with printf"
 
 
 void perrorQuit(char*);

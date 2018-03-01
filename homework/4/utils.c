@@ -18,12 +18,23 @@ char* readStdin(void) {
 	int c;
 
 	while (1) {
+		if (position >= size) {
+			size += SHELL_BUFFER_SIZE;
+
+			buffer = realloc(buffer, size);
+			if (!buffer) {
+				perrorQuit(PERROR_MEMORY);
+			}
+		}
+
 		c = getchar();
 
 		// EOF or newline
 		if (c == -1 || c == '\n') {
 			// handle line breaks
-			if (buffer[position - 1] != '\\') {
+			if (position == 0) {
+				break;
+			} else if (position > 0 && buffer[position - 1] != '\\') {
 				buffer[position] = '\0';
 				break;
 			} else {
@@ -34,15 +45,6 @@ char* readStdin(void) {
 
 		buffer[position] = c;
 		position++;
-
-		if (position >= size) {
-			size += SHELL_BUFFER_SIZE;
-
-			buffer = realloc(buffer, size);
-			if (!buffer) {
-				perrorQuit(PERROR_MEMORY);
-			}
-		}
 	}
 
 	return buffer;
