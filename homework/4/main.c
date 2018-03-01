@@ -25,6 +25,10 @@ int main(void) {
 
 		if (input[0] == '\0') {
 			free(input);
+			break;
+		} else if (input[0] == '\n' || input[0] == ' ' || input[0] == '\t') {
+			flush();
+			free(input);
 			continue;
 		}
 
@@ -61,6 +65,7 @@ int main(void) {
 			}
 		} else {
 			wait(&status);
+			PID = 0;
 		}
 
 		tokenDeconstruct(token);

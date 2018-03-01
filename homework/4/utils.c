@@ -6,6 +6,12 @@ void perrorQuit(char* msg) {
 	exit(EXIT_FAILURE);
 }
 
+void flush(void) {
+	if (write(STDOUT_FILENO, "\n", 1) < 0) {
+		perrorQuit(PERROR_WRITE);
+	}
+}
+
 char* readStdin(void) {
 	uint32_t size = SHELL_BUFFER_SIZE;
 	uint32_t position = 0;
@@ -30,17 +36,17 @@ char* readStdin(void) {
 		c = getchar();
 
 		// EOF or newline
-		if (c == -1 || c == '\n') {
-			// handle line breaks
-			if (position == 0) {
-				break;
-			} else if (position > 0 && buffer[position - 1] != '\\') {
-				buffer[position] = '\0';
-				break;
-			} else {
-				position--;
-				continue;
+		bool isEOF = c == EOF && feof(stdin);
+		bool error = c == EOF;
+		bool isNewline = c == '\n';
+		if (isEOF || isNewline || error) {
+			if (position == 0 && isNewline) {
+				buffer[position] = c;
+			} else if (error) {
+				buffer[position] = ' ';
 			}
+
+			break;
 		}
 
 		buffer[position] = c;

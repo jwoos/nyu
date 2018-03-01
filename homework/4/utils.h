@@ -2,13 +2,14 @@
 #define SHELL_UTILS_H
 
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
 
-#define SHELL_BUFFER_SIZE 256
+#define SHELL_BUFFER_SIZE 64
 #define SHELL_TOKEN_SIZE 2
 
 #define PERROR_MEMORY "Error allocating memory"
@@ -21,6 +22,8 @@
 
 
 void perrorQuit(char*);
+
+void flush(void);
 
 char* readStdin(void);
 

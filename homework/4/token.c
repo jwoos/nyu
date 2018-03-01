@@ -77,8 +77,14 @@ void tokenExpand(Token* token) {
 				perrorQuit(PERROR_MEMORY);
 			}
 
-			if (snprintf(buf, 4, "%d", WEXITSTATUS(status)) < 0) {
-				perrorQuit(PERROR_PRINTF);
+			if (WIFSIGNALED(status)) {
+				if (snprintf(buf, 4, "%d", WTERMSIG(status) + 127) < 0) {
+					perrorQuit(PERROR_PRINTF);
+				}
+			} else {
+				if (snprintf(buf, 4, "%d", WEXITSTATUS(status)) < 0) {
+					perrorQuit(PERROR_PRINTF);
+				}
 			}
 			free(token -> tokens[i]);
 

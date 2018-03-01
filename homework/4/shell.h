@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #include "utils.h"
@@ -17,7 +18,7 @@ int status;
 
 void prompt(void);
 
-void sigactionHandler(int);
+void sigintHandler(int);
 
 void handleSignals(void);
 
