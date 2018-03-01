@@ -17,6 +17,7 @@
 #define PERROR_FORK "Error forking"
 #define PERROR_EXEC "Error execing"
 #define PERROR_PRINTF "Error with printf"
+#define PERROR_CHDIR "Error changing directory"
 
 
 void perrorQuit(char*);

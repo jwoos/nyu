@@ -23,38 +23,48 @@ int main(void) {
 
 		input = readStdin();
 
-		if (!strncmp(input, "exit", 4)) {
-			exit(EXIT_SUCCESS);
-		} else if (!strncmp(input, "cd", 2)) {
-			printf("Not implemented");
-			exit(EXIT_FAILURE);
+		if (input[0] == '\0') {
+			free(input);
+			continue;
 		}
 
-		if (input[0] != '\0') {
-			token = tokenConstruct(input);
-			free(input);
-			input = NULL;
+		token = tokenConstruct(input);
+		free(input);
+		input = NULL;
 
-			tokenExpand(token);
+		if (!strncmp(token -> tokens[0], "exit", 4)) {
+			tokenDeconstruct(token);
+			token = NULL;
 
-			PID = fork();
-			if (PID < 0) {
-				perrorQuit(PERROR_FORK);
-			}
-
-			if (PID == 0) {
-				if (execvp(token -> tokens[0], token -> tokens) < 0) {
-					perrorQuit(PERROR_EXEC);
-				}
-			} else {
-				wait(&status);
+			exit(EXIT_SUCCESS);
+		} else if (!strncmp(token -> tokens[0], "cd", 2)) {
+			if (chdir(token -> tokens[1])) {
+				perrorQuit(PERROR_CHDIR);
 			}
 
 			tokenDeconstruct(token);
 			token = NULL;
-		} else {
-			free(input);
+
+			continue;
 		}
+
+		tokenExpand(token);
+
+		PID = fork();
+		if (PID < 0) {
+			perrorQuit(PERROR_FORK);
+		}
+
+		if (PID == 0) {
+			if (execvp(token -> tokens[0], token -> tokens) < 0) {
+				perrorQuit(PERROR_EXEC);
+			}
+		} else {
+			wait(&status);
+		}
+
+		tokenDeconstruct(token);
+		token = NULL;
 	}
 
 	return EXIT_SUCCESS;
