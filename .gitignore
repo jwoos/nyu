@@ -57,4 +57,4 @@ dkms.conf
 life
 env
 du
-du_nftw
+shell

@@ -8,7 +8,13 @@ void prompt(void) {
 		prompt = "$ ";
 	}
 
-	printf("%s ", prompt);
+	printf("%s", prompt);
+}
+
+void flush(void) {
+	if (write(STDOUT_FILENO, "\n", 1) < 0) {
+		perrorQuit(PERROR_WRITE);
+	}
 }
 
 void sigactionHandler(int sig) {
@@ -37,7 +43,7 @@ void handleSignals(void) {
 	act.sa_flags = 0;
 
 	if (sigaction(SIGINT, &act, NULL) < 0) {
-		perror("error registering signal handler");
-		exit(EXIT_FAILURE);
+		perrorQuit(PERROR_SIGNAL);
 	}
 }
+
