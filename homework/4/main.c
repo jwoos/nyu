@@ -26,7 +26,7 @@ int main(void) {
 		if (input[0] == '\0') {
 			free(input);
 			break;
-		} else if (input[0] == '\n' || input[0] == ' ' || input[0] == '\t') {
+		} else if (input[0] == '\n' || input[0] == ' ') {
 			flush();
 			free(input);
 			continue;

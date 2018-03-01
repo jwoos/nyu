@@ -17,7 +17,6 @@ void prompt(void) {
 
 void sigintHandler(int sig) {
 	if (PID > 0) {
-		printf("PID: %d\n", PID);
 		kill(PID, sig);
 		PID = 0;
 		flush();

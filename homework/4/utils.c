@@ -39,13 +39,17 @@ char* readStdin(void) {
 		bool isEOF = c == EOF && feof(stdin);
 		bool error = c == EOF;
 		bool isNewline = c == '\n';
-		if (isEOF || isNewline || error) {
-			if (position == 0 && isNewline) {
-				buffer[position] = c;
-			} else if (error) {
-				buffer[position] = ' ';
-			}
-
+		if (position == 0 && isEOF) {
+			flush();
+			exit(EXIT_SUCCESS);
+			break;
+		} else if (position == 0 && isNewline) {
+			buffer[position] = c;
+			break;
+		} else if (isNewline) {
+			break;
+		} else if (error) {
+			buffer[position] = ' ';
 			break;
 		}
 
