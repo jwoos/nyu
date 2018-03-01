@@ -5,6 +5,10 @@ extern int PID;
 extern int status;
 
 
+/* show prompt
+ * if PS1 is set, use that. otherwise
+ * just use $
+ */
 void prompt(void) {
 	char* prompt = getenv("PS1");
 
@@ -15,6 +19,7 @@ void prompt(void) {
 	printf("%s", prompt);
 }
 
+// handle sigint
 void sigintHandler(int sig) {
 	if (PID > 0) {
 		kill(PID, sig);
@@ -26,6 +31,7 @@ void sigintHandler(int sig) {
 	}
 }
 
+// register handler
 void handleSignals(void) {
 	struct sigaction act;
 

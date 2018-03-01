@@ -39,16 +39,26 @@ char* readStdin(void) {
 		bool isEOF = c == EOF && feof(stdin);
 		bool error = c == EOF;
 		bool isNewline = c == '\n';
+
 		if (position == 0 && isEOF) {
+			// actual EOF (c-d)
 			flush();
 			exit(EXIT_SUCCESS);
 			break;
 		} else if (position == 0 && isNewline) {
+			// newline when empty doesn't count
 			buffer[position] = c;
 			break;
 		} else if (isNewline) {
+			// actual newline - we should process it now
 			break;
 		} else if (error) {
+			/* error is set when EOF or just error getting char
+			 * such as when it's interrupted by a signal.
+			 * Since we already caught EOF we can just say that the signal
+			 * interrupted. This will do nothing as the driver will
+			 * ignore all input starting with space
+			 */
 			buffer[position] = ' ';
 			break;
 		}

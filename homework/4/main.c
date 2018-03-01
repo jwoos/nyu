@@ -21,14 +21,16 @@ int main(void) {
 	while (true) {
 		prompt();
 
+		// read input a character at a time
 		input = readStdin();
 
 		if (input[0] == '\0') {
 			free(input);
+			input = NULL;
 			break;
 		} else if (input[0] == '\n' || input[0] == ' ') {
-			flush();
 			free(input);
+			input = NULL;
 			continue;
 		}
 
@@ -36,6 +38,9 @@ int main(void) {
 		free(input);
 		input = NULL;
 
+		/* Built ins
+		 * If one of these matches, don't bother exec'ing
+		 */
 		if (!strncmp(token -> tokens[0], "exit", 4)) {
 			tokenDeconstruct(token);
 			token = NULL;
@@ -52,6 +57,7 @@ int main(void) {
 			continue;
 		}
 
+		// Expand variables, or just $? in this case
 		tokenExpand(token);
 
 		PID = fork();
@@ -60,14 +66,17 @@ int main(void) {
 		}
 
 		if (PID == 0) {
+			// child process
 			if (execvp(token -> tokens[0], token -> tokens) < 0) {
 				perrorQuit(PERROR_EXEC);
 			}
 		} else {
+			// parent process
 			wait(&status);
 			PID = 0;
 		}
 
+		// clean up
 		tokenDeconstruct(token);
 		token = NULL;
 	}

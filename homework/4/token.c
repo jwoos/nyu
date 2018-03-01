@@ -4,6 +4,7 @@
 extern int status;
 
 
+// tokenize by space
 Token* tokenConstruct(char* input) {
 	Token* tokenStruct = malloc(sizeof(*tokenStruct));
 
@@ -26,8 +27,13 @@ Token* tokenConstruct(char* input) {
 		index++;
 	}
 
-	while (true) {
-		if (index == size) {
+	while (token != NULL) {
+		/* increase size of array
+		 * This has to come first and compared to size - 1
+		 * as we need an extra space at the end to put in
+		 * a null.
+		 */
+		if (index == size - 1) {
 			size += SHELL_TOKEN_SIZE;
 			tokens = realloc(tokens, sizeof(char*) * size);
 			if (tokens == NULL) {
@@ -71,13 +77,16 @@ void tokenDeconstruct(Token* token) {
 void tokenExpand(Token* token) {
 	for (uint32_t i = 0; i < token -> size; i++) {
 		if (!strncmp(token -> tokens[i], "$?", 2)) {
-			// 8 bits can only be 3 characters + 1 null character
+			/* 8 bits can only be 3 characters + 1 null character
+			 * -1 - 255
+			 */
 			char* buf = malloc(sizeof(char) * 4);
 			if (buf == NULL) {
 				perrorQuit(PERROR_MEMORY);
 			}
 
 			if (WIFSIGNALED(status)) {
+				// if exited because of signal
 				if (snprintf(buf, 4, "%d", WTERMSIG(status) + 127) < 0) {
 					perrorQuit(PERROR_PRINTF);
 				}
