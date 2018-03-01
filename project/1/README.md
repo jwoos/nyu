@@ -1,7 +1,27 @@
 # Compiler Design and Construction Project 1
 
+# Details
+Individual Project
+
+Junwoo Shin (js8460)
+
+Project 1
+
 ## Build
+Tested with Go 1.10 on Linux 4.15.6
+
 The files should be placed in a directory on your `$GOPATH`. Move to that directory and run: `go build`. That should result in a binary with the same name as the directory.
+
+Example:
+```shell
+mkdir -p $GOPATH/src/js8460/project1
+
+cd $GOPATH/src/js8460/project1 # move files in there somehow
+
+go build # this should ouput an executable named project1
+
+./project1
+```
 
 ## Run
 ```
