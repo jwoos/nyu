@@ -1,14 +1,23 @@
 #include "utils.h"
 
 
-void perrorQuit(char* msg) {
+void perrorQuit(char* msg, bool quit) {
 	perror(msg);
-	exit(EXIT_FAILURE);
+	if (quit) {
+		exit(EXIT_FAILURE);
+	}
+}
+
+void errorQuit(char* msg, bool quit) {
+	fprintf(stderr, "%s\n", msg);
+	if (quit) {
+		exit(EXIT_FAILURE);
+	}
 }
 
 void flush(void) {
 	if (write(STDOUT_FILENO, "\n", 1) < 0) {
-		perrorQuit(PERROR_WRITE);
+		perrorQuit(PERROR_WRITE, true);
 	}
 }
 
@@ -18,7 +27,7 @@ char* readStdin(void) {
 
 	char* buffer = calloc(size, sizeof(char));
 	if (!buffer) {
-		perrorQuit(PERROR_MEMORY);
+		perrorQuit(PERROR_MEMORY, true);
 	}
 
 	int c;
@@ -29,7 +38,7 @@ char* readStdin(void) {
 
 			buffer = realloc(buffer, size);
 			if (!buffer) {
-				perrorQuit(PERROR_MEMORY);
+				perrorQuit(PERROR_MEMORY, true);
 			}
 		}
 

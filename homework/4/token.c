@@ -19,7 +19,7 @@ Token* tokenConstruct(char* input) {
 
 		tokens[index] = malloc(sizeof(char) * tokenLength + 1);
 		if (tokens[index] == NULL) {
-			perrorQuit(PERROR_MEMORY);
+			perrorQuit(PERROR_MEMORY, true);
 		}
 
 		strncpy(tokens[index], token, tokenLength + 1);
@@ -37,7 +37,7 @@ Token* tokenConstruct(char* input) {
 			size += SHELL_TOKEN_SIZE;
 			tokens = realloc(tokens, sizeof(char*) * size);
 			if (tokens == NULL) {
-				perrorQuit(PERROR_MEMORY);
+				perrorQuit(PERROR_MEMORY, true);
 			}
 		}
 
@@ -49,7 +49,7 @@ Token* tokenConstruct(char* input) {
 		tokenLength = strlen(token);
 		tokens[index] = malloc(sizeof(char) * tokenLength + 1);
 		if (tokens[index] == NULL) {
-			perrorQuit(PERROR_MEMORY);
+			perrorQuit(PERROR_MEMORY, true);
 		}
 
 		strncpy(tokens[index], token, tokenLength + 1);
@@ -83,17 +83,17 @@ void tokenExpand(Token* token) {
 			 */
 			char* buf = malloc(sizeof(char) * 4);
 			if (buf == NULL) {
-				perrorQuit(PERROR_MEMORY);
+				perrorQuit(PERROR_MEMORY, true);
 			}
 
 			if (WIFSIGNALED(status)) {
 				// if exited because of signal
 				if (snprintf(buf, 4, "%d", WTERMSIG(status) + 128) < 0) {
-					perrorQuit(PERROR_PRINTF);
+					errorQuit("Error reading from last status", false);
 				}
 			} else {
 				if (snprintf(buf, 4, "%d", WEXITSTATUS(status)) < 0) {
-					perrorQuit(PERROR_PRINTF);
+					errorQuit("Error reading from last status", false);
 				}
 			}
 			free(token -> tokens[i]);
@@ -131,23 +131,23 @@ static void _rightRedirect(char* right) {
 		fd = open(filename, O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 	}
 	if (fd < 0) {
-		perrorQuit(PERROR_OPEN);
+		perrorQuit(PERROR_OPEN, true);
 	}
 
 	if (index > 1) {
 		// fd was provided
 		if (dup2(fd, atol(buf[0])) < 0) {
-			perrorQuit(PERROR_DUP);
+			perrorQuit(PERROR_DUP, true);
 		}
 	} else {
 		// fd was not provided, default to stdout
 		if (dup2(fd, STDOUT_FILENO) < 0) {
-			perrorQuit(PERROR_DUP);
+			perrorQuit(PERROR_DUP, true);
 		}
 	}
 
 	if (close(fd) < 0) {
-		perrorQuit(PERROR_CLOSE);
+		perrorQuit(PERROR_CLOSE, true);
 	}
 }
 
@@ -156,15 +156,15 @@ static void _leftRedirect(char* left) {
 
 	int fd = open(buf, O_RDONLY);
 	if (fd < 0) {
-		perrorQuit(PERROR_OPEN);
+		perrorQuit(PERROR_OPEN, true);
 	}
 
 	if (dup2(fd, STDIN_FILENO) < 0) {
-		perrorQuit(PERROR_DUP);
+		perrorQuit(PERROR_DUP, true);
 	}
 
 	if (close(fd) < 0) {
-		perrorQuit(PERROR_CLOSE);
+		perrorQuit(PERROR_CLOSE, true);
 	}
 }
 
