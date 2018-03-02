@@ -2,6 +2,7 @@
 #define SHELL_TOKEN_H
 
 
+#include <fcntl.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -12,6 +13,7 @@
 
 typedef struct Token {
 	char** tokens;
+	uint32_t index;
 	uint32_t size;
 	uint32_t capacity;
 } Token;
@@ -23,6 +25,8 @@ void tokenDeconstruct(Token*);
 
 // expand variables
 void tokenExpand(Token*);
+
+void tokenRedirect(Token*);
 
 
 #endif

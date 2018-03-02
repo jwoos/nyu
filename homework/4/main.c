@@ -66,8 +66,11 @@ int main(void) {
 		}
 
 		if (PID == 0) {
+			// do any redirections necessary
+			tokenRedirect(token);
+
 			// child process
-			if (execvp(token -> tokens[0], token -> tokens) < 0) {
+			if (execvp((token -> tokens + token -> index)[0], token -> tokens + token -> index) < 0) {
 				perrorQuit(PERROR_EXEC);
 			}
 		} else {
