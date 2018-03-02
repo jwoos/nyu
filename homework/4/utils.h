@@ -17,14 +17,15 @@
 #define PERROR_WRITE "Error writing"
 #define PERROR_FORK "Error forking"
 #define PERROR_EXEC "Error execing"
-#define PERROR_PRINTF "Error with printf"
 #define PERROR_CHDIR "Error changing directory"
 #define PERROR_OPEN "Error opening"
 #define PERROR_DUP "Error duplicating fd"
 #define PERROR_CLOSE "Error closing"
 
 
-void perrorQuit(char*);
+void perrorQuit(char*, bool);
+
+void errorQuit(char*, bool);
 
 void flush(void);
 

@@ -41,7 +41,7 @@ int builtins(Token* token) {
 		act = -1;
 	} else if (!strncmp(token -> tokens[0], "cd", 2)) {
 		if (chdir(token -> tokens[1])) {
-			perrorQuit(PERROR_CHDIR);
+			perrorQuit(PERROR_CHDIR, false);
 		}
 
 		tokenDeconstruct(token);
@@ -88,14 +88,14 @@ void handleSignals(void) {
 	act.sa_flags = 0;
 
 	if (sigaction(SIGINT, &act, NULL) < 0) {
-		perrorQuit(PERROR_SIGNAL);
+		perrorQuit(PERROR_SIGNAL, true);
 	}
 }
 
 void runProcess(Token* token) {
 	PID = fork();
 	if (PID < 0) {
-		perrorQuit(PERROR_FORK);
+		perrorQuit(PERROR_FORK, false);
 	}
 
 	if (PID == 0) {
@@ -104,7 +104,7 @@ void runProcess(Token* token) {
 
 		// child process
 		if (execvp((token -> tokens + token -> index)[0], token -> tokens + token -> index) < 0) {
-			perrorQuit(PERROR_EXEC);
+			perrorQuit(PERROR_EXEC, true);
 		}
 	} else {
 		// parent process
