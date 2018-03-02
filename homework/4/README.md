@@ -17,3 +17,6 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 ## Notes
 - `ctrl-D` works but only when there is nothing else in the input. This is equivalent to doing `exit`
+- Redirection works with no spaces
+	- `1>file1`
+	- `<file1`
