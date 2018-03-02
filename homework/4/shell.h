@@ -10,11 +10,14 @@
 #include <unistd.h>
 
 #include "utils.h"
+#include "token.h"
 
 
 int PID;
 int status;
 
+
+bool builtins(Token*);
 
 void prompt(void);
 

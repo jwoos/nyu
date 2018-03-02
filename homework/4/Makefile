@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -std=gnu11 -ggdb -O0
+CFLAGS = -Wall -Wextra -std=gnu11 -ggdb -O0 -Wno-sign-compare
 
 EXECUTABLES = shell
 OBJECTS = shell.o utils.o token.o

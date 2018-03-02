@@ -38,22 +38,9 @@ int main(void) {
 		free(input);
 		input = NULL;
 
-		/* Built ins
-		 * If one of these matches, don't bother exec'ing
-		 */
-		if (!strncmp(token -> tokens[0], "exit", 4)) {
-			tokenDeconstruct(token);
-			token = NULL;
-
-			exit(EXIT_SUCCESS);
-		} else if (!strncmp(token -> tokens[0], "cd", 2)) {
-			if (chdir(token -> tokens[1])) {
-				perrorQuit(PERROR_CHDIR);
-			}
-
-			tokenDeconstruct(token);
-			token = NULL;
-
+		// builtins
+		bool cont = builtins(token);
+		if (cont) {
 			continue;
 		}
 
