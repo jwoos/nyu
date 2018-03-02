@@ -5,7 +5,32 @@ extern int PID;
 extern int status;
 
 
-bool builtins(Token* token) {
+/* -1 for break
+ * 0 for nothing
+ * 1 for continue
+ */
+int inputCheck(char* input) {
+	int act = 0;
+
+	if (input[0] == '\0') {
+		free(input);
+
+		act = -1;
+	} else if (input[0] == '\n' || input[0] == ' ') {
+		free(input);
+
+		act = 1;
+	}
+
+	return act;
+}
+
+/* -1 for break
+ * 0 for nothing
+ * 1 for continue
+ */
+int builtins(Token* token) {
+	int act = 0;
 	/* Built ins
 	 * If one of these matches, don't bother exec'ing
 	 */
@@ -13,7 +38,7 @@ bool builtins(Token* token) {
 		tokenDeconstruct(token);
 		token = NULL;
 
-		exit(EXIT_SUCCESS);
+		act = -1;
 	} else if (!strncmp(token -> tokens[0], "cd", 2)) {
 		if (chdir(token -> tokens[1])) {
 			perrorQuit(PERROR_CHDIR);
@@ -23,10 +48,10 @@ bool builtins(Token* token) {
 
 		token = NULL;
 
-		return true;
+		act = 1;
 	}
 
-	return false;
+	return act;
 }
 
 /* show prompt
@@ -64,5 +89,26 @@ void handleSignals(void) {
 
 	if (sigaction(SIGINT, &act, NULL) < 0) {
 		perrorQuit(PERROR_SIGNAL);
+	}
+}
+
+void runProcess(Token* token) {
+	PID = fork();
+	if (PID < 0) {
+		perrorQuit(PERROR_FORK);
+	}
+
+	if (PID == 0) {
+		// do any redirections necessary
+		tokenRedirect(token);
+
+		// child process
+		if (execvp((token -> tokens + token -> index)[0], token -> tokens + token -> index) < 0) {
+			perrorQuit(PERROR_EXEC);
+		}
+	} else {
+		// parent process
+		wait(&status);
+		PID = 0;
 	}
 }

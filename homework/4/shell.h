@@ -17,13 +17,17 @@ int PID;
 int status;
 
 
-bool builtins(Token*);
+int inputCheck(char*);
+
+int builtins(Token*);
 
 void prompt(void);
 
 void sigintHandler(int);
 
 void handleSignals(void);
+
+void runProcess(Token*);
 
 
 #endif

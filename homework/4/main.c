@@ -8,10 +8,6 @@
 #include "token.h"
 
 
-extern int PID;
-extern int status;
-
-
 int main(void) {
 	handleSignals();
 
@@ -24,13 +20,10 @@ int main(void) {
 		// read input a character at a time
 		input = readStdin();
 
-		if (input[0] == '\0') {
-			free(input);
-			input = NULL;
+		int inputCheckAction = inputCheck(input);
+		if (inputCheckAction == -1) {
 			break;
-		} else if (input[0] == '\n' || input[0] == ' ') {
-			free(input);
-			input = NULL;
+		} else if (inputCheckAction == 1) {
 			continue;
 		}
 
@@ -39,32 +32,17 @@ int main(void) {
 		input = NULL;
 
 		// builtins
-		bool cont = builtins(token);
-		if (cont) {
+		int builtinsAction = builtins(token);
+		if (builtinsAction == -1) {
+			break;
+		} else if (builtinsAction == 1) {
 			continue;
 		}
 
 		// Expand variables, or just $? in this case
 		tokenExpand(token);
 
-		PID = fork();
-		if (PID < 0) {
-			perrorQuit(PERROR_FORK);
-		}
-
-		if (PID == 0) {
-			// do any redirections necessary
-			tokenRedirect(token);
-
-			// child process
-			if (execvp((token -> tokens + token -> index)[0], token -> tokens + token -> index) < 0) {
-				perrorQuit(PERROR_EXEC);
-			}
-		} else {
-			// parent process
-			wait(&status);
-			PID = 0;
-		}
+		runProcess(token);
 
 		// clean up
 		tokenDeconstruct(token);
