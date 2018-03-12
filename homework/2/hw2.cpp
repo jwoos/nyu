@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <cmath>
 
 #include "Angel-yjc.h"
 
@@ -43,7 +44,25 @@ Entity _floor;
 
 Entity _axis;
 
+const vec3 pathPoints[3] = {
+	vec3(-4, 1, 4),
+	vec3(3, 1, -4),
+	vec3(-3, 1, -3)
+};
+vec3 movementVectors[3];
+vec3 rotationAxes[3];
+vec3 sphereCenter;
+int sphereIndex = 0;
+float radius = 1;
+float angle = 0;
+float rate = 1;
+mat4 rotationMatrix(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(0, 0, 0, 1));
 Entity _sphere;
+
+float distance(const vec3& a, const vec3& b) {
+	vec3 dist = a - b;
+	return sqrt(dot(dist, dist));
+}
 
 void readFile() {
 	string filename;
@@ -163,6 +182,19 @@ void sphere(void) {
 	}
 }
 
+void sphereRotation(void) {
+	vec3 y(0, 1, 0);
+
+	for (int i = 0; i < 3; i++) {
+		movementVectors[i] = normalize(pathPoints[(i + 1) % 3] - pathPoints[i]);
+		rotationAxes[i] = cross(y, movementVectors[i]);
+
+		cout << i << " " << pathPoints[(i + 1) % 3] << " - " << pathPoints[i] << " = " << (pathPoints[(i + 1) % 3] - pathPoints[i]) << endl;
+	}
+
+	sphereCenter = pathPoints[sphereIndex];
+}
+
 void init(void) {
 	floor();
 	glGenBuffers(1, &_floor.buffer);
@@ -179,6 +211,7 @@ void init(void) {
 	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec3) * _axis.size, sizeof(vec3) * _axis.size, _axis.colors);
 
 	sphere();
+	sphereRotation();
 	glGenBuffers(1, &_sphere.buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, _sphere.buffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * _sphere.size * 2, NULL, GL_STATIC_DRAW);
@@ -230,12 +263,15 @@ void display(void) {
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	drawObj(_floor.buffer, _floor.size);
 
-	// draw axis lines
+	// draw axes lines
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	drawObj(_axis.buffer, _axis.size);
 
 	// draw sphere
-	mv *= Translate(-4, 1, 4);
+	// the rightmost rotations ones are applied first
+	rotationMatrix = Rotate(rate, rotationAxes[sphereIndex].x, rotationAxes[sphereIndex].y, rotationAxes[sphereIndex].z) * rotationMatrix;
+	mv *= Translate(sphereCenter.x, sphereCenter.y, sphereCenter.z) * rotationMatrix;
+
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	drawObj(_sphere.buffer, _sphere.size);
@@ -244,6 +280,25 @@ void display(void) {
 }
 
 void idle(void) {
+	cout << pathPoints[2] << endl;
+	angle += rate;
+
+	if (angle >= 360) {
+		angle = 0;
+	}
+
+	float offset = radius * rate * (M_PI / 180);
+
+	sphereCenter.x += movementVectors[sphereIndex].x * offset;
+	sphereCenter.y += movementVectors[sphereIndex].y * offset;
+	sphereCenter.z += movementVectors[sphereIndex].z * offset;
+
+	// check for when the sphere should turn
+	if (distance(sphereCenter, pathPoints[sphereIndex]) >= distance(pathPoints[(sphereIndex + 1) % 3], pathPoints[sphereIndex])) {
+		sphereIndex = (sphereIndex + 1) % 3;
+		sphereCenter = pathPoints[sphereIndex];
+	}
+
 	glutPostRedisplay();
 }
 
@@ -260,16 +315,12 @@ void keyboard(unsigned char key, int x, int y) {
 int main(int argc, char** argv) {
 	readFile();
 
-	for (vector<vec3>::iterator it = spherePoints.begin(); it != spherePoints.end(); it++) {
-		cout << (*it).x << " " << (*it).y << " " << (*it).z << endl;
-	}
-
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowSize(512, 512);
 	glutCreateWindow("Rotating Sphere");
 
-	/* Call glewInit() and error checking */
+	// Call glewInit() and error checking
 	int err = glewInit();
 	if (GLEW_OK != err) {
 		printf("Error: glewInit failed: %s\n", (char*) glewGetErrorString(err));
