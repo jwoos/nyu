@@ -21,9 +21,10 @@ typedef struct Entity {
 
 
 GLuint program;
-
-vector<vec3> spherePoints;
-
+vec4 originalEye(7, 3, -10, 1);
+vec4 eye = originalEye;
+bool animation;
+bool started;
 GLuint aspect;
 
 vec3 colorSphere(1, 0.84, 0);
@@ -49,6 +50,7 @@ const vec3 pathPoints[3] = {
 	vec3(3, 1, -4),
 	vec3(-3, 1, -3)
 };
+vector<vec3> spherePoints;
 vec3 movementVectors[3];
 vec3 rotationAxes[3];
 vec3 sphereCenter;
@@ -104,6 +106,18 @@ void readFile() {
 	}
 
 	file.close();
+}
+
+void menu(int index) {
+	switch (index) {
+		case 0:
+			eye = originalEye;
+			break;
+
+		case 1:
+			exit(EXIT_SUCCESS);
+			break;
+	}
 }
 
 void drawObj(GLuint buffer, int num_vertices) {
@@ -188,8 +202,6 @@ void sphereRotation(void) {
 	for (int i = 0; i < 3; i++) {
 		movementVectors[i] = normalize(pathPoints[(i + 1) % 3] - pathPoints[i]);
 		rotationAxes[i] = cross(y, movementVectors[i]);
-
-		cout << i << " " << pathPoints[(i + 1) % 3] << " - " << pathPoints[i] << " = " << (pathPoints[(i + 1) % 3] - pathPoints[i]) << endl;
 	}
 
 	sphereCenter = pathPoints[sphereIndex];
@@ -239,7 +251,7 @@ void display(void) {
 
 	// set up model view matrix
 	// VRP (view reference points)
-	vec4 eye(7, 3, -10, 1);
+	// eye is global
 
 	// VPN (view plane normal) -7, -3, 10, 0;
 	vec4 at(0, 0, 0, 1);
@@ -280,7 +292,6 @@ void display(void) {
 }
 
 void idle(void) {
-	cout << pathPoints[2] << endl;
 	angle += rate;
 
 	if (angle >= 360) {
@@ -309,7 +320,66 @@ void reshape(int w, int h) {
 }
 
 void keyboard(unsigned char key, int x, int y) {
+	switch(key) {
+		case 033: // Escape Key
+		case 'q': case 'Q':
+			exit(EXIT_SUCCESS);
+			break;
 
+		case 'X':
+			eye[0] += 1.0;
+			break;
+
+		case 'x':
+			eye[0] -= 1.0;
+			break;
+
+		case 'Y':
+			eye[1] += 1.0;
+			break;
+
+		case 'y':
+			eye[1] -= 1.0;
+			break;
+
+		case 'Z':
+			eye[2] += 1.0;
+			break;
+
+		case 'z':
+			eye[2] -= 1.0;
+			break;
+
+		case 'b':
+		case 'B':
+			started = true;
+			animation = !animation;
+
+			if (animation) {
+				glutIdleFunc(idle);
+			} else {
+				glutIdleFunc(NULL);
+			}
+			break;
+
+		case ' ':
+			eye = originalEye;
+			break;
+	}
+
+	glutPostRedisplay();
+}
+
+void mouse(int button, int state, int x, int y) {
+	if (button == GLUT_RIGHT_BUTTON && state == GLUT_UP && started) {
+		animation = !animation;
+	}
+
+	if (animation) {
+		glutIdleFunc(idle);
+	} else {
+		glutIdleFunc(NULL);
+	}
 }
 
 int main(int argc, char** argv) {
@@ -324,20 +394,26 @@ int main(int argc, char** argv) {
 	int err = glewInit();
 	if (GLEW_OK != err) {
 		printf("Error: glewInit failed: %s\n", (char*) glewGetErrorString(err));
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	// Get info of GPU and supported OpenGL version
 	printf("Renderer: %s\n", glGetString(GL_RENDERER));
 	printf("OpenGL version supported %s\n", glGetString(GL_VERSION));
 
+	glutCreateMenu(menu);
+	glutAddMenuEntry("Default View Point", 0);
+	glutAddMenuEntry("Quit", 1);
+	glutAttachMenu(GLUT_LEFT_BUTTON);
+
 	glutDisplayFunc(display);
-	glutIdleFunc(idle);
+	glutIdleFunc(NULL);
 	glutReshapeFunc(reshape);
 	glutKeyboardFunc(keyboard);
+	glutMouseFunc(mouse);
 
 	init();
 	glutMainLoop();
 
-	return 0;
+	return EXIT_SUCCESS;
 }
