@@ -48,8 +48,14 @@ Entity _sphere;
 void readFile() {
 	string filename;
 
-	cout << "Enter the file to read" << endl;
+	cout << "Enter the file to read - 8 is shortcut for sphere.8 and 128 is shortcut for sphere.128" << endl;
 	cin >> filename;
+
+	if (filename == "8") {
+		filename = "sphere.8";
+	} else if (filename == "128") {
+		filename = "sphere.128";
+	}
 
 	ifstream file;
 	file.open(filename);
