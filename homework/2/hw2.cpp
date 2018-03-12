@@ -10,8 +10,8 @@ using namespace std;
 
 
 typedef struct Entity {
-	vec3* point;
-	vec3* color;
+	vec3* points;
+	vec3* colors;
 
 	GLuint buffer;
 
@@ -20,6 +20,8 @@ typedef struct Entity {
 
 
 GLuint program;
+
+GLuint aspect;
 
 vec3 colorSphere(1, 0.84, 0);
 vec3 colorFloor(0, 1, 0);
@@ -30,10 +32,10 @@ vec3 axisColors[3] = {
 };
 
 vec3 floorVertices[4] = {
-	vec3( 5, 0,  8),
-	vec3( 5, 0,  -4),
-	vec3(  -5,  0,  -4),
-	vec3(  -5,  0,  8),
+	vec3(5, 0, 8),
+	vec3(5, 0, -4),
+	vec3(-5, 0, -4),
+	vec3(-5, 0, 8)
 };
 Entity _floor;
 
@@ -105,42 +107,42 @@ void drawObj(GLuint buffer, int num_vertices) {
 
 void floor(void) {
 	_floor.size = 6;
-	_floor.point = new vec3[_floor.size];
-	_floor.color = new vec3[_floor.size];
+	_floor.points = new vec3[_floor.size];
+	_floor.colors = new vec3[_floor.size];
 
-	_floor.point[0] = floorVertices[0];
-	_floor.point[1] = floorVertices[1];
-	_floor.point[2] = floorVertices[2];
-	_floor.point[3] = floorVertices[0];
-	_floor.point[4] = floorVertices[2];
-	_floor.point[5] = floorVertices[3];
+	_floor.points[0] = floorVertices[0];
+	_floor.points[1] = floorVertices[1];
+	_floor.points[2] = floorVertices[2];
+	_floor.points[3] = floorVertices[0];
+	_floor.points[4] = floorVertices[2];
+	_floor.points[5] = floorVertices[3];
 
 	for (int i = 0; i < _floor.size; i++) {
-		_floor.color[i] = colorFloor;
+		_floor.colors[i] = colorFloor;
 	}
 }
 
 void axis(void) {
 	_axis.size = 9;
 
-	_axis.point = new vec3[_axis.size];
-	_axis.color = new vec3[_axis.size];
+	_axis.points = new vec3[_axis.size];
+	_axis.colors = new vec3[_axis.size];
 
-	_axis.point[0] = vec3(0, 0, 0);
-	_axis.point[1] = vec3(10, 0, 0);
-	_axis.point[2] = vec3(20, 0, 0);
+	_axis.points[0] = vec3(0, 0, 0);
+	_axis.points[1] = vec3(10, 0, 0);
+	_axis.points[2] = vec3(20, 0, 0);
 
-	_axis.point[3] = vec3(0, 0, 0);
-	_axis.point[4] = vec3(0, 10, 0);
-	_axis.point[5] = vec3(0, 20, 0);
+	_axis.points[3] = vec3(0, 0, 0);
+	_axis.points[4] = vec3(0, 10, 0);
+	_axis.points[5] = vec3(0, 20, 0);
 
-	_axis.point[6] = vec3(0, 0, 0);
-	_axis.point[7] = vec3(0, 0, 10);
-	_axis.point[8] = vec3(0, 0, 20);
+	_axis.points[6] = vec3(0, 0, 0);
+	_axis.points[7] = vec3(0, 0, 10);
+	_axis.points[8] = vec3(0, 0, 20);
 
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
-			_axis.color[i + j] = axisColors[i];
+			_axis.colors[i + j] = axisColors[i];
 		}
 	}
 }
@@ -151,23 +153,18 @@ void sphere(void) {
 
 void init(void) {
 	floor();
-	/*
-	 *for (int i = 0; i < _floor.size; i++) {
-	 *    cout << _floor.point[i] << " " << _floor.color[i] << endl;
-	 *}
-	 */
 	glGenBuffers(1, &_floor.buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, _floor.buffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * _floor.size * 2, NULL, GL_STATIC_DRAW);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec3) * _floor.size, _floor.point);
-    glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec3) * _floor.size, sizeof(vec3) * _floor.size, _floor.color);
+	glBindBuffer(GL_ARRAY_BUFFER, _floor.buffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * _floor.size * 2, NULL, GL_STATIC_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec3) * _floor.size, _floor.points);
+	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec3) * _floor.size, sizeof(vec3) * _floor.size, _floor.colors);
 
 	axis();
 	glGenBuffers(1, &_axis.buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, _axis.buffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * _axis.size * 2, NULL, GL_STATIC_DRAW);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec3) * _axis.size, _axis.point);
-    glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec3) * _axis.size, sizeof(vec3) * _axis.size, _axis.color);
+	glBindBuffer(GL_ARRAY_BUFFER, _axis.buffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * _axis.size * 2, NULL, GL_STATIC_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec3) * _axis.size, _axis.points);
+	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec3) * _axis.size, sizeof(vec3) * _axis.size, _axis.colors);
 
 	// initialize the shader
 	program = InitShader("vshader.glsl", "fshader.glsl");
@@ -189,11 +186,10 @@ void display(void) {
 	GLuint projection = glGetUniformLocation(program, "projection");
 
 	// set up model view matrix
-	// VRP (view reference point)
+	// VRP (view reference points)
 	vec4 eye(7, 3, -10, 1);
 
-	// VPN (view plane normal)
-	//vec4 at(-7, -3, 10, 0);
+	// VPN (view plane normal) -7, -3, 10, 0;
 	vec4 at(0, 0, 0, 1);
 
 	// VUP (view up vector)
@@ -204,16 +200,16 @@ void display(void) {
 
 	// set up projection matrix
 	GLfloat fovy = 45;
-	GLfloat aspect;
 	GLfloat zNear = 0.5;
 	GLfloat zFar = 13;
 
-    mat4 p = Perspective(fovy, aspect, zNear, zFar);
-    glUniformMatrix4fv(projection, 1, GL_TRUE, p);
+	mat4 p = Perspective(fovy, aspect, zNear, zFar);
+	glUniformMatrix4fv(projection, 1, GL_TRUE, p);
 
 	// draw floor
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	drawObj(_floor.buffer, _floor.size);
 
 	// draw axis lines
@@ -229,7 +225,9 @@ void idle(void) {
 }
 
 void reshape(int w, int h) {
-
+	glViewport(0, 0, w, h);
+	aspect = (GLfloat) w / (GLfloat) h;
+	glutPostRedisplay();
 }
 
 void keyboard(unsigned char key, int x, int y) {
@@ -237,17 +235,17 @@ void keyboard(unsigned char key, int x, int y) {
 }
 
 int main(int argc, char** argv) {
-/*
- *    vector<vector<vec3>> spherePoints;
- *
- *    readFile(spherePoints);
- *
- *    for (vector<vector<vec3>>::iterator it = spherePoints.begin(); it != spherePoints.end(); it++) {
- *        for (vector<vec3>::iterator jt = (*it).begin(); jt != (*it).end(); jt++) {
- *            cout << (*jt).x << " " << (*jt).y << " " << (*jt).z << endl;
- *        }
- *    }
- */
+	/*
+	 *    vector<vector<vec3>> spherePoints;
+	 *
+	 *    readFile(spherePoints);
+	 *
+	 *    for (vector<vector<vec3>>::iterator it = spherePoints.begin(); it != spherePoints.end(); it++) {
+	 *        for (vector<vec3>::iterator jt = (*it).begin(); jt != (*it).end(); jt++) {
+	 *            cout << (*jt).x << " " << (*jt).y << " " << (*jt).z << endl;
+	 *        }
+	 *    }
+	 */
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
