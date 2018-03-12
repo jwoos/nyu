@@ -21,6 +21,8 @@ typedef struct Entity {
 
 GLuint program;
 
+vector<vec3> spherePoints;
+
 GLuint aspect;
 
 vec3 colorSphere(1, 0.84, 0);
@@ -43,7 +45,7 @@ Entity _axis;
 
 Entity _sphere;
 
-void readFile(vector<vector<vec3>>& spherePoints) {
+void readFile() {
 	string filename;
 
 	cout << "Enter the file to read" << endl;
@@ -61,7 +63,6 @@ void readFile(vector<vector<vec3>>& spherePoints) {
 	file >> n;
 
 	for (int i = 0; i < n; i++) {
-		vector<vec3> temp;
 		int points;
 
 		float x;
@@ -73,10 +74,8 @@ void readFile(vector<vector<vec3>>& spherePoints) {
 		for (int j = 0; j < points; j++) {
 			file >> x >> y >> z;
 
-			temp.push_back(vec3(x, y, z));
+			spherePoints.push_back(vec3(x, y, z));
 		}
-
-		spherePoints.push_back(temp);
 	}
 
 	file.close();
@@ -148,7 +147,14 @@ void axis(void) {
 }
 
 void sphere(void) {
+	_sphere.size = spherePoints.size();
 
+	_sphere.points = &spherePoints[0];
+	_sphere.colors = new vec3[_sphere.size];
+
+	for (int i = 0; i < _sphere.size; i++) {
+		_sphere.colors[i] = colorSphere;
+	}
 }
 
 void init(void) {
@@ -165,6 +171,13 @@ void init(void) {
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * _axis.size * 2, NULL, GL_STATIC_DRAW);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec3) * _axis.size, _axis.points);
 	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec3) * _axis.size, sizeof(vec3) * _axis.size, _axis.colors);
+
+	sphere();
+	glGenBuffers(1, &_sphere.buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, _sphere.buffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * _sphere.size * 2, NULL, GL_STATIC_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec3) * _sphere.size, _sphere.points);
+	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec3) * _sphere.size, sizeof(vec3) * _sphere.size, _sphere.colors);
 
 	// initialize the shader
 	program = InitShader("vshader.glsl", "fshader.glsl");
@@ -207,15 +220,19 @@ void display(void) {
 	glUniformMatrix4fv(projection, 1, GL_TRUE, p);
 
 	// draw floor
-	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	drawObj(_floor.buffer, _floor.size);
 
 	// draw axis lines
-	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	drawObj(_axis.buffer, _axis.size);
+
+	// draw sphere
+	mv *= Translate(-4, 1, 4);
+	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	drawObj(_sphere.buffer, _sphere.size);
 
 	glutSwapBuffers();
 }
@@ -235,17 +252,11 @@ void keyboard(unsigned char key, int x, int y) {
 }
 
 int main(int argc, char** argv) {
-	/*
-	 *    vector<vector<vec3>> spherePoints;
-	 *
-	 *    readFile(spherePoints);
-	 *
-	 *    for (vector<vector<vec3>>::iterator it = spherePoints.begin(); it != spherePoints.end(); it++) {
-	 *        for (vector<vec3>::iterator jt = (*it).begin(); jt != (*it).end(); jt++) {
-	 *            cout << (*jt).x << " " << (*jt).y << " " << (*jt).z << endl;
-	 *        }
-	 *    }
-	 */
+	readFile();
+
+	for (vector<vec3>::iterator it = spherePoints.begin(); it != spherePoints.end(); it++) {
+		cout << (*it).x << " " << (*it).y << " " << (*it).z << endl;
+	}
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
