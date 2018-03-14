@@ -5,7 +5,7 @@
   branch = "master"
   name = "github.com/jwoos/go_checkers"
   packages = ["."]
-  revision = "91a03a2f14cde7d48bf3da20ff6c075db0ca6a77"
+  revision = "0e8ea4433e40d5590bdfcfdbfa51d9a86a6b3aad"
 
 [solve-meta]
   analyzer-name = "dep"
