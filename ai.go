@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"math"
 
 	"github.com/jwoos/go_checkers"
@@ -22,7 +21,7 @@ type Node struct {
 
 // check for movable and safe count
 func evaluation(state *checkers.StateByte, who byte) float64 {
-	log.Println("EVALUATION")
+	lln("EVALUATION")
 	if who == AI {
 		return float64(len(state.White)) / float64(len(state.Black))
 	} else {
@@ -31,13 +30,13 @@ func evaluation(state *checkers.StateByte, who byte) float64 {
 }
 
 func minimaxAB(state *checkers.StateByte, depth int) checkers.Move {
-	log.Println("STARTING MINIMAX")
+	lln("STARTING MINIMAX")
 	move := max(state, math.Inf(-1), math.Inf(1), depth).Move
 	return move
 }
 
 func max(state *checkers.StateByte, alpha float64, beta float64, depth int) Node {
-	log.Println("MAX")
+	lln("MAX")
 
 	node := Node{}
 	node.State = state
@@ -49,8 +48,8 @@ func max(state *checkers.StateByte, alpha float64, beta float64, depth int) Node
 	}
 
 	for coord, _ := range state.White {
-		moves := state.PossibleMoves(&coord)
-		log.Println(coord, moves)
+		moves := state.PossibleMoves(coord)
+		lln(coord, moves)
 
 		for _, move := range moves {
 			newState := state.Copy()
@@ -74,8 +73,8 @@ func max(state *checkers.StateByte, alpha float64, beta float64, depth int) Node
 }
 
 func min(state *checkers.StateByte, alpha float64, beta float64, depth int) Node {
-	log.Println("MIN")
-	log.Println(state)
+	lln("MIN")
+	lln(state)
 
 	node := Node{}
 	node.State= state
@@ -87,8 +86,8 @@ func min(state *checkers.StateByte, alpha float64, beta float64, depth int) Node
 	}
 
 	for coord, _ := range state.Black {
-		moves := state.PossibleMoves(&coord)
-		log.Println(coord, moves)
+		moves := state.PossibleMoves(coord)
+		lln(coord, moves)
 
 		for _, move := range moves {
 			newState := state.Copy()

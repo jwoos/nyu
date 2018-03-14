@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -16,7 +17,14 @@ const (
 	AI    byte = checkers.WHITE
 )
 
+var DEBUG bool
+var DEPTH int
+
 func main() {
+	flag.BoolVar(&DEBUG, "debug", false, "Debug mode")
+	flag.IntVar(&DEPTH, "depth", 15, "Depth of minimax")
+	flag.Parse()
+
 	fmt.Println("Will you go first? (y/n)")
 	reader := bufio.NewReader(os.Stdin)
 	text, err := reader.ReadString('\n')
@@ -44,8 +52,10 @@ func main() {
 	fmt.Println("\nStarting game\n")
 
 	for true {
-		fmt.Printf("%#v \n", state)
+		fmt.Printf("%#v \n\n", state)
+
 		if state.Turn == HUMAN {
+			fmt.Println("Human (BLACK) move")
 			fmt.Println("Enter the move specifying the piece first and then the move: p1,p2 c1,c2")
 			text, err = reader.ReadString('\n')
 			if err != nil {
@@ -83,15 +93,15 @@ func main() {
 			to := checkers.NewCoordinate(toRow, toColumn)
 			moves := state.PossibleMoves(from)
 
-			if _, okay := moves[*to]; okay {
-				state.Move(moves[*to])
+			if _, okay := moves[to]; okay {
+				state.Move(moves[to])
 			} else {
 				fmt.Println(state.Validate(from, to))
 			}
 		} else {
-			fmt.Println("AI move")
-			move := minimaxAB(state, 1)
-			fmt.Println(move)
+			fmt.Println("AI (WHITE) move")
+			fmt.Println()
+			move := minimaxAB(state, DEPTH)
 			state.Move(move)
 		}
 	}
