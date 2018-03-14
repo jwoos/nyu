@@ -16,8 +16,6 @@ const (
 	AI    byte = checkers.WHITE
 )
 
-var state *State
-
 func main() {
 	fmt.Println("Will you go first? (y/n)")
 	reader := bufio.NewReader(os.Stdin)
@@ -41,7 +39,7 @@ func main() {
 	rule := checkers.NewRule(6, 6, firstMove, side, 2, false, false, false)
 
 	// instantitate state
-	state = checkers.NewStateByte(rule, true)
+	state := checkers.NewStateByte(rule, true)
 
 	fmt.Println("\nStarting game\n")
 
@@ -85,14 +83,16 @@ func main() {
 			to := checkers.NewCoordinate(toRow, toColumn)
 			moves := state.PossibleMoves(from)
 
-			fmt.Println(moves)
 			if _, okay := moves[*to]; okay {
 				state.Move(moves[*to])
 			} else {
 				fmt.Println(state.Validate(from, to))
 			}
 		} else {
-			log.Fatal("should not be here")
+			fmt.Println("AI move")
+			move := minimaxAB(state, 1)
+			fmt.Println(move)
+			state.Move(move)
 		}
 	}
 }
