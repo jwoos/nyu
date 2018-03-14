@@ -12,9 +12,11 @@ import (
 )
 
 const (
-	HUMAN int = checkers.BLACK
-	AI    int = checkers.WHITE
+	HUMAN byte = checkers.BLACK
+	AI    byte = checkers.WHITE
 )
+
+var state *State
 
 func main() {
 	fmt.Println("Will you go first? (y/n)")
@@ -24,7 +26,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	var firstMove int
+	var firstMove byte
 	var side int
 
 	if strings.Trim(text, "\n ") == "y" {
@@ -39,7 +41,7 @@ func main() {
 	rule := checkers.NewRule(6, 6, firstMove, side, 2, false, false, false)
 
 	// instantitate state
-	state := checkers.NewState(rule, true)
+	state = checkers.NewStateByte(rule, true)
 
 	fmt.Println("\nStarting game\n")
 
@@ -54,39 +56,40 @@ func main() {
 			fmt.Println()
 
 			spaceSplit := strings.Split(strings.Trim(text, " \n"), " ")
-			from := strings.Split(spaceSplit[0], ",")
-			to := strings.Split(spaceSplit[1], ",")
+			fromText := strings.Split(spaceSplit[0], ",")
+			toText := strings.Split(spaceSplit[1], ",")
 
-			fromRow, err := strconv.Atoi(from[0])
+			fromRow, err := strconv.Atoi(fromText[0])
 			if err != nil {
 				fmt.Println(err)
 				continue
 			}
-			fromColumn, err := strconv.Atoi(from[1])
-			if err != nil {
-				fmt.Println(err)
-				continue
-			}
-
-			toRow, err := strconv.Atoi(to[0])
-			if err != nil {
-				fmt.Println(err)
-				continue
-			}
-			toColumn, err := strconv.Atoi(to[1])
+			fromColumn, err := strconv.Atoi(fromText[1])
 			if err != nil {
 				fmt.Println(err)
 				continue
 			}
 
-			piece := state.Board[fromRow][fromColumn]
-			moves := state.PossibleMoves(piece, false)
-			coord := checkers.Coordinate{Row: toRow, Column: toColumn}
+			toRow, err := strconv.Atoi(toText[0])
+			if err != nil {
+				fmt.Println(err)
+				continue
+			}
+			toColumn, err := strconv.Atoi(toText[1])
+			if err != nil {
+				fmt.Println(err)
+				continue
+			}
 
-			if _, okay := moves[coord]; okay {
-				state.Move(piece, moves[coord])
+			from := checkers.NewCoordinate(fromRow, fromColumn)
+			to := checkers.NewCoordinate(toRow, toColumn)
+			moves := state.PossibleMoves(from)
+
+			fmt.Println(moves)
+			if _, okay := moves[*to]; okay {
+				state.Move(moves[*to])
 			} else {
-				fmt.Println(state.ValidateMoveTo(piece, checkers.NewCoordinate(toRow, toColumn)))
+				fmt.Println(state.Validate(from, to))
 			}
 		} else {
 			log.Fatal("should not be here")
