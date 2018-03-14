@@ -51,6 +51,7 @@ func main() {
 			if err != nil {
 				log.Fatal(err)
 			}
+			fmt.Println()
 
 			spaceSplit := strings.Split(strings.Trim(text, " \n"), " ")
 			from := strings.Split(spaceSplit[0], ",")
@@ -79,11 +80,13 @@ func main() {
 			}
 
 			piece := state.Board[fromRow][fromColumn]
+			moves := state.PossibleMoves(piece, false)
+			coord := checkers.Coordinate{Row: toRow, Column: toColumn}
 
-			err = state.MovePieceTo(piece, checkers.NewCoordinate(toRow, toColumn))
-			if err != nil {
-				fmt.Println(err)
-				continue
+			if _, okay := moves[coord]; okay {
+				state.Move(piece, moves[coord])
+			} else {
+				fmt.Println(state.ValidateMoveTo(piece, checkers.NewCoordinate(toRow, toColumn)))
 			}
 		} else {
 			log.Fatal("should not be here")
