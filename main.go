@@ -91,10 +91,21 @@ func main() {
 
 			from := checkers.NewCoordinate(fromRow, fromColumn)
 			to := checkers.NewCoordinate(toRow, toColumn)
-			moves := state.PossibleMoves(from)
+			moves := state.PossibleMovesAll()
 
-			if _, okay := moves[to]; okay {
-				state.Move(moves[to])
+			okay := false
+			var move checkers.Move
+
+			for m, _ := range moves {
+				if m.From == from && m.To == to {
+					okay = true
+					move = m
+					break
+				}
+			}
+
+			if okay {
+				state.Move(move)
 			} else {
 				fmt.Println(state.Validate(from, to))
 			}
@@ -102,6 +113,7 @@ func main() {
 			fmt.Println("AI (WHITE) move")
 			fmt.Println()
 			move := minimaxAB(state, DEPTH)
+			lln("AI move: ", move)
 			state.Move(move)
 		}
 	}

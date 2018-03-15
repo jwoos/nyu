@@ -47,26 +47,23 @@ func max(state *checkers.StateByte, alpha float64, beta float64, depth int) Node
 		return node
 	}
 
-	for coord, _ := range state.White {
-		moves := state.PossibleMoves(coord)
-		lln(coord, moves)
+	moves := state.PossibleMovesAll()
+	lln(moves)
+	for move, _ := range moves {
+		newState := state.Copy()
+		newState.Move(move)
 
-		for _, move := range moves {
-			newState := state.Copy()
-			newState.Move(move)
-
-			v := math.Max(node.Heuristic, min(newState, alpha, beta, depth - 1).Heuristic)
-			if v != node.Heuristic {
-				node.Move = move
-			}
-			node.Heuristic = v
-
-			if node.Heuristic >= beta {
-				return node
-			}
-
-			alpha = math.Max(alpha, node.Heuristic)
+		v := math.Max(node.Heuristic, min(newState, alpha, beta, depth - 1).Heuristic)
+		if v != node.Heuristic {
+			node.Move = move
 		}
+		node.Heuristic = v
+
+		if node.Heuristic >= beta {
+			return node
+		}
+
+		alpha = math.Max(alpha, node.Heuristic)
 	}
 
 	return node
