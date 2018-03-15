@@ -49,12 +49,16 @@ func minimaxAB(state *checkers.StateByte, depth int) (checkers.Move, Stat) {
 	stat := Stat{}
 
 	lln("STARTING MINIMAX")
+	stat.Start = depth
 	move := max(state, math.Inf(-1), math.Inf(1), depth, &stat).Move
 	lln(stat)
 	return move, stat
 }
 
 func max(state *checkers.StateByte, alpha float64, beta float64, depth int, stat *Stat) Node {
+	if stat.Start - depth > stat.Levels {
+		stat.Levels = stat.Start - depth
+	}
 	stat.Generated++
 	lln("MAX")
 
@@ -103,6 +107,9 @@ func max(state *checkers.StateByte, alpha float64, beta float64, depth int, stat
 }
 
 func min(state *checkers.StateByte, alpha float64, beta float64, depth int, stat *Stat) Node {
+	if stat.Start - depth > stat.Levels {
+		stat.Levels = stat.Start - depth
+	}
 	stat.Generated++
 	lln("MIN")
 
