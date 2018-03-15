@@ -42,12 +42,14 @@ func max(state *checkers.StateByte, alpha float64, beta float64, depth int) Node
 	node.State = state
 	node.Heuristic = math.Inf(-1)
 
-	if depth == 0 {
+	w, _ := state.GameEnd()
+	if depth == 0 || w {
 		node.Heuristic = evaluation(node.State, MAX)
+		lln("Heuristic:", node.Heuristic)
 		return node
 	}
 
-	moves := state.PossibleMovesAll()
+	moves := state.PossibleMovesAll(state.Turn)
 	lln(moves)
 	for move, _ := range moves {
 		newState := state.Copy()
@@ -71,37 +73,35 @@ func max(state *checkers.StateByte, alpha float64, beta float64, depth int) Node
 
 func min(state *checkers.StateByte, alpha float64, beta float64, depth int) Node {
 	lln("MIN")
-	lln(state)
 
 	node := Node{}
-	node.State= state
+	node.State = state
 	node.Heuristic = math.Inf(1)
 
-	if depth == 0 {
+	w, _ := state.GameEnd()
+	if depth == 0 || w {
 		node.Heuristic = evaluation(node.State, MIN)
+		lln("Heuristic:", node.Heuristic)
 		return node
 	}
 
-	for coord, _ := range state.Black {
-		moves := state.PossibleMoves(coord)
-		lln(coord, moves)
+	moves := state.PossibleMovesAll(state.Turn)
+	lln(moves)
+	for move, _ := range moves {
+		newState := state.Copy()
+		newState.Move(move)
 
-		for _, move := range moves {
-			newState := state.Copy()
-			newState.Move(move)
-
-			v := math.Min(node.Heuristic, max(newState, alpha, beta, depth - 1).Heuristic)
-			if v != node.Heuristic {
-				node.Move = move
-			}
-			node.Heuristic = v
-
-			if node.Heuristic <= alpha {
-				return node
-			}
-
-			beta = math.Min(beta, node.Heuristic)
+		v := math.Min(node.Heuristic, max(newState, alpha, beta, depth - 1).Heuristic)
+		if v != node.Heuristic {
+			node.Move = move
 		}
+		node.Heuristic = v
+
+		if node.Heuristic <= alpha {
+			return node
+		}
+
+		beta = math.Min(beta, node.Heuristic)
 	}
 
 	return node

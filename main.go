@@ -48,14 +48,30 @@ func main() {
 
 	// instantitate state
 	state := checkers.NewStateByte(rule, true)
+	fmt.Printf("%#v \n\n", state)
+
+	won := checkers.BLANK
 
 	fmt.Println("\nStarting game\n")
-
 	for true {
-		fmt.Printf("%#v \n\n", state)
+		w, s := state.GameEnd()
+		lln("Game won:", w, s)
+		if w {
+			won = s
+			break
+		}
 
 		if state.Turn == HUMAN {
 			fmt.Println("Human (BLACK) move")
+
+			moves := state.PossibleMovesAll(state.Turn)
+			if len(moves) == 0 {
+				fmt.Println("No more possible moves, skipping")
+				fmt.Println()
+				state.Skip()
+				continue
+			}
+
 			fmt.Println("Enter the move specifying the piece first and then the move: p1,p2 c1,c2")
 			text, err = reader.ReadString('\n')
 			if err != nil {
@@ -64,8 +80,18 @@ func main() {
 			fmt.Println()
 
 			spaceSplit := strings.Split(strings.Trim(text, " \n"), " ")
+			if len(spaceSplit) != 2 {
+				fmt.Println("Invalid input")
+				continue
+			}
+
 			fromText := strings.Split(spaceSplit[0], ",")
 			toText := strings.Split(spaceSplit[1], ",")
+
+			if len(fromText) != 2 || len(toText) != 2 {
+				fmt.Println("Invalid input")
+				continue
+			}
 
 			fromRow, err := strconv.Atoi(fromText[0])
 			if err != nil {
@@ -91,7 +117,6 @@ func main() {
 
 			from := checkers.NewCoordinate(fromRow, fromColumn)
 			to := checkers.NewCoordinate(toRow, toColumn)
-			moves := state.PossibleMovesAll()
 
 			okay := false
 			var move checkers.Move
@@ -107,14 +132,35 @@ func main() {
 			if okay {
 				state.Move(move)
 			} else {
-				fmt.Println(state.Validate(from, to))
+				err := state.Validate(from, to)
+				if err != nil {
+					fmt.Println(err)
+				} else {
+					fmt.Println(checkers.ERROR_MOVE_INVALID)
+				}
 			}
 		} else {
 			fmt.Println("AI (WHITE) move")
-			fmt.Println()
+			if len(state.PossibleMovesAll(state.Turn)) == 0 {
+				fmt.Println("No more possible moves, skipping")
+				state.Skip()
+				continue
+			}
 			move := minimaxAB(state, DEPTH)
-			lln("AI move: ", move)
+			fmt.Println("AI move: ", move)
+			fmt.Println()
 			state.Move(move)
 		}
+
+		fmt.Printf("%#v \n\n", state)
+	}
+
+	switch won {
+	case AI:
+		fmt.Println("You lost!")
+	case HUMAN:
+		fmt.Println("You won!")
+	case checkers.BLANK:
+		fmt.Println("It's a tie!")
 	}
 }
