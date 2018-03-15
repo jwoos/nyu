@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/jwoos/go_checkers"
 )
@@ -146,8 +147,14 @@ func main() {
 				state.Skip()
 				continue
 			}
-			move := minimaxAB(state, DEPTH)
-			fmt.Println("AI move: ", move)
+
+			start := time.Now()
+			move, stat := minimaxAB(state, DEPTH)
+			elapsed := time.Since(start)
+
+			fmt.Println("AI move:", move)
+			fmt.Println("Time elapsed:", elapsed)
+			fmt.Println(stat)
 			fmt.Println()
 			state.Move(move)
 		}
