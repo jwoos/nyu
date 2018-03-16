@@ -61,11 +61,13 @@ float rate = 1;
 mat4 rotationMatrix(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(0, 0, 0, 1));
 Entity _sphere;
 
+// distance between two points
 float distance(const vec3& a, const vec3& b) {
 	vec3 dist = a - b;
 	return sqrt(dot(dist, dist));
 }
 
+// reads in points into spherePoints
 void readFile() {
 	string filename;
 
@@ -143,6 +145,7 @@ void drawObj(GLuint buffer, int num_vertices) {
 	glDisableVertexAttribArray(vColor);
 }
 
+// set up floor
 void floor(void) {
 	_floor.size = 6;
 	_floor.points = new vec3[_floor.size];
@@ -160,6 +163,7 @@ void floor(void) {
 	}
 }
 
+// set up lines for axes
 void axis(void) {
 	_axis.size = 9;
 
@@ -185,6 +189,7 @@ void axis(void) {
 	}
 }
 
+// set up sphere
 void sphere(void) {
 	_sphere.size = spherePoints.size();
 
@@ -196,6 +201,7 @@ void sphere(void) {
 	}
 }
 
+// set up things needed for sphere rotation
 void sphereRotation(void) {
 	vec3 y(0, 1, 0);
 
@@ -272,7 +278,6 @@ void display(void) {
 
 	// draw floor
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	drawObj(_floor.buffer, _floor.size);
 
 	// draw axes lines
