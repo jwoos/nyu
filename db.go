@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"log"
 
+	"github.com/jinzhu/gorm"
 	"github.com/go-sql-driver/mysql"
 )
 

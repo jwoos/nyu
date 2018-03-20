@@ -11,6 +11,7 @@ import (
 func newRouter() *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/status", status).Methods("GET")
+
 	return router
 }
 
