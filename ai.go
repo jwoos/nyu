@@ -203,12 +203,13 @@ func min(state *checkers.StateByte, alpha float64, beta float64, depth int, stat
 
 		// v <= alpha - should it be pruned?
 		if node.Heuristic >= beta {
-		if node.Heuristic <= alpha {
-			stat.MinPruned++
-			return node
-		}
+			if node.Heuristic <= alpha {
+				stat.MinPruned++
+				return node
+			}
 
-		beta = math.Min(beta, node.Heuristic)
+			beta = math.Min(beta, node.Heuristic)
+		}
 	}
 
 	return node
