@@ -38,11 +38,43 @@ func (stat Stat) GoString() string {
 // check for movable and safe count
 func evaluation(state *checkers.StateByte, who byte) float64 {
 	lln("EVALUATION")
+	var evaluation float64
+
 	if who == MAX {
-		return float64(len(state.White)) / float64(len(state.Black)) + float64(len(state.PossibleMovesAll(who)))
+		// ratio of own piece to oppponent pieces
+		evaluation = float64(len(state.White)) / float64(len(state.Black))
+
+		// capture moves
+		captureMoves := len(state.PossibleCaptureMovesAll(MAX))
+		evaluation += 1.5 * float64(captureMoves)
+
+		// how many possible moves
+		evaluation += 0.5 * float64(len(state.PossibleMovesAll(MAX)) - captureMoves)
+
+		// how many pieces are in danger
+		danger := make(map[checkers.Coordinate]bool)
+		for move, _ := range state.PossibleCaptureMovesAll(MIN) {
+			danger[move.Jump] = true
+		}
+
+		evaluation += float64(len(state.White) - len(danger))
 	} else {
-		return -float64(len(state.Black)) / float64(len(state.White)) - float64(len(state.PossibleMovesAll(who)))
+		evaluation = -float64(len(state.Black)) / float64(len(state.White))
+
+		captureMoves := len(state.PossibleCaptureMovesAll(MIN))
+		evaluation -= 1.5 * float64(captureMoves)
+
+		evaluation -= 0.5 * float64(len(state.PossibleMovesAll(MIN)) - captureMoves)
+
+		danger := make(map[checkers.Coordinate]bool)
+		for move, _ := range state.PossibleCaptureMovesAll(MAX) {
+			danger[move.Jump] = true
+		}
+
+		evaluation -= float64(len(state.Black) - len(danger))
 	}
+
+	return evaluation
 }
 
 func minimaxAB(state *checkers.StateByte, depth int) (checkers.Move, Stat) {

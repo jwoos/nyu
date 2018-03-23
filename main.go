@@ -54,6 +54,7 @@ func main() {
 	won := checkers.BLANK
 
 	fmt.Println("\nStarting game\n")
+	// keep looping until game is over
 	for true {
 		w, s := state.GameEnd()
 		lln("Game won:", w, s)
@@ -141,6 +142,7 @@ func main() {
 				}
 			}
 		} else {
+			// AI move
 			fmt.Println("AI (WHITE) move")
 			if len(state.PossibleMovesAll(state.Turn)) == 0 {
 				fmt.Println("No more possible moves, skipping")
