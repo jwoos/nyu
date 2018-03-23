@@ -34,7 +34,7 @@ func main() {
 	}
 
 	var firstMove byte
-	var side int
+	var side byte
 
 	if strings.Trim(text, "\n ") == "y" {
 		firstMove = HUMAN
