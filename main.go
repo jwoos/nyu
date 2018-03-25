@@ -15,8 +15,6 @@ import (
 
 	"github.com/asticode/go-astilectron"
 	"github.com/asticode/go-astilectron-bootstrap"
-	"github.com/asticode/go-astilog"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -33,15 +31,14 @@ var (
 
 
 func gui() {
-	var (
-		AppName string
-		w       *astilectron.Window
-	)
+	// Constants
+	const htmlAbout = `Welcome on <b>Astilectron</b> demo!<br>
+	This is using the bootstrap and the bundler.`
 
-	astilog.FlagInit()
+	// Vars
+	var AppName string
 
-	// Run bootstrap
-	err := bootstrap.Run(bootstrap.Options{
+	bootstrap.Run(bootstrap.Options{
 		Asset: Asset,
 		AstilectronOptions: astilectron.Options{
 			AppName:            AppName,
@@ -55,18 +52,9 @@ func gui() {
 			SubMenu: []*astilectron.MenuItemOptions{
 				{Role: astilectron.MenuItemRoleClose},
 			},
-		}},,
-		OnWait: func(_ *astilectron.Astilectron, iw *astilectron.Window, _ *astilectron.Menu, _ *astilectron.Tray, _ *astilectron.Menu) error {
-			w = iw
-			go func() {
-				time.Sleep(5 * time.Second)
-				if err := bootstrap.SendMessage(w, "check.out.menu", "Don't forget to check out the menu!"); err != nil {
-					astilog.Error(errors.Wrap(err, "sending check.out.menu event failed"))
-				}
-			}()
-			return nil
-		},
-		MessageHandler: nil,
+		}},
+		OnWait: nil,
+		MessageHandler: handleMessages,
 		RestoreAssets:  RestoreAssets,
 		WindowOptions: &astilectron.WindowOptions{
 			BackgroundColor: astilectron.PtrStr("#333"),
@@ -75,10 +63,6 @@ func gui() {
 			Width:           astilectron.PtrInt(700),
 		},
 	})
-
-	if err != nil {
-		astilog.Fatal(errors.Wrap(err, "running bootstrap failed"))
-	}
 }
 
 func cli() {
@@ -233,7 +217,7 @@ func cli() {
 
 
 func main() {
-	flag.BoolVar(&GUI, "GUI", false, "Initialize with a GUI")
+	flag.BoolVar(&GUI, "gui", false, "Initialize with a GUI")
 	flag.BoolVar(&DEBUG, "debug", false, "Debug mode")
 	flag.IntVar(&DEPTH, "depth", 20, "Depth of minimax")
 	flag.IntVar(&LEVEL, "difficulty", 3, "Difficulty indicated from 1 - 3 with 3 being the hardest")
@@ -244,8 +228,8 @@ func main() {
 	rand.Seed(time.Now().Unix())
 
 	if GUI {
-		cli()
-	} else {
 		gui()
+	} else {
+		cli()
 	}
 }
