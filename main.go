@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"strconv"
 	"strings"
@@ -18,13 +19,22 @@ const (
 	AI    byte = checkers.WHITE
 )
 
-var DEBUG bool
-var DEPTH int
+var (
+	LEVEL int
+	DEBUG bool
+	DEPTH int
+)
+
 
 func main() {
 	flag.BoolVar(&DEBUG, "debug", false, "Debug mode")
-	flag.IntVar(&DEPTH, "depth", 15, "Depth of minimax")
+	flag.IntVar(&DEPTH, "depth", 14, "Depth of minimax")
+	flag.IntVar(&LEVEL, "difficulty", 3, "Difficulty indicated from 1 - 3 with 3 being the hardest")
 	flag.Parse()
+
+	lln("debug:", DEBUG, "depth:", DEPTH, "difficulty:", LEVEL)
+
+	rand.Seed(time.Now().Unix())
 
 	fmt.Println("Will you go first? (y/n)")
 	reader := bufio.NewReader(os.Stdin)
@@ -146,6 +156,7 @@ func main() {
 			fmt.Println("AI (WHITE) move")
 			if len(state.PossibleMovesAll(state.Turn)) == 0 {
 				fmt.Println("No more possible moves, skipping")
+				fmt.Println()
 				state.Skip()
 				continue
 			}

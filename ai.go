@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math"
+	"math/rand"
 
 	"github.com/jwoos/go_checkers"
 )
@@ -35,52 +36,116 @@ func (stat Stat) GoString() string {
 	return stat.String()
 }
 
-// check for movable and safe count
-func evaluation(state *checkers.StateByte, who byte) float64 {
-	lln("EVALUATION")
-	var evaluation float64
+func evaluation1(state *checkers.StateByte, who byte) float64 {
+	var eval float64
+
+	if who == MAX {
+		// ratio of own piece to oppponent pieces with a random component
+		eval = float64(len(state.White)) / float64(len(state.Black))
+
+		// random skew
+		eval -= rand.Float64() * 10
+	} else {
+		// ratio of own piece to oppponent pieces with a random component
+		eval = -float64(len(state.Black)) / float64(len(state.White))
+
+		// random skew
+		eval += rand.Float64() * 10
+	}
+
+	return eval
+}
+
+func evaluation2(state *checkers.StateByte, who byte) float64 {
+	var eval float64
 
 	if who == MAX {
 		// ratio of own piece to oppponent pieces
-		evaluation = float64(len(state.White)) / float64(len(state.Black))
+		eval = float64(len(state.White)) / float64(len(state.Black))
 
 		// capture moves
 		captureMoves := len(state.PossibleCaptureMovesAll(MAX))
-		evaluation += 1.5 * float64(captureMoves)
+		eval += float64(captureMoves)
 
 		// how many possible moves
-		evaluation += 0.5 * float64(len(state.PossibleMovesAll(MAX)) - captureMoves)
+		eval += float64(len(state.PossibleMovesAll(MAX)) - captureMoves)
 
-		// how many pieces are in danger
-		danger := make(map[checkers.Coordinate]bool)
-		for move, _ := range state.PossibleCaptureMovesAll(MIN) {
-			danger[move.Jump] = true
-		}
-
-		// how many are safe based on how many are in danger
-		evaluation += float64(len(state.White) - len(danger))
+		// random skew
+		eval -= rand.Float64() * 10
 	} else {
 		// ratio of own piece to oppponent pieces
-		evaluation = -float64(len(state.Black)) / float64(len(state.White))
+		eval = -float64(len(state.Black)) / float64(len(state.White))
 
 		// capture moves
 		captureMoves := len(state.PossibleCaptureMovesAll(MIN))
-		evaluation -= 1.5 * float64(captureMoves)
+		eval -= float64(captureMoves)
 
 		// how many possible moves
-		evaluation -= 0.5 * float64(len(state.PossibleMovesAll(MIN)) - captureMoves)
+		eval -= float64(len(state.PossibleMovesAll(MIN)) - captureMoves)
 
-		// how many pieces are in danger
-		danger := make(map[checkers.Coordinate]bool)
-		for move, _ := range state.PossibleCaptureMovesAll(MAX) {
-			danger[move.Jump] = true
-		}
-
-		// how many are safe based on how many are in danger
-		evaluation -= float64(len(state.Black) - len(danger))
+		// random skew
+		eval += rand.Float64() * 10
 	}
 
-	return evaluation
+	return eval
+}
+
+func evaluation3(state *checkers.StateByte, who byte) float64 {
+	var own byte
+	var oppponent byte
+	var ownPieceCount float64
+
+	if who == MAX {
+		own = MAX
+		oppponent = MIN
+
+		ownPieceCount = float64(len(state.White))
+	} else {
+		own = MIN
+		oppponent = MAX
+
+		ownPieceCount = float64(len(state.Black))
+	}
+
+	// ratio of own piece to original pieces
+	eval := 0.5 * (ownPieceCount / 6)
+
+	// how many possible moves out of maximum possible
+	eval += 0.25 * (float64(len(state.PossibleMovesAll(own))) / (ownPieceCount * 2))
+
+	// how many pieces are in danger
+	danger := make(map[checkers.Coordinate]bool)
+	for move, _ := range state.PossibleCaptureMovesAll(oppponent) {
+		danger[move.Jump] = true
+	}
+
+	// how many are safe based on how many are in danger out of how many available
+	eval += 0.25 * ((ownPieceCount - float64(len(danger))) / ownPieceCount)
+
+	if who == MIN {
+		eval *= -1
+	}
+
+	return eval
+}
+
+// check for movable and safe count
+func evaluation(state *checkers.StateByte, who byte) float64 {
+	lln("EVALUATION")
+
+	switch LEVEL {
+	case 1:
+		return evaluation1(state, who)
+
+	case 2:
+		return evaluation2(state, who)
+
+	case 3:
+		fallthrough
+
+	default:
+		return evaluation3(state, who)
+	}
 }
 
 // minimax driver
@@ -138,10 +203,7 @@ func max(state *checkers.StateByte, alpha float64, beta float64, depth int, stat
 
 		// branch deeper
 		v := math.Max(node.Heuristic, min(newState, alpha, beta, depth-1, stat).Heuristic)
-		// if the current value is different from the heuristic, change the move
-		if v != node.Heuristic {
-			node.Move = move
-		}
+		node.Move = move
 		node.Heuristic = v
 
 		// v >= beta should it be pruned?
@@ -166,8 +228,10 @@ func min(state *checkers.StateByte, alpha float64, beta float64, depth int, stat
 
 	node := Node{}
 	node.State = state
+	// v value
 	node.Heuristic = math.Inf(1)
 
+	// check if game is over
 	w, s := state.GameEnd()
 	if w {
 		if s == MAX {
@@ -195,21 +259,16 @@ func min(state *checkers.StateByte, alpha float64, beta float64, depth int, stat
 
 		// branch deeper
 		v := math.Min(node.Heuristic, max(newState, alpha, beta, depth-1, stat).Heuristic)
-		// if the current value is different from the heuristic, change the move
-		if v != node.Heuristic {
-			node.Move = move
-		}
+		node.Move = move
 		node.Heuristic = v
 
 		// v <= alpha - should it be pruned?
-		if node.Heuristic >= beta {
-			if node.Heuristic <= alpha {
-				stat.MinPruned++
-				return node
-			}
-
-			beta = math.Min(beta, node.Heuristic)
+		if node.Heuristic <= alpha {
+			stat.MinPruned++
+			return node
 		}
+
+		beta = math.Min(beta, node.Heuristic)
 	}
 
 	return node
