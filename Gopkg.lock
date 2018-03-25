@@ -3,13 +3,113 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/akavel/rsrc"
+  packages = [
+    "binutil",
+    "coff",
+    "ico",
+    "internal",
+    "rsrc"
+  ]
+  revision = "f6a15ece2cfd2560077c556499f19340ddc768e9"
+
+[[projects]]
+  name = "github.com/asticode/go-astilectron"
+  packages = ["."]
+  revision = "2cc41c241216d45ccdae1fb2af7e5d114855cc74"
+
+[[projects]]
+  name = "github.com/asticode/go-astilectron-bootstrap"
+  packages = ["."]
+  revision = "e777aa2beef481bd163363b7b9d2165f01b89817"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/asticode/go-astilectron-bundler"
+  packages = ["."]
+  revision = "c9aa756170b8ee1a40f9f3640d34e8f6fbc80f6b"
+
+[[projects]]
+  name = "github.com/asticode/go-astilog"
+  packages = ["."]
+  revision = "9566758383acb7abb2836c0f54562c34eb84f8ed"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/asticode/go-astitools"
+  packages = [
+    "context",
+    "exec",
+    "http",
+    "io",
+    "os",
+    "ptr",
+    "regexp",
+    "url",
+    "zip"
+  ]
+  revision = "29171cb43252f23536ef331763674ab8a2bbc332"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/asticode/go-bindata"
+  packages = ["."]
+  revision = "a0ff2567cfb70903282db057e799fd826784d41d"
+
+[[projects]]
+  name = "github.com/julienschmidt/httprouter"
+  packages = ["."]
+  revision = "8c199fb6259ffc1af525cc3ad52ee60ba8359669"
+  version = "v1.1"
+
+[[projects]]
+  branch = "master"
   name = "github.com/jwoos/go_checkers"
   packages = ["."]
   revision = "72cbafa7f288caf2bdfa2e2f0016588cc6a06095"
 
+[[projects]]
+  name = "github.com/mattn/go-colorable"
+  packages = ["."]
+  revision = "167de6bfdfba052fa6b2d3664c8f5272e23c9072"
+  version = "v0.0.9"
+
+[[projects]]
+  name = "github.com/mattn/go-isatty"
+  packages = ["."]
+  revision = "0360b2af4f38e8d38c7fce2a9f4e702702d73a39"
+  version = "v0.0.3"
+
+[[projects]]
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
+
+[[projects]]
+  name = "github.com/sirupsen/logrus"
+  packages = ["."]
+  revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
+  version = "v1.0.5"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/crypto"
+  packages = ["ssh/terminal"]
+  revision = "88942b9c40a4c9d203b82b3731787b672d6e809b"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/sys"
+  packages = [
+    "unix",
+    "windows"
+  ]
+  revision = "91ee8cde435411ca3f1cd365e8f20131aed4d0a1"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "14cbaebd53d4f92282bfc9d69325dba67203578296dab4740cb23e8fcf5a506f"
+  inputs-digest = "352543ee48478d84fb5e1958fac14fe93d343b2ebd6ac895b24643aa71d0b8c0"
   solver-name = "gps-cdcl"
   solver-version = 1

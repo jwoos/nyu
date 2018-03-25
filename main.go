@@ -12,6 +12,11 @@ import (
 	"time"
 
 	"github.com/jwoos/go_checkers"
+
+	"github.com/asticode/go-astilectron"
+	"github.com/asticode/go-astilectron-bootstrap"
+	"github.com/asticode/go-astilog"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -22,20 +27,61 @@ const (
 var (
 	LEVEL int
 	DEBUG bool
+	GUI  bool
 	DEPTH int
 )
 
 
-func main() {
-	flag.BoolVar(&DEBUG, "debug", false, "Debug mode")
-	flag.IntVar(&DEPTH, "depth", 14, "Depth of minimax")
-	flag.IntVar(&LEVEL, "difficulty", 3, "Difficulty indicated from 1 - 3 with 3 being the hardest")
-	flag.Parse()
+func gui() {
+	var (
+		AppName string
+		w       *astilectron.Window
+	)
 
-	lln("debug:", DEBUG, "depth:", DEPTH, "difficulty:", LEVEL)
+	astilog.FlagInit()
 
-	rand.Seed(time.Now().Unix())
+	// Run bootstrap
+	err := bootstrap.Run(bootstrap.Options{
+		Asset: Asset,
+		AstilectronOptions: astilectron.Options{
+			AppName:            AppName,
+			AppIconDarwinPath:  "resources/icon.icns",
+			AppIconDefaultPath: "resources/icon.png",
+		},
+		Debug: DEBUG,
+		Homepage: "index.html",
+		MenuOptions: []*astilectron.MenuItemOptions{{
+			Label: astilectron.PtrStr("File"),
+			SubMenu: []*astilectron.MenuItemOptions{
+				{Role: astilectron.MenuItemRoleClose},
+			},
+		}},,
+		OnWait: func(_ *astilectron.Astilectron, iw *astilectron.Window, _ *astilectron.Menu, _ *astilectron.Tray, _ *astilectron.Menu) error {
+			w = iw
+			go func() {
+				time.Sleep(5 * time.Second)
+				if err := bootstrap.SendMessage(w, "check.out.menu", "Don't forget to check out the menu!"); err != nil {
+					astilog.Error(errors.Wrap(err, "sending check.out.menu event failed"))
+				}
+			}()
+			return nil
+		},
+		MessageHandler: nil,
+		RestoreAssets:  RestoreAssets,
+		WindowOptions: &astilectron.WindowOptions{
+			BackgroundColor: astilectron.PtrStr("#333"),
+			Center:          astilectron.PtrBool(true),
+			Height:          astilectron.PtrInt(700),
+			Width:           astilectron.PtrInt(700),
+		},
+	})
 
+	if err != nil {
+		astilog.Fatal(errors.Wrap(err, "running bootstrap failed"))
+	}
+}
+
+func cli() {
 	fmt.Println("Will you go first? (y/n)")
 	reader := bufio.NewReader(os.Stdin)
 	text, err := reader.ReadString('\n')
@@ -182,5 +228,24 @@ func main() {
 		fmt.Println("You won!")
 	case checkers.BLANK:
 		fmt.Println("It's a tie!")
+	}
+}
+
+
+func main() {
+	flag.BoolVar(&GUI, "GUI", false, "Initialize with a GUI")
+	flag.BoolVar(&DEBUG, "debug", false, "Debug mode")
+	flag.IntVar(&DEPTH, "depth", 20, "Depth of minimax")
+	flag.IntVar(&LEVEL, "difficulty", 3, "Difficulty indicated from 1 - 3 with 3 being the hardest")
+	flag.Parse()
+
+	lln("debug:", DEBUG, "depth:", DEPTH, "difficulty:", LEVEL)
+
+	rand.Seed(time.Now().Unix())
+
+	if GUI {
+		cli()
+	} else {
+		gui()
 	}
 }
