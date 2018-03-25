@@ -92,35 +92,31 @@ func evaluation2(state *checkers.StateByte, who byte) float64 {
 
 func evaluation3(state *checkers.StateByte, who byte) float64 {
 	var own byte
-	var oppponent byte
+	//var oppponent byte
 	var ownPieceCount float64
+	var oppponentPieceCount float64
 
 	if who == MAX {
 		own = MAX
-		oppponent = MIN
+		//oppponent = MIN
 
 		ownPieceCount = float64(len(state.White))
+		oppponentPieceCount = float64(len(state.Black))
 	} else {
 		own = MIN
-		oppponent = MAX
+		//oppponent = MAX
 
 		ownPieceCount = float64(len(state.Black))
+		oppponentPieceCount = float64(len(state.White))
 	}
 
 	// ratio of own piece to original pieces
-	eval := 0.5 * (ownPieceCount / 6)
+	eval := 0.3 * (ownPieceCount / 6)
+
+	eval += 0.6 * (1 - (oppponentPieceCount / 6))
 
 	// how many possible moves out of maximum possible
-	eval += 0.25 * (float64(len(state.PossibleMovesAll(own))) / (ownPieceCount * 2))
-
-	// how many pieces are in danger
-	danger := make(map[checkers.Coordinate]bool)
-	for move, _ := range state.PossibleCaptureMovesAll(oppponent) {
-		danger[move.Jump] = true
-	}
-
-	// how many are safe based on how many are in danger out of how many available
-	eval += 0.25 * ((ownPieceCount - float64(len(danger))) / ownPieceCount)
+	eval += 0.1 * (float64(len(state.PossibleMovesAll(own))) / (ownPieceCount * 2))
 
 	if who == MIN {
 		eval *= -1
