@@ -15,17 +15,18 @@ const (
 )
 
 var (
-	FIRST byte
+	FIRST      byte
 	FIRST_UINT uint
-	SIDE byte
-	SIDE_UINT uint
-	LEVEL int
-	DEBUG bool
-	GUI  bool
-	DEPTH int
+	SIDE       byte
+	SIDE_UINT  uint
+	LEVEL      int
+	DEBUG      bool
+	GUI        bool
+	DEPTH      int
 )
 
 func main() {
+	// parse commandline flags
 	flag.UintVar(&FIRST_UINT, "first", uint(HUMAN), fmt.Sprintf("Who should go first, %d for human and %d for ai", HUMAN, AI))
 	flag.BoolVar(&GUI, "gui", false, "Initialize with a GUI")
 	flag.BoolVar(&DEBUG, "debug", false, "Debug mode")
@@ -35,9 +36,9 @@ func main() {
 
 	FIRST = byte(FIRST_UINT)
 	if FIRST == HUMAN {
-		SIDE = checkers.BOTTOM;
+		SIDE = checkers.BOTTOM
 	} else {
-		SIDE = checkers.TOP;
+		SIDE = checkers.TOP
 	}
 
 	lln("debug:", DEBUG, "depth:", DEPTH, "difficulty:", LEVEL)

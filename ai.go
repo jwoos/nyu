@@ -1,3 +1,5 @@
+/* AI's searching algorithm
+ */
 package main
 
 import (
@@ -24,7 +26,7 @@ type Stat struct {
 
 	MinPruned uint
 	MaxPruned uint
-	Levels int
+	Levels    int
 	Generated uint
 }
 
@@ -36,6 +38,7 @@ func (stat Stat) GoString() string {
 	return stat.String()
 }
 
+// easiest evaluation
 func evaluation1(state *checkers.StateByte, who byte) float64 {
 	var eval float64
 
@@ -56,6 +59,7 @@ func evaluation1(state *checkers.StateByte, who byte) float64 {
 	return eval
 }
 
+// medium evaluation
 func evaluation2(state *checkers.StateByte, who byte) float64 {
 	var eval float64
 
@@ -90,6 +94,7 @@ func evaluation2(state *checkers.StateByte, who byte) float64 {
 	return eval
 }
 
+// hardest evaluation
 func evaluation3(state *checkers.StateByte, who byte) float64 {
 	var own byte
 	//var oppponent byte
@@ -125,7 +130,7 @@ func evaluation3(state *checkers.StateByte, who byte) float64 {
 	return eval
 }
 
-// check for movable and safe count
+// evaluation driver
 func evaluation(state *checkers.StateByte, who byte) float64 {
 	lln("EVALUATION")
 
@@ -153,13 +158,14 @@ func minimaxAB(state *checkers.StateByte, depth int) (checkers.Move, Stat) {
 	stat.Start = depth
 	move := max(state, math.Inf(-1), math.Inf(1), depth, &stat).Move
 	lln(stat)
+
 	return move, stat
 }
 
 // max player's move
 func max(state *checkers.StateByte, alpha float64, beta float64, depth int, stat *Stat) Node {
 	// check if current depth is higher than previously set max
-	if stat.Start - depth > stat.Levels {
+	if stat.Start-depth > stat.Levels {
 		stat.Levels = stat.Start - depth
 	}
 	// incremenet for node generated
@@ -216,7 +222,7 @@ func max(state *checkers.StateByte, alpha float64, beta float64, depth int, stat
 
 // min player's move
 func min(state *checkers.StateByte, alpha float64, beta float64, depth int, stat *Stat) Node {
-	if stat.Start - depth > stat.Levels {
+	if stat.Start-depth > stat.Levels {
 		stat.Levels = stat.Start - depth
 	}
 	stat.Generated++
