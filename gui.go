@@ -17,6 +17,9 @@ func gui() {
 	var rule checkers.Rule
 	var state *checkers.StateByte
 
+	rule = checkers.NewRule(6, 6, FIRST, SIDE, 2, false, false, false)
+	state = checkers.NewStateByte(rule, true)
+
 	bootstrap.Run(bootstrap.Options{
 		Asset: Asset,
 		AstilectronOptions: astilectron.Options{
@@ -38,15 +41,14 @@ func gui() {
 
 			switch message.Name {
 			case "initialize":
-				rule = checkers.NewRule(6, 6, FIRST, SIDE, 2, false, false, false)
-				state = checkers.NewStateByte(rule, true)
-
 				// astilectron doesn't play well with bytes
 				response := NewMessage(
 					arrayBytetoUint(state.Board),
 					uint(state.Turn),
 					"",
 					false,
+					false,
+					uint(checkers.BLANK),
 				)
 
 				return response, nil
@@ -63,12 +65,13 @@ func gui() {
 					return err, err
 				}
 
-				//skip := skipIfNecessary(state)
 				response := NewMessage(
 					arrayBytetoUint(state.Board),
 					uint(state.Turn),
 					"",
 					false,
+					false,
+					uint(checkers.BLANK),
 				)
 
 				return response, nil
@@ -80,16 +83,33 @@ func gui() {
 
 				state.Move(move)
 
-				//skip := skipIfNecessary(state)
 				response := NewMessage(
 					arrayBytetoUint(state.Board),
 					uint(state.Turn),
 					fmt.Sprintf("AI move: %v \n Time elapsed: %v \n%v", move, elapsed, stat),
 					false,
+					false,
+					uint(checkers.BLANK),
 				)
 
 				return response, nil
-				return arrayBytetoUint(state.Board), nil
+
+			case "check":
+				win, side := state.GameEnd()
+				skip := false
+				if (!win) {
+					skip = skipIfNecessary(state)
+				}
+				response := NewMessage(
+					arrayBytetoUint(state.Board),
+					uint(state.Turn),
+					"",
+					skip,
+					win,
+					uint(side),
+				)
+
+				return response, nil
 			}
 
 			return "", nil

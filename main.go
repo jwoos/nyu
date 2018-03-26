@@ -27,7 +27,6 @@ var (
 
 func main() {
 	flag.UintVar(&FIRST_UINT, "first", uint(HUMAN), fmt.Sprintf("Who should go first, %d for human and %d for ai", HUMAN, AI))
-	flag.UintVar(&SIDE_UINT, "side", uint(checkers.BOTTOM), "Which side")
 	flag.BoolVar(&GUI, "gui", false, "Initialize with a GUI")
 	flag.BoolVar(&DEBUG, "debug", false, "Debug mode")
 	flag.IntVar(&DEPTH, "depth", 20, "Depth of minimax")
@@ -35,7 +34,11 @@ func main() {
 	flag.Parse()
 
 	FIRST = byte(FIRST_UINT)
-	SIDE = byte(SIDE_UINT)
+	if FIRST == HUMAN {
+		SIDE = checkers.BOTTOM;
+	} else {
+		SIDE = checkers.TOP;
+	}
 
 	lln("debug:", DEBUG, "depth:", DEPTH, "difficulty:", LEVEL)
 

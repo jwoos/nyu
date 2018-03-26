@@ -9,14 +9,18 @@ type Message struct {
 	Turn uint `json:"turn"`
 	Info string `json:"info"`
 	Skip bool `json:"skip"`
+	Win bool `json:"win"`
+	Side uint `json:"side"`
 }
 
-func NewMessage(board [][]uint, turn uint, info string, skip bool) Message {
+func NewMessage(board [][]uint, turn uint, info string, skip bool, win bool, side uint) Message {
 	return Message{
 		Board: board,
 		Turn: turn,
 		Info: info,
 		Skip: skip,
+		Win: win,
+		Side: side,
 	}
 }
 
