@@ -5,6 +5,7 @@ let global = {};
 const WHITE = 1;
 const BLACK = 2;
 
+// sending message as a promisified function
 const post = (outgoing) => {
 	return new Promise((resolve, reject) => {
 		astilectron.sendMessage(outgoing, (incoming) => {
@@ -18,10 +19,12 @@ const post = (outgoing) => {
 	});
 };
 
+// non blocking sleep
 const sleep = (ms) => {
   return new Promise(resolve => setTimeout(resolve, ms));
 };
 
+// create the board and add appropriate event listeners
 const initializeBoard = () => {
 	// initialize board
 	global.board = [];
@@ -77,6 +80,7 @@ const initializeBoard = () => {
 	global.eventListeners = [];
 };
 
+// tell the server to initialize the game
 const initializeGame = () => {
 	post({'name': 'initialize'}).then(async (msg) => {
 		console.log(msg);
@@ -89,6 +93,7 @@ const initializeGame = () => {
 	});
 };
 
+// clear event listeners and reset the board
 const clear = () => {
 	for (let val of global.eventListeners) {
 		val.element.removeEventListener('click', val.handler);
@@ -103,6 +108,7 @@ const clear = () => {
 	}
 };
 
+// update the render based on the new data returned
 const update = (payload) => {
 	let byteboard = payload.board;
 	let turn = payload.turn;
@@ -153,6 +159,7 @@ const update = (payload) => {
 	document.querySelector('#info').innerText = info;
 };
 
+// move the ai and then do a check
 const aiMove = async () => {
 	let msg = await post({'name': 'ai-move'});
 	console.log('ai move complete:', msg.payload);
@@ -162,6 +169,7 @@ const aiMove = async () => {
 	check(msg.payload);
 };
 
+// move the human and then do a check
 const humanMove = async (i, j) => {
 	let msg;
 	try {
@@ -181,6 +189,7 @@ const humanMove = async (i, j) => {
 	aiMove();
 };
 
+// clear event listeners and effectively end the game
 const cleanUp = () => {
 	for (let val of global.eventListeners) {
 		val.element.removeEventListener('click', val.handler);
@@ -191,6 +200,7 @@ const cleanUp = () => {
 	document.querySelector('#info').innerText = 'Game over\nRestart to play another game';
 };
 
+// check if game end or turn skip
 const check = (payload) => {
 	let cont = true;
 
@@ -224,6 +234,7 @@ const check = (payload) => {
 	return cont;
 };
 
+// this should only start when the server is ready
 document.addEventListener('astilectron-ready', () => {
 	console.log('astilectron loaded');
 

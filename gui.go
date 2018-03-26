@@ -42,8 +42,6 @@ func gui() {
 		 * messages are keyed by the name
 		 */
 		MessageHandler: func(w *astilectron.Window, message bootstrap.MessageIn) (interface{}, error) {
-			w.OpenDevTools()
-
 			switch message.Name {
 
 			// called when electron is done setting up
@@ -129,7 +127,7 @@ func gui() {
 						fmt.Println()
 					}
 				} else {
-					switch win {
+					switch side {
 					case AI:
 						fmt.Println("You lost!")
 					case HUMAN:
