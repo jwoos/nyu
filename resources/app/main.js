@@ -1,22 +1,26 @@
 'use strict';
 
-let coord = null;
+let global = {};
+
+const WHITE = 1;
+const BLACK = 2;
 
 const post = (outgoing) => {
 	return new Promise((resolve, reject) => {
 		astilectron.sendMessage(outgoing, (incoming) => {
-			if (incoming.name === 'error') {
-				reject(incoming);
-			} else {
-				resolve(incoming);
+			if (incoming.name === "error") {
+				reject(incoming.payload.Message);
+				return;
 			}
+
+			resolve(incoming);
 		});
 	});
 };
 
 const initializeBoard = () => {
 	// initialize board
-	window.board = [];
+	global.board = [];
 	for (let i = 5; i >= 0; i--) {
 		let row = document.createElement('div');
 		row.className = 'row';
@@ -43,36 +47,49 @@ const initializeBoard = () => {
 			// listener
 			square.addEventListener('click', (event) => {
 				event.stopPropagation = true;
-				if (coord === null) {
-					console.log(i, j);
-				} else {
-					post({"name": "human-move", "payload": {"from": coord, "to": [i, j]}}).then((msg) => {
-						updateBoard(msg.payload.board);
-						updateOther(msg.turn, msg.info);
-						return post({"name": "ai-move"});
-					}, alert).then((msg) => {
-						updateBoard(msg.payload);
-						updateOther(msg.turn, msg.info);
-					}, alert);
+				if (global.turn != BLACK) {
+					return;
 				}
+
+				if (global.coord === null) {
+					console.log(i, j);
+					return;
+				}
+
+				post({"name": "human-move", "payload": {"from": global.coord, "to": [i, j]}}).then((msg) => {
+					console.log("human move complete:", msg.payload);
+					update(msg.payload);
+					return post({"name": "ai-move"});
+				}, (err) => {
+					alert(err);
+					return false;
+				}).then((msg) => {
+					if (msg === false) {
+						return;
+					}
+
+					console.log("ai move complete:", msg.payload);
+					update(msg.payload);
+				}, alert);
+
+				global.coord = null;
 			});
 
 			rowDom.push(square);
 			row.appendChild(square);
 		}
 
-		board.push(rowDom);
+		global.board.push(rowDom);
 		document.querySelector('#board').appendChild(row);
 	}
 
-	window.board = window.board.reverse();
+	global.board = global.board.reverse();
 };
 
 const initializeGame = () => {
 	post({'name': 'initialize'}).then((msg) => {
 		console.log(msg);
-		//updateBoard(msg.payload);
-		//updateOther(msg.turn, msg.info);
+		update(msg.payload);
 	});
 };
 
@@ -84,47 +101,48 @@ const clear = (board) => {
 	}
 };
 
-const updateBoard = (byteboard) => {
-	window.byteboard = byteboard;
+const update = (payload) => {
+	let byteboard = payload.board;
+	let turn = payload.turn;
+	let info = payload.info;
 
-	clear(window.board);
+	global.byteboard = byteboard;
+	global.turn = turn;
+
+	clear(global.board);
 
 	for (let i = 0; i < 6; i++) {
 		for (let j = 0; j < 6; j++) {
-			if (byteboard[i][j] === 1) {
+			if (byteboard[i][j] === WHITE) {
 				let piece = document.createElement('div');
 				piece.className = 'piece white';
-				board[i][j].appendChild(piece);
-
-				piece.addEventListener('click', (event) => {
-					event.stopPropagation();
-					coord = [i, j];
-				});
-			} else if (byteboard[i][j] == 2) {
+				global.board[i][j].appendChild(piece);
+			} else if (byteboard[i][j] == BLACK) {
 				let piece = document.createElement('div');
 				piece.className = 'piece black';
-				board[i][j].appendChild(piece);
+				global.board[i][j].appendChild(piece);
 
 				piece.addEventListener('click', (event) => {
 					event.stopPropagation();
-					coord = [i, j];
+
+					if (global.turn != BLACK) {
+						return;
+					}
+
+					global.coord = [i, j];
 				});
 			}
 		}
 	}
-};
 
-const updateOther = (turn, info) => {
-	if (turn == 1) {
+	if (turn == WHITE) {
 		document.querySelector('#turn').innerText = "White (A/I) Turn";
 	} else {
 		document.querySelector('#turn').innerText = "Black (Human) Turn";
 	}
 
-	if (info) {
-		document.querySelector('#stat').innerText = info;
-	}
-}
+	document.querySelector('#info').innerText = info;
+};
 
 const main = () => {
 	initializeBoard();

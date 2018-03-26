@@ -12,10 +12,6 @@ import (
 )
 
 func gui() {
-	// Constants
-	const htmlAbout = `Welcome on <b>Astilectron</b> demo!<br>
-	This is using the bootstrap and the bundler.`
-
 	// Vars
 	var AppName string
 	var rule checkers.Rule
@@ -38,13 +34,22 @@ func gui() {
 		}},
 		OnWait: nil,
 		MessageHandler: func(w *astilectron.Window, message bootstrap.MessageIn) (interface{}, error) {
+			w.OpenDevTools();
+
 			switch message.Name {
 			case "initialize":
 				rule = checkers.NewRule(6, 6, FIRST, SIDE, 2, false, false, false)
 				state = checkers.NewStateByte(rule, true)
 
 				// astilectron doesn't play well with bytes
-				return arrayBytetoUint(state.Board), nil
+				response := NewMessage(
+					arrayBytetoUint(state.Board),
+					uint(state.Turn),
+					"",
+					false,
+				)
+
+				return response, nil
 
 			case "human-move":
 				var payload map[string][]int
@@ -55,13 +60,15 @@ func gui() {
 
 				err := move(state, from, to)
 				if err != nil {
-					return nil, err
+					return err, err
 				}
 
+				//skip := skipIfNecessary(state)
 				response := NewMessage(
 					arrayBytetoUint(state.Board),
 					uint(state.Turn),
 					"",
+					false,
 				)
 
 				return response, nil
@@ -71,10 +78,14 @@ func gui() {
 				move, stat := minimaxAB(state, DEPTH)
 				elapsed := time.Since(start)
 
+				state.Move(move)
+
+				//skip := skipIfNecessary(state)
 				response := NewMessage(
 					arrayBytetoUint(state.Board),
 					uint(state.Turn),
 					fmt.Sprintf("AI move: %v \n Time elapsed: %v \n%v", move, elapsed, stat),
+					false,
 				)
 
 				return response, nil
