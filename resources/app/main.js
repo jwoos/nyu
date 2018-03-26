@@ -168,17 +168,17 @@ const humanMove = async (i, j) => {
 		msg = await post({'name': 'human-move', 'payload': {'from': global.coord, 'to': [i, j]}});
 	} catch (e) {
 		alert(e);
-		return false;
+		return;
 	}
 	console.log('human move complete:', msg.payload);
 	update(msg.payload);
 
 	msg = await post({'name': 'check'})
-	check(msg.payload);
-
-	if (!msg.skip) {
-		aiMove();
+	if (!check(msg.payload)) {
+		return;
 	}
+
+	aiMove();
 };
 
 const cleanUp = () => {
@@ -192,7 +192,11 @@ const cleanUp = () => {
 };
 
 const check = (payload) => {
+	let cont = true;
+
 	if (payload.win) {
+		cont = false;
+
 		if (payload.side === WHITE) {
 			alert('You lose');
 		} else if (payload.side === BLACK) {
@@ -207,6 +211,8 @@ const check = (payload) => {
 	}
 
 	if (payload.skip) {
+		cont = false;
+
 		update(payload);
 		alert('No moves left, skipping');
 
@@ -214,6 +220,8 @@ const check = (payload) => {
 			aiMove();
 		}
 	}
+
+	return cont;
 };
 
 document.addEventListener('astilectron-ready', () => {
