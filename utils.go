@@ -13,6 +13,18 @@ func round(f float64) int {
 	return int(f + math.Copysign(0.5, f))
 }
 
+func arrayBytetoUint(a [][]byte) [][]uint {
+	uintBoard := make([][]uint, 6)
+	for i, row := range a {
+		uintBoard[i] = make([]uint, 6)
+		for j, val := range row {
+			uintBoard[i][j] = uint(val)
+		}
+	}
+
+	return uintBoard
+}
+
 func lf(format string, args ...interface{}) {
 	if DEBUG {
 		log.Printf(format, args...)
