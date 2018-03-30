@@ -5,7 +5,6 @@ package main
 import (
 	"fmt"
 	"math"
-	"math/rand"
 
 	"github.com/jwoos/go_checkers"
 )
@@ -40,20 +39,24 @@ func (stat Stat) GoString() string {
 
 // easiest evaluation
 func evaluation1(state *checkers.StateByte, who byte) float64 {
-	var eval float64
+	var ownPieces map[checkers.Coordinate]bool
+	var opponentPieces map[checkers.Coordinate]bool
 
 	if who == MAX {
-		// ratio of own piece to oppponent pieces with a random component
-		eval = float64(len(state.White)) / float64(len(state.Black))
-
-		// random skew
-		eval -= rand.Float64() * 10
+		ownPieces = state.White
+		opponentPieces = state.Black
 	} else {
-		// ratio of own piece to oppponent pieces with a random component
-		eval = -float64(len(state.Black)) / float64(len(state.White))
+		ownPieces = state.Black
+		opponentPieces = state.White
+	}
 
-		// random skew
-		eval += rand.Float64() * 10
+	ownPieceCount := float64(len(ownPieces))
+	opponentPieceCount := float64(len(opponentPieces))
+
+	eval := ownPieceCount - opponentPieceCount
+
+	if who == MIN {
+		eval *= -1
 	}
 
 	return eval
@@ -61,34 +64,37 @@ func evaluation1(state *checkers.StateByte, who byte) float64 {
 
 // medium evaluation
 func evaluation2(state *checkers.StateByte, who byte) float64 {
-	var eval float64
+	var own byte
+	var opponent byte
+
+	var ownPieces map[checkers.Coordinate]bool
+	var opponentPieces map[checkers.Coordinate]bool
 
 	if who == MAX {
-		// ratio of own piece to oppponent pieces
-		eval = float64(len(state.White)) / float64(len(state.Black))
+		own = MAX
+		opponent = MIN
 
-		// capture moves
-		captureMoves := len(state.PossibleCaptureMovesAll(MAX))
-		eval += float64(captureMoves)
-
-		// how many possible moves
-		eval += float64(len(state.PossibleMovesAll(MAX)) - captureMoves)
-
-		// random skew
-		eval -= rand.Float64() * 10
+		ownPieces = state.White
+		opponentPieces = state.Black
 	} else {
-		// ratio of own piece to oppponent pieces
-		eval = -float64(len(state.Black)) / float64(len(state.White))
+		own = MIN
+		opponent = MAX
 
-		// capture moves
-		captureMoves := len(state.PossibleCaptureMovesAll(MIN))
-		eval -= float64(captureMoves)
+		ownPieces = state.Black
+		opponentPieces = state.White
+	}
 
-		// how many possible moves
-		eval -= float64(len(state.PossibleMovesAll(MIN)) - captureMoves)
+	ownPieceCount := float64(len(ownPieces))
+	opponentPieceCount := float64(len(opponentPieces))
 
-		// random skew
-		eval += rand.Float64() * 10
+	ownPossibleMoves := state.PossibleMovesAll(own)
+	opponentPossibleMoves := state.PossibleMovesAll(opponent)
+
+	eval := 10 * (ownPieceCount - opponentPieceCount)
+	eval += 5 * (float64(len(ownPossibleMoves)) - float64(len(opponentPossibleMoves)))
+
+	if who == MIN {
+		eval *= -1
 	}
 
 	return eval
@@ -97,31 +103,51 @@ func evaluation2(state *checkers.StateByte, who byte) float64 {
 // hardest evaluation
 func evaluation3(state *checkers.StateByte, who byte) float64 {
 	var own byte
-	//var oppponent byte
-	var ownPieceCount float64
-	var oppponentPieceCount float64
+	var opponent byte
+
+	var ownPieces map[checkers.Coordinate]bool
+	var opponentPieces map[checkers.Coordinate]bool
 
 	if who == MAX {
 		own = MAX
-		//oppponent = MIN
+		opponent = MIN
 
-		ownPieceCount = float64(len(state.White))
-		oppponentPieceCount = float64(len(state.Black))
+		ownPieces = state.White
+		opponentPieces = state.Black
 	} else {
 		own = MIN
-		//oppponent = MAX
+		opponent = MAX
 
-		ownPieceCount = float64(len(state.Black))
-		oppponentPieceCount = float64(len(state.White))
+		ownPieces = state.Black
+		opponentPieces = state.White
 	}
 
-	// ratio of own piece to original pieces
-	eval := 0.3 * (ownPieceCount / 6)
+	ownPieceCount := float64(len(ownPieces))
+	opponentPieceCount := float64(len(opponentPieces))
 
-	eval += 0.6 * (1 - (oppponentPieceCount / 6))
+	ownPossibleMoves := state.PossibleMovesAll(own)
+	opponentPossibleMoves := state.PossibleMovesAll(opponent)
 
-	// how many possible moves out of maximum possible
-	eval += 0.1 * (float64(len(state.PossibleMovesAll(own))) / (ownPieceCount * 2))
+	var ownCoordinateCache map[checkers.Coordinate]bool
+	ownSafePieces := ownPieceCount
+	for m, _ := range opponentPossibleMoves {
+		if (m.Jump != checkers.NO_JUMP) && ownCoordinateCache[m.Jump] {
+			ownCoordinateCache[m.Jump] = true
+			ownSafePieces--
+		}
+	}
+	var opponentCoordinateCache map[checkers.Coordinate]bool
+	opponentSafePieces := opponentPieceCount
+	for m, _ := range opponentPossibleMoves {
+		if (m.Jump != checkers.NO_JUMP) && opponentCoordinateCache[m.Jump] {
+			opponentCoordinateCache[m.Jump] = true
+			opponentSafePieces--
+		}
+	}
+
+	eval := 15 * (ownPieceCount - opponentPieceCount)
+	eval += 10 * (float64(len(ownPossibleMoves)) - float64(len(opponentPossibleMoves)))
+	eval += 5 * (ownSafePieces - opponentSafePieces)
 
 	if who == MIN {
 		eval *= -1

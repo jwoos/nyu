@@ -89,24 +89,23 @@ func gui() {
 
 			// ai moves
 			case "ai-move":
-				fmt.Println("AI move:", move)
-
 				start := time.Now()
-				move, stat := minimaxAB(state, DEPTH)
+				m, stat := minimaxAB(state, DEPTH)
 				elapsed := time.Since(start)
 
+				fmt.Println("AI move:", m)
 				fmt.Println("Time elapsed:", elapsed)
 				fmt.Println(stat)
 				fmt.Println()
 
-				state.Move(move)
+				state.Move(m)
 
 				fmt.Printf("%#v \n\n", state)
 
 				response := NewMessage(
 					arrayBytetoUint(state.Board),
 					uint(state.Turn),
-					fmt.Sprintf("AI move: %v \n Time elapsed: %v \n%v", move, elapsed, stat),
+					fmt.Sprintf("AI move: %v \n Time elapsed: %v \n%v", m, elapsed, stat),
 					false,
 					false,
 					uint(checkers.BLANK),
@@ -117,6 +116,7 @@ func gui() {
 			// check if game ended or someone should skip their turn
 			case "check":
 				fmt.Println("checking")
+				fmt.Println()
 				win, side := state.GameEnd()
 				skip := false
 
