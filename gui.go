@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/jwoos/go_checkers"
@@ -22,7 +23,7 @@ func gui() {
 	state = checkers.NewStateByte(rule, true)
 
 	// run the gui
-	bootstrap.Run(bootstrap.Options{
+	err := bootstrap.Run(bootstrap.Options{
 		Asset: Asset,
 		AstilectronOptions: astilectron.Options{
 			AppName:            AppName,
@@ -162,4 +163,8 @@ func gui() {
 			},
 		},
 	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
 }
