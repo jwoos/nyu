@@ -42,12 +42,3 @@
   #branch = "master"
   name = "github.com/asticode/go-astilectron-bootstrap"
 	revision = "e777aa2beef481bd163363b7b9d2165f01b89817"
-
-[[constraint]]
-  #branch = "master"
-  name = "github.com/asticode/go-astilog"
-	revision = "9566758383acb7abb2836c0f54562c34eb84f8ed"
-
-[[constraint]]
-  name = "github.com/pkg/errors"
-  version = "0.8.0"

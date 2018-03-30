@@ -14,12 +14,6 @@
   revision = "f6a15ece2cfd2560077c556499f19340ddc768e9"
 
 [[projects]]
-  branch = "master"
-  name = "github.com/asticode/go-astichartjs"
-  packages = ["."]
-  revision = "efebf848095edc23d8c03832f65b1f89076bbd85"
-
-[[projects]]
   name = "github.com/asticode/go-astilectron"
   packages = ["."]
   revision = "2cc41c241216d45ccdae1fb2af7e5d114855cc74"
@@ -116,6 +110,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "dec489f2a624e1bbf5b7d54406f45369ae137c73e8271ff468f7bfc8c044b888"
+  inputs-digest = "dff4f07a5de184284053b6b65fd676c688347acda5edec554f747feec6f912e8"
   solver-name = "gps-cdcl"
   solver-version = 1
