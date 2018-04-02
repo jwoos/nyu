@@ -1,0 +1,53 @@
+/* Exhaustive check for scanner; please suggest more test if you can think of them. */
+
+/* correct stuff comes first; this is just a stream of tokens; no syntax is followed */
+
+/* keywords */
+int float if else while return read write
+
+/* not keywords; should be recognized as ID */
+repeat do until double
+
+/* ID */
+sd
+asdsa230921
+______1  /* legal ID! */
+12_234_213 /* should break it into one integer and two IDs: 12, _234, _213 */
+
+/* literals */
+0
+11
+12398928
+0.0
+3.1415
+1.41
+"This is a string" /* No string literals in the original description, added later */
+
+/* punctuation */
+(){};,
+
+/* multi
+   line
+   comment */
+   
+
+
+/* TROUBLE */
+
+/* illegal characters; only a partial list */
+#:'%^&
+
+/* checking corner cases */
+111111111111111111111111111111111111111111 /* int too long; should read the entire thing as one integer literal, but complain */
+1.11111111111111111111111111111111111111 /* same for float */
+/* the next two are NOT legal float literals */
+/* I guess one could modify the scanner to actually notice these as tokens, but complain that they are illegal */
+.01
+10.
+
+/* how is the scanner supposed to react to an unclosed string?  as strings are not allowed to contain newlines, a scanner designed to handle actual human programmers with human errors would actually have a pattern specifically matching an unclosed string and report it; a less nice would just report a bunch of illegal characters and/or read the string content as part of the program; a terrible one will "eat" all the input after the quote. */
+"this is an unclosed string # @ ! weeeeee!
+
+
+
+

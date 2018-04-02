@@ -1,0 +1,30 @@
+int call_count;
+
+int Abs(int); /* Declaration only, definition below. */
+
+/* Main program */
+int main (int dummy)
+{
+  int x;
+
+  call_count=0;
+  read x;
+
+  while (x<9999)
+    if (x)
+      write 7777;
+    else
+      write x, Abs(x);
+
+  write call_count;
+}
+
+/* Integer absolute value. */
+int Abs(int x)
+  {
+    call_count = call_count + 1;
+    if (x<0)
+      return -x;
+    else
+      return x;
+  }
