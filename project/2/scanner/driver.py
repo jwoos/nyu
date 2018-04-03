@@ -2,7 +2,7 @@ import scanner
 
 # Give the lexer some input
 with open('TEST_EXHAUSTIVE', 'r') as inf:
-    tok1.lexer.input(inf.read(-1))
+    scanner.lexer.input(inf.read(-1))
 # lexer.input(data)
 
 with open('TEST_EXHAUSTIVE_OUTPUT','w') as f:
@@ -13,11 +13,11 @@ with open('TEST_EXHAUSTIVE_OUTPUT','w') as f:
 print("token\t" +  "token\t" + "token")
 
 while True:
-    tok = tok1.lexer.token()
+    tok = scanner.lexer.token()
     if not tok:
         print("FOUND EOF")
         break      # No more input
-    tok.lexpos = tok1.token_dictionary[tok.type]
+    tok.lexpos = scanner.token_dictionary[tok.type]
     with open('TEST_EXHAUSTIVE_OUTPUT','a') as f:
         f.write(str(tok.lexpos) + '\t\t' + str(tok.type) + '\t\t' + '"'+str(tok.value)+'"' + '\n')
 
