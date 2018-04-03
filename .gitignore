@@ -3,3 +3,4 @@ nyu_csuy-3943-project1
 1
 *.o
 *.pyc
+*_OUTPUT
