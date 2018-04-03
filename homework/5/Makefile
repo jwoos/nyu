@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -Wall -Wextra -std=gnu11 -ggdb -O0 -Wno-sign-compare
 
 EXECUTABLES = chat
-OBJECTS = chat.o utils.o token.o
+OBJECTS = utils.o client.o server.o
 
 all: clean $(EXECUTABLES)
 
@@ -10,7 +10,7 @@ all: clean $(EXECUTABLES)
 # $(CC) $(CPPFLAGS) $(CFLAGS) -c $@
 
 chat: $(OBJECTS)
-	$(CC) $(CFLAGS) main.c $^ -o $@
+	$(CC) $(CFLAGS) chat.c $^ -o $@
 
 memcheck: chat
 	valgrind --leak-check=full --show-leak-kinds=all ./chat
