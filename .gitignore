@@ -4,3 +4,5 @@ nyu_csuy-3943-project1
 *.o
 *.pyc
 *_OUTPUT
+*.out
+parsetab.py
