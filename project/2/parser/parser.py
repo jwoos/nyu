@@ -2,6 +2,7 @@ from ply import yacc
 
 from scanner import scanner
 
+
 tokens = scanner.tokens
 
 precedence = (
@@ -10,6 +11,7 @@ precedence = (
     ('left', 'PLUS', 'MINUS'),
     ('right', 'ASSIGN'),
 )
+
 
 def p_program(p):
     '''
@@ -46,15 +48,15 @@ def p_var_list_prime(p):
     '''
     pass
 
-def p_func_decl(p):
+def p_function_decl(p):
     '''
-    func_decl : kind identifier LPAR kind RPAR SEMI
+    function_decl : kind identifier LPAR kind RPAR SEMI
     '''
     pass
 
-def p_func_def(p):
+def p_function_def(p):
     '''
-    func_def : kind identifier LPAR kind identifier RPAR body
+    function_def : kind identifier LPAR kind identifier RPAR body
     '''
     pass
 
@@ -178,7 +180,7 @@ def p_bool_op(p):
             | GT
             | EQUAL
             | GE
-            | LT
+            | LE
     '''
     pass
 
