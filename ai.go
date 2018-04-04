@@ -146,7 +146,7 @@ func evaluation3(state *checkers.StateByte, who byte) float64 {
 	}
 
 	eval := 15 * (ownPieceCount - opponentPieceCount)
-	eval += 10 * (float64(len(ownPossibleMoves)) - float64(len(opponentPossibleMoves)))
+	eval += 5 * (float64(len(ownPossibleMoves)) - float64(len(opponentPossibleMoves)))
 	eval += 5 * (ownSafePieces - opponentSafePieces)
 
 	if who == MIN {
@@ -206,12 +206,16 @@ func max(state *checkers.StateByte, alpha float64, beta float64, depth int, stat
 	// check if game is over
 	w, s := state.GameEnd()
 	if w {
-		if s == MAX {
+		switch s {
+		case MAX:
 			node.Heuristic = 100
-		} else {
+		case MIN:
 			node.Heuristic = -100
+		default:
+			node.Heuristic = 0
 		}
 
+		lln("Game Over Heuristic:", node.Heuristic)
 		return node
 	}
 
@@ -262,12 +266,16 @@ func min(state *checkers.StateByte, alpha float64, beta float64, depth int, stat
 	// check if game is over
 	w, s := state.GameEnd()
 	if w {
-		if s == MAX {
+		switch s {
+		case MAX:
 			node.Heuristic = 100
-		} else {
+		case MIN:
 			node.Heuristic = -100
+		default:
+			node.Heuristic = 0
 		}
 
+		lln("Game Over Heuristic:", node.Heuristic)
 		return node
 	}
 
