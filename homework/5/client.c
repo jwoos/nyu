@@ -106,6 +106,9 @@ void client(char* ip, int port) {
 					perror("read");
 					continue;
 				} else if (n == 0) {
+					println("Connection closed");
+					println("Exiting");
+					println("");
 					break;
 				}
 				buffer[n] = '\0';

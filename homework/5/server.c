@@ -106,46 +106,51 @@ void server(int port) {
 
 	initListen();
 
-	initAccept();
 
-	char buffer[BUFFER_SIZE];
-
-	// set up fd_set each time
+	// don't die while waiting for a new connection
 	while (true) {
-		fflush(stdin);
-		memset(&buffer, 0, sizeof(char) * BUFFER_SIZE);
+		initAccept();
 
-		int selectStatus = initSelect();
-		if (selectStatus) {
-			int n;
+		char buffer[BUFFER_SIZE];
 
-			if (FD_ISSET(STDIN_FILENO, &descriptors)) {
-				if (fgets(buffer, READ_SIZE, stdin) == NULL) {
-					perror("getline");
+		// set up fd_set each time
+		while (true) {
+			fflush(stdin);
+			memset(&buffer, 0, sizeof(char) * BUFFER_SIZE);
 
-					continue;
+			int selectStatus = initSelect();
+			if (selectStatus) {
+				int n;
+
+				if (FD_ISSET(STDIN_FILENO, &descriptors)) {
+					if (fgets(buffer, READ_SIZE, stdin) == NULL) {
+						perror("getline");
+						continue;
+					}
+
+					printf("[you] %s", buffer);
+
+					n = write(clientDescriptor, buffer, strlen(buffer));
+					if (n < 0) {
+						perror("write");
+						continue;
+					}
 				}
 
-				printf("[you] %s", buffer);
+				if (FD_ISSET(clientDescriptor, &descriptors)) {
+					n = read(clientDescriptor, buffer, READ_SIZE);
+					if (n < 0) {
+						perror("read");
+						continue;
+					} else if (n == 0) {
+						println("Connection closed");
+						println("");
+						break;
+					}
+					buffer[n] = '\0';
 
-				n = write(clientDescriptor, buffer, strlen(buffer));
-				if (n < 0) {
-					perror("write");
-					continue;
+					printf("[%s:%d] %s", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port), buffer);
 				}
-			}
-
-			if (FD_ISSET(clientDescriptor, &descriptors)) {
-				n = read(clientDescriptor, buffer, READ_SIZE);
-				if (n < 0) {
-					perror("read");
-					continue;
-				} else if (n == 0) {
-					break;
-				}
-				buffer[n] = '\0';
-
-				printf("[%s:%d] %s", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port), buffer);
 			}
 		}
 	}
