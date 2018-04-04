@@ -9,8 +9,8 @@
 #define SELECT_TIMEOUT_SECONDS 10
 #define SELECT_TIMEOUT_USECONDS 10
 
-#define BUFFER_SIZE 128
-#define READ_SIZE 32
+#define BUFFER_SIZE 1024
+#define READ_SIZE 512
 
 
 #endif

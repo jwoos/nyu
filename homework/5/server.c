@@ -35,78 +35,69 @@ int server(int port) {
 		return EXIT_FAILURE;
 	}
 
-	// make stdin nonblocking
-	int flags = fcntl(STDIN_FILENO, F_GETFL);
-	flags |= O_NONBLOCK;
-	fcntl(STDIN_FILENO, F_SETFL, flags);
+	// connect to a client
+	println("Waiting to connect to client");
 
-	// connect to a new client when necessary
+	struct sockaddr_in clientAddr;
+	unsigned int clientAddrSize;
+	int clientDescriptor = accept(fd, (struct sockaddr*)&clientAddr, &clientAddrSize);
+	if (clientDescriptor < 0) {
+		perror("accept");
+
+		return EXIT_FAILURE;
+	}
+
+	println("Connected to client: %s:%d", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port));
+	println("");
+
+	char buffer[BUFFER_SIZE];
+
+	// set up fd_set each time
 	while (true) {
-		// connect to a client
-		println("Waiting to connect to client");
+		fflush(stdin);
+		memset(&buffer, 0, sizeof(char) * BUFFER_SIZE);
 
-		struct sockaddr_in clientAddr;
-		unsigned int clientAddrSize;
-		if (accept(fd, (struct sockaddr*)&clientAddr, &clientAddrSize) < 0) {
-			perror("accept");
+		// set up fd_set
+		fd_set descriptors;
+		FD_ZERO(&descriptors);
+
+		FD_SET(STDIN_FILENO, &descriptors);
+		FD_SET(clientDescriptor, &descriptors);
+
+		// the fd of the socket will always be greater than stdin
+		int selectStatus = select(FD_SETSIZE, &descriptors, NULL, NULL, NULL);
+		if (selectStatus < 0) {
+			perror("select");
 
 			return EXIT_FAILURE;
-		}
+		} else if (selectStatus) {
+			int n;
 
-		println("Connected to client: %s:%d", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port));
-		println("");
+			if (FD_ISSET(STDIN_FILENO, &descriptors)) {
+				if (fgets(buffer, READ_SIZE, stdin) == NULL) {
+					perror("getline");
 
-		char buffer[BUFFER_SIZE];
-
-		// set up fd_set each time
-		while (true) {
-			// set up fd_set
-			fd_set descriptors;
-			FD_ZERO(&descriptors);
-
-			FD_SET(STDIN_FILENO, &descriptors);
-			FD_SET(fd, &descriptors);
-
-			// the fd of the socket will always be greater than stdin
-			int selectStatus = select(FD_SETSIZE, &descriptors, NULL, NULL, NULL);
-			if (selectStatus < 0) {
-				perror("select");
-
-				return EXIT_FAILURE;
-			} else if (selectStatus) {
-				int n;
-
-				if (FD_ISSET(STDIN_FILENO, &descriptors)) {
-					n = read(STDIN_FILENO, buffer, READ_SIZE);
-					if (n < 0) {
-						if (errno == EAGAIN) {
-							errno = 0;
-							continue;
-						}
-						perror("read");
-						continue;
-					}
-					buffer[n] = '\0';
-
-					printf("[you] %s", buffer);
-
-					n = write(fd, buffer, n + 1);
-					if (n < 0) {
-						perror("write");
-						continue;
-					}
+					continue;
 				}
 
-				if (FD_ISSET(fd, &descriptors)) {
-					n = read(fd, buffer, READ_SIZE);
-					if (n < 0) {
-						perror("read");
-						continue;
-					}
-					buffer[n] = '\0';
+				printf("[you] %s", buffer);
 
-					printf("[%s:%d] %s", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port), buffer);
+				n = write(clientDescriptor, buffer, strlen(buffer));
+				if (n < 0) {
+					perror("write");
+					continue;
 				}
+			}
+
+			if (FD_ISSET(clientDescriptor, &descriptors)) {
+				n = read(clientDescriptor, buffer, READ_SIZE);
+				if (n < 0) {
+					perror("read");
+					continue;
+				}
+				buffer[n] = '\0';
+
+				printf("[%s:%d] %s", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port), buffer);
 			}
 		}
 	}

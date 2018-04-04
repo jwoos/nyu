@@ -23,11 +23,6 @@ int client(char* host, int port) {
 	}
 	addr.sin_addr = ip;
 
-	// make stdin nonblocking
-	int flags = fcntl(STDIN_FILENO, F_GETFL);
-	flags |= O_NONBLOCK;
-	fcntl(STDIN_FILENO, F_SETFL, flags);
-
 	println("Waiting to connect to server");
 	if (connect(fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
 		perror("connect");
@@ -40,6 +35,9 @@ int client(char* host, int port) {
 	char buffer[BUFFER_SIZE];
 
 	while (true) {
+		fflush(stdin);
+		memset(&buffer, 0, sizeof(char) * BUFFER_SIZE);
+
 		fd_set descriptors;
 		FD_ZERO(&descriptors);
 
@@ -55,20 +53,15 @@ int client(char* host, int port) {
 			int n;
 
 			if (FD_ISSET(STDIN_FILENO, &descriptors)) {
-				n = read(STDIN_FILENO, buffer, READ_SIZE);
-				if (n < 0) {
-					if (errno == EAGAIN) {
-						errno = 0;
-						continue;
-					}
-					perror("read");
+				if (fgets(buffer, READ_SIZE, stdin) == NULL) {
+					perror("getline");
+
 					continue;
 				}
-				buffer[n] = '\0';
 
 				printf("[you] %s", buffer);
 
-				n = write(fd, buffer, n + 1);
+				n = write(fd, buffer, strlen(buffer));
 				if (n < 0) {
 					perror("write");
 					continue;
@@ -79,8 +72,6 @@ int client(char* host, int port) {
 				n = read(fd, buffer, READ_SIZE);
 				if (n < 0) {
 					perror("read");
-					continue;
-				} else if (n == 0) {
 					continue;
 				}
 				buffer[n] = '\0';
