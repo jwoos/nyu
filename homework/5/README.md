@@ -20,4 +20,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 - Run the application with no arguments to see the usage
 - Only takes IP and not hostnames for client
 - There is a period of time after the application is killed that the port is unavailable which seems to be to flush out any requests still pending on that port
-- The message can be a bit confusing as I don't know how to keep the "input" at the bottom of the screen without ncurses
+- The message sent can be a bit confusing as it would be a pain to implement it so that it's the proper line without something like ncurses
+- Tested on the same machine as well as on local network with two machines
+- Without a specified port the server will use 8000
+- The client requires a port as well if the IP is specified if neither are specified it will use localhost (127.0.0.1) and port 8000

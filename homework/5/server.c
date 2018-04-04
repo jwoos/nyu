@@ -45,7 +45,7 @@ static void initBind(int port) {
 	addr.sin_port = htons(port);
 	struct in_addr ip;
 	memset(&ip, 0, sizeof(struct in_addr));
-	ip.s_addr = INADDR_ANY;
+	ip.s_addr = htonl(INADDR_ANY);
 	addr.sin_addr = ip;
 
 	if (bind(fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
