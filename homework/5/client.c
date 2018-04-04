@@ -1,10 +1,27 @@
 #include "client.h"
 
 
+static int fd;
+
+static void cleanup(void) {
+	if (fd > 0) {
+		if (shutdown(fd, SHUT_RDWR) < 0) {
+			perror("shutdown");
+		}
+
+		if (close(fd) < 0) {
+			perror("close");
+		}
+	}
+}
+
 int client(char* host, int port) {
+	// register cleanup
+	atexit(cleanup);
+
 	println("client: %s:%d", host, port);
 
-	int fd = socket(AF_INET, SOCK_STREAM, 0);
+	fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (fd < 0) {
 		perror("socket");
 
@@ -73,6 +90,8 @@ int client(char* host, int port) {
 				if (n < 0) {
 					perror("read");
 					continue;
+				} else if (n == 0) {
+					break;
 				}
 				buffer[n] = '\0';
 
