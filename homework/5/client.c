@@ -2,6 +2,8 @@
 
 
 static int fd;
+static struct sockaddr_in addr;
+static fd_set descriptors;
 
 static void cleanup(void) {
 	if (fd > 0) {
@@ -15,39 +17,62 @@ static void cleanup(void) {
 	}
 }
 
-int client(char* host, int port) {
-	// register cleanup
-	atexit(cleanup);
-
-	println("client: %s:%d", host, port);
-
+// create a TCP socket using IPv4
+static void initSocket(void) {
 	fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (fd < 0) {
 		perror("socket");
-
-		return EXIT_FAILURE;
+		exit(EXIT_FAILURE);
 	}
+}
 
-	struct sockaddr_in addr;
+static void initConnect(char* ip, int port) {
 	memset(&addr, 0, sizeof(struct sockaddr_in));
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(port);
-	struct in_addr ip;
-	if (inet_aton(host, &ip) < 0) {
+	struct in_addr ipAddr;
+	if (inet_aton(ip, &ipAddr) < 0) {
 		perror("inet_aton");
-
-		return EXIT_FAILURE;
+		exit(EXIT_FAILURE);
 	}
-	addr.sin_addr = ip;
+	addr.sin_addr = ipAddr;
 
 	println("Waiting to connect to server");
+
 	if (connect(fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
 		perror("connect");
-
-		return EXIT_FAILURE;
+		exit(EXIT_FAILURE);
 	}
+
 	println("Connected to server: %s:%d", inet_ntoa(addr.sin_addr), ntohs(addr.sin_port));
 	println("");
+}
+
+static int initSelect(void) {
+	FD_ZERO(&descriptors);
+
+	FD_SET(STDIN_FILENO, &descriptors);
+	FD_SET(fd, &descriptors);
+
+	int selectStatus = select(FD_SETSIZE, &descriptors, NULL, NULL, NULL);
+	if (selectStatus < 0) {
+		perror("select");
+		exit(EXIT_FAILURE);
+	}
+
+	return selectStatus;
+}
+
+void client(char* ip, int port) {
+	// register cleanup
+	atexit(cleanup);
+
+	println("client: %s:%d", ip, port);
+
+	initSocket();
+
+	initConnect(ip, port);
+
 
 	char buffer[BUFFER_SIZE];
 
@@ -55,18 +80,8 @@ int client(char* host, int port) {
 		fflush(stdin);
 		memset(&buffer, 0, sizeof(char) * BUFFER_SIZE);
 
-		fd_set descriptors;
-		FD_ZERO(&descriptors);
-
-		FD_SET(STDIN_FILENO, &descriptors);
-		FD_SET(fd, &descriptors);
-
-		int selectStatus = select(FD_SETSIZE, &descriptors, NULL, NULL, NULL);
-		if (selectStatus < 0) {
-			perror("select");
-
-			return EXIT_FAILURE;
-		} else if (selectStatus) {
+		int selectStatus = initSelect();
+		if (selectStatus) {
 			int n;
 
 			if (FD_ISSET(STDIN_FILENO, &descriptors)) {
@@ -100,6 +115,4 @@ int client(char* host, int port) {
 			}
 		}
 	}
-
-	return EXIT_SUCCESS;
 }

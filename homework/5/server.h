@@ -19,7 +19,7 @@
 #include "utils.h"
 
 
-int server(int);
+void server(int);
 
 
 #endif

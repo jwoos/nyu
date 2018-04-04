@@ -29,8 +29,6 @@ int main(int argc, char** argv) {
 		usage(true);
 	}
 
-	int status = EXIT_SUCCESS;
-
 	if (!strncmp(argv[1], "server", 6)) {
 		if (argc != 2 && argc != 3) {
 			usage(true);
@@ -43,7 +41,7 @@ int main(int argc, char** argv) {
 			port = strtol(argv[2], NULL, 10);
 		}
 
-		status = server(port);
+		server(port);
 	} else if (!strncmp(argv[1], "client", 5)) {
 		if (argc != 2 && argc != 4) {
 			usage(true);
@@ -60,10 +58,10 @@ int main(int argc, char** argv) {
 			port = strtol(argv[3], NULL, 10);
 		}
 
-		status = client(host, port);
+		client(host, port);
 	} else {
 		usage(true);
 	}
 
-	return status;
+	return EXIT_SUCCESS;
 }
