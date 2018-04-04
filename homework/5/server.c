@@ -16,7 +16,7 @@ int server(int port) {
 	struct sockaddr_in addr;
 	memset(&addr, 0, sizeof(struct sockaddr_in));
 	addr.sin_family = AF_INET;
-	addr.sin_port = port;
+	addr.sin_port = htons(port);
 	struct in_addr ip;
 	memset(&ip, 0, sizeof(struct in_addr));
 	ip.s_addr = INADDR_ANY;
@@ -29,16 +29,21 @@ int server(int port) {
 	}
 
 	// listen with no backlog
-	if (listen(fd, 0) < 0) {
+	if (listen(fd, 1) < 0) {
 		perror("listen");
 
 		return EXIT_FAILURE;
 	}
 
+	// make stdin nonblocking
+	int flags = fcntl(STDIN_FILENO, F_GETFL);
+	flags |= O_NONBLOCK;
+	fcntl(STDIN_FILENO, F_SETFL, flags);
+
 	// connect to a new client when necessary
 	while (true) {
 		// connect to a client
-		println("Waiting to connect to a client");
+		println("Waiting to connect to client");
 
 		struct sockaddr_in clientAddr;
 		unsigned int clientAddrSize;
@@ -48,7 +53,8 @@ int server(int port) {
 			return EXIT_FAILURE;
 		}
 
-		println("Connected to client: %s:%d", inet_ntoa(clientAddr.sin_addr), clientAddr.sin_port);
+		println("Connected to client: %s:%d", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port));
+		println("");
 
 		char buffer[BUFFER_SIZE];
 
@@ -62,40 +68,44 @@ int server(int port) {
 			FD_SET(fd, &descriptors);
 
 			// the fd of the socket will always be greater than stdin
-			int selectStatus = select(fd + 1, &descriptors, NULL, NULL, NULL);
+			int selectStatus = select(FD_SETSIZE, &descriptors, NULL, NULL, NULL);
 			if (selectStatus < 0) {
 				perror("select");
 
 				return EXIT_FAILURE;
 			} else if (selectStatus) {
+				int n;
+
 				if (FD_ISSET(STDIN_FILENO, &descriptors)) {
-					int n;
 					n = read(STDIN_FILENO, buffer, READ_SIZE);
 					if (n < 0) {
+						if (errno == EAGAIN) {
+							errno = 0;
+							continue;
+						}
 						perror("read");
 						continue;
 					}
 					buffer[n] = '\0';
+
+					printf("[you] %s", buffer);
 
 					n = write(fd, buffer, n + 1);
 					if (n < 0) {
 						perror("write");
 						continue;
 					}
-
-					printf("[you] %s", buffer);
 				}
 
 				if (FD_ISSET(fd, &descriptors)) {
-					int n;
-					n = read(STDIN_FILENO, buffer, READ_SIZE);
+					n = read(fd, buffer, READ_SIZE);
 					if (n < 0) {
 						perror("read");
 						continue;
 					}
 					buffer[n] = '\0';
 
-					printf("[%s:%d] %s", inet_ntoa(clientAddr.sin_addr), clientAddr.sin_port, buffer);
+					printf("[%s:%d] %s", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port), buffer);
 				}
 			}
 		}

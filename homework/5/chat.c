@@ -56,8 +56,8 @@ int main(int argc, char** argv) {
 			host = DEFAULT_HOST;
 			port = DEFAULT_PORT;
 		} else {
-			host = argv[3];
-			port = strtol(argv[4], NULL, 10);
+			host = argv[2];
+			port = strtol(argv[3], NULL, 10);
 		}
 
 		status = client(host, port);
