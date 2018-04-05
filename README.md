@@ -137,3 +137,45 @@ The CLI game is just a loop going between human and AI. Before each move, it che
 The GUI version is actually an electron application using astilectron which aims to simplify things a bit. Essentially the electron GUI is the client and the Go application is the server. It then falls to passing messages between the two via an internal HTTP call. The GUI does no calculations of its own meaning that everything is offloaded to the server since everything was being done there anyways. After each move, it's checked whether the game has ended or whether the player has no moves left.
 
 The JavaScript code is just simple rendering code, to take the state of the game and just display it.
+
+## Heuristics
+
+## Terminal
+
+- 0: There was a tie
+- -100: Min player has won
+- 100: Max player has won
+
+### Levels
+
+#### 1
+
+The easiest level just takes the difference in the number of pieces between the two players. This allows each player to respectively minimize the other player's piece count while maximizing their own piece count. This makes sense as a game is over when one player has no more pieces remaining.
+$$
+max = pieces_{max} - pieces_{min} \\
+min = -(pieces_{min} - pieces_{max})
+$$
+
+#### 2
+
+The second level takes into account the moves while also looking at the number of possible moves. This is also important since there are occasions where a move might not be capturing but might just set up for a better state. It's also important as a player loses when they have no more possible moves left. Although the two metrics are used together, a greater weight was given to the number of pieces which also correlates with the number of moves left.
+$$
+max = 10 * (pieces_{max} - pieces_{min}) + 5 * (moves_{max} - moves_{min}) \\
+min = -(10 * (pieces_{min} - pieces_{max}) + 5 * (moves_{min} - moves_{max}))
+$$
+
+#### 3
+
+The third level extends the second level further. It takes into account how many of your own pieces are actually safe from capture. This is important as it indicates just what kind of position you might be in as opposed to your opponent. The move in turn will lead to a capture which lowers the opponent piece count, tilting the game in your favor. Again, it was weight against the total number of pieces based on how important it seems.
+$$
+max = 15 * (pieces_{max} - pieces_{min}) + 5 * (moves_{max} - moves_{min} + 5 * (safe_{max} - safe_{min})) \\
+min = -(15 * (pieces_{min} - pieces_{max}) + 5 * (moves_{min} - moves_{max}) + 5 * (safe_{min} - safe_{max}))
+$$
+
+
+#### Note
+
+- In all of these, I chose to take the difference for each metric as this is a zero sum game where one player benefits from the loss of the other.
+- The weight was determined through trial and error as well as what seems to make sense. The count seemed the most important as it would be impossible to get through a game without capturing pieces which meant that most matches would be determined by piece count. The other evaluation function pieces merely help it perform a bit better than just trying to capture everything including positioning and safety of own pieces.
+- The algorithm was very aggressive, frequently offering up its own pieces for capture which in turn would allow them to do another capture. I believe this was due to the count of pieces but wasn't sure how to make it a bit more neutral.
+- At times the algorithm sacrifices pieces even though there were other viable moves which would have saved the piece from being captured for the foreseeable future.
