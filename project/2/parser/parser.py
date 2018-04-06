@@ -43,7 +43,7 @@ def p_var_list(p):
 
 def p_var_list_prime(p):
     '''
-    var_list_prime : COMMA identifier var_list
+    var_list_prime : COMMA var_list
                    | empty
     '''
     pass
@@ -80,23 +80,23 @@ def p_stmt(p):
          | if_kw LPAR expr RPAR stmt else_stmt
          | while_kw LPAR bool_expr RPAR stmt
          | read_kw var_list SEMI
-         | write_kw expr_list SEMI
+         | write_kw write_expr_list SEMI
          | return_kw expr SEMI
     '''
     pass
 
-def p_expr_list(p):
-    '''
-    expr_list : expr expr_list_prime
-    '''
-    pass
-
-def p_expr_list_prime(p):
-    '''
-    expr_list_prime : COMMA expr
-                    | empty
-    '''
-    pass
+# def p_expr_list(p):
+#     '''
+#     expr_list : expr expr_list_prime
+#     '''
+#     pass
+#
+# def p_expr_list_prime(p):
+#     '''
+#     expr_list_prime : COMMA expr
+#                     | empty
+#     '''
+#     pass
 
 def p_else_stmt(p):
     '''
@@ -104,6 +104,19 @@ def p_else_stmt(p):
               | empty
     '''
     pass
+
+def p_write_expr_list(p):
+    '''
+    write_expr_list : expr write_expr_list_prime
+                    | string write_expr_list_prime
+    '''
+    pass
+
+def p_write_expr_list_prime(p):
+    '''
+    write_expr_list_prime : COMMA write_expr_list
+                          | empty
+    '''
 
 def p_factor(p):
     '''
@@ -135,7 +148,7 @@ def p_term(p):
 
 def p_term_prime(p):
     '''
-    term_prime : mulop uminus term_prime
+    term_prime : mulop uminus factor term_prime
                | empty
     '''
     pass
@@ -162,7 +175,7 @@ def p_expr1(p):
 
 def p_expr1_prime(p):
     '''
-    expr1_prime : add_op term expr1_prime
+    expr1_prime : add_op expr1
                 | empty
     '''
     pass
