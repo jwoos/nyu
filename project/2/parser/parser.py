@@ -85,7 +85,7 @@ def p_body_prime(p):
 def p_stmt(p):
     '''
     stmt : expr SEMI
-         | if_kw LPAR expr RPAR stmt else_stmt
+         | if_kw LPAR bool_expr RPAR stmt else_stmt
          | while_kw LPAR bool_expr RPAR stmt
          | read_kw var_list SEMI
          | write_kw write_expr_list SEMI
@@ -173,20 +173,20 @@ def p_mulop(p):
     mulop : MULTIPLY
           | DIVIDE
     '''
-    print(p)
+    p[0] = Node('mulop', p[1], terminal=True)
 
 def p_expr1(p):
     '''
     expr1 : term expr1_prime
     '''
-    print(p)
+    p[0] = Node('expr1', p[1], p[2], terminal=False)
 
 def p_expr1_prime(p):
     '''
     expr1_prime : add_op expr1
                 | empty
     '''
-    print(p)
+    p[0] = Node('expr1_prime', p[1], p[2], terminal=False)
 
 def p_add_op(p):
     '''
@@ -207,8 +207,8 @@ def p_bool_op(p):
 
 def p_expr(p):
     '''
-    expr : identifier ASSIGN expr SEMI
-         | expr1 SEMI
+    expr : identifier ASSIGN expr
+         | expr1
     '''
     print(p)
 
