@@ -14,3 +14,9 @@ class Node:
         self.attrs = attrs
         if self.attrs is None:
             self.attrs = {}
+
+    def __str__(self):
+        return f'{self.symbol} : ({self.args})'
+
+    def __repr__(self):
+        return self.__str__()

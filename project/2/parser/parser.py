@@ -2,6 +2,7 @@ from ply import yacc
 
 from scanner import scanner
 from parser.ast import Node
+from log import logger
 
 
 tokens = scanner.tokens
@@ -40,7 +41,7 @@ def p_kind(p):
     kind : int_kw
          | float_kw
     '''
-    p[0] = Node(p[0], args=None, terminal=True)
+    p[0] = Node(p[1], args=None, terminal=True)
 
 def p_var_list(p):
     '''
@@ -48,8 +49,6 @@ def p_var_list(p):
              | COMMA var_list
              | empty
     '''
-    p[1] = Node(p[1], args=None, terminal=True)
-
     # empty
     if len(p) == 2:
         p[0] = None
@@ -58,6 +57,7 @@ def p_var_list(p):
         if p[1] == ',':
             p[0] = p[2]
         else:
+            p[1] = Node(p[1], args=None, terminal=True)
             if p[2] is not None:
                 p[0] = Node('var_list', args=[p[1], *p[2].args], terminal=False)
             else:
@@ -73,7 +73,7 @@ def p_function_def(p):
     '''
     function_def : kind identifier LPAR kind identifier RPAR body
     '''
-    p[0] = Node('function_def', args=[p[1], p[2], p[4], p[5]], terminal=False)
+    p[0] = Node('function_def', args=[p[1], p[2], p[4], p[5], p[7]], terminal=False)
 
 def p_body(p):
     '''
@@ -93,7 +93,7 @@ def p_body_prime(p):
         if p[2] is None:
             p[0] = Node('body', args=p[1], terminal=False)
         else:
-            p[0] = Node('', args=[p[1], *p[2].args], terminal=False)
+            p[0] = Node('body', args=[p[1], *p[2].args], terminal=False)
 
 def p_stmt(p):
     '''
@@ -109,19 +109,19 @@ def p_stmt(p):
         p[0] = p[1]
     else:
         if p[1] == 'if':
-            p[1] = Node(p[1], args=[p[3], p[5]], terminal=True)
+            p[0] = Node(p[1], args=[p[3], p[5]], terminal=True)
             # else_stmt
             if p[6] is not None:
-                p[1].args.append(p[6])
+                p[0].args.extend(p[6].args)
 
         elif p[1] == 'while':
-            p[1] = Node(p[1], args=[p[3], p[5]], terminal=True)
+            p[0] = Node(p[1], args=[p[3], p[5]], terminal=True)
 
         elif p[1] == 'read':
-            p[1] = Node(p[1], args=[p[2]], terminal=True)
+            p[0] = Node(p[1], args=[p[2]], terminal=True)
 
         elif p[1] == 'write':
-            p[1] = Node(p[1], args=[p[2]], terminal=True)
+            p[0] = Node(p[1], args=[p[2]], terminal=True)
 
         else:
             p[1] = Node(p[1], args=[p[2]], terminal=True)
@@ -134,7 +134,7 @@ def p_else_stmt(p):
     if len(p) == 2:
         p[0] = None
     else:
-        p[0] = Node(p[0], )
+        p[0] = Node(p[1], args=p[2])
 
 def p_write_expr_list(p):
     '''
@@ -257,7 +257,7 @@ def p_expr1(p):
     '''
     expr1 : term expr1_prime
     '''
-    if expr1_prime is None:
+    if p[2] is None:
         p[0] = p[1]
     else:
         p[0] = p[2]
@@ -309,6 +309,6 @@ def p_empty(p):
     p[0] = None
 
 def p_error(p):
-    print(p)
+    print(f'error: {p}')
 
 parser = yacc.yacc()
