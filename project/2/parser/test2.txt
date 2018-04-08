@@ -1,0 +1,19 @@
+/* this input would not pass semantic checking, but it is almost correct syntactically.  can you spot the errors? */
+
+int main()
+{
+  int n, c, k;
+ 
+  s = "Enter an integer in decimal number system" ;
+ 
+  while(c>=0)
+  {
+    k = n + c;
+ 
+    if (k = 1)
+      return 1 ;
+    else
+      return 0 ;
+  }
+
+}

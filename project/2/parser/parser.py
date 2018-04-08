@@ -67,12 +67,15 @@ def p_function_decl(p):
     '''
     function_decl : kind identifier LPAR kind RPAR SEMI
     '''
+    p[2] = Node(p[2], args=None, terminal=True)
     p[0] = Node('function_decl', args=[p[1], p[2], p[4]], terminal=False)
 
 def p_function_def(p):
     '''
     function_def : kind identifier LPAR kind identifier RPAR body
     '''
+    p[2] = Node(p[2], args=None, terminal=True)
+    p[5] = Node(p[5], args=None, terminal=True)
     p[0] = Node('function_def', args=[p[1], p[2], p[4], p[5], p[7]], terminal=False)
 
 def p_body(p):
@@ -181,14 +184,19 @@ def p_bool_expr(p):
     '''
     bool_expr : expr boolop expr
     '''
+    logger.info(f'p[0] {p[0]}')
+    logger.info(f'p[1] {p[1]}')
+    logger.info(f'p[2] {p[2]}')
+    logger.info(f'p[3] {p[3]}')
     p[0] = p[1]
-    p[0].args = [p[1], p[2]]
+    p[0].args = [p[1], p[3]]
 
 def p_function_call(p):
     '''
     function_call : identifier LPAR expr RPAR
     '''
-    p[1] = Node(p[1], args=[p[1], p[3]], terminal=True)
+    p[1] = Node(p[1], args=None, terminal=True)
+    p[0] = Node('func_call', args=[p[1], p[3]], terminal=False)
 
 def p_term(p):
     '''
