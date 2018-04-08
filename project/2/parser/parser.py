@@ -45,23 +45,26 @@ def p_kind(p):
 
 def p_var_list(p):
     '''
-    var_list : identifier var_list
-             | COMMA var_list
-             | empty
+    var_list : identifier var_list_prime
     '''
-    # empty
+    p[1] = Node(p[1], args=None, terminal=True)
+    p[0] = Node('var_list', args=[p[1]], terminal=False)
+    if p[2] is not None:
+        p[0].args.extend(p[2].args)
+
+def p_var_list_prime(p):
+    '''
+    var_list_prime : COMMA identifier var_list_prime
+                   | empty
+    '''
     if len(p) == 2:
         p[0] = None
     else:
-        # comma
-        if p[1] == ',':
-            p[0] = p[2]
+        p[1] = Node(p[1], args=None, terminal=True)
+        if p[3] is not None:
+            p[0] = Node('var_list', args=[p[2], *p[3].args], terminal=False)
         else:
-            p[1] = Node(p[1], args=None, terminal=True)
-            if p[2] is not None:
-                p[0] = Node('var_list', args=[p[1], *p[2].args], terminal=False)
-            else:
-                p[0] = Node('var_list', args=[p[1]], terminal=False)
+            p[0] = Node('var_list', args=[p[2]], terminal=False)
 
 def p_function_decl(p):
     '''
