@@ -94,7 +94,7 @@ def p_body_prime(p):
         p[0] = None
     else:
         if p[2] is None:
-            p[0] = Node('body', args=p[1], terminal=False)
+            p[0] = Node('body', args=[p[1]], terminal=False)
         else:
             p[0] = Node('body', args=[p[1], *p[2].args], terminal=False)
 
@@ -213,11 +213,11 @@ def p_term(p):
             # term_prime
             if p[3] is not None:
                 p[0] = p[3]
-                p[0].args = [p[1], *p[0].args]
+                p[3].args = [p[1], *p[3].args]
         else:
             if p[3] is not None:
                 p[0] = p[3]
-                p[0].args = [p[1], *p[0].args]
+                p[3].args = [p[2], *p[3].args]
             else:
                 p[0] = p[2]
 
@@ -233,16 +233,16 @@ def p_term_prime(p):
 
         # uminus
         if p[2] is not None:
-            p[0].args.append(p[2])
+            p[1].args.append(p[2])
             p[2].args.append(p[3])
 
-            if p[3] is not None:
-                p[2].args.append(p[3])
+            if p[4] is not None:
+                p[1].args.extend(p[4].args)
         else:
-            p[0].args.append(p[3])
+            p[1].args.append(p[3])
 
-            if p[3] is not None:
-                p[0].args.append(p[3])
+            if p[4] is not None:
+                p[0].args.extend(p[4].args)
 
 def p_uminus(p):
     '''
@@ -318,5 +318,7 @@ def p_empty(p):
 
 def p_error(p):
     print(f'error: {p}')
+    if p:
+        parser.errok()
 
 parser = yacc.yacc()

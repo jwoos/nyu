@@ -16,7 +16,10 @@ class Node:
             self.attrs = {}
 
     def __str__(self):
-        return f'{self.symbol} : ({self.args})'
+        if not self.args:
+            return f'{self.symbol}'
+        else:
+            return f'{self.symbol} : ({self.args})'
 
     def __repr__(self):
         return self.__str__()
