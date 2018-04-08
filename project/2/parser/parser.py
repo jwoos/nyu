@@ -54,17 +54,13 @@ def p_var_list(p):
 
 def p_var_list_prime(p):
     '''
-    var_list_prime : COMMA identifier var_list_prime
+    var_list_prime : COMMA var_list
                    | empty
     '''
     if len(p) == 2:
         p[0] = None
     else:
-        p[1] = Node(p[1], args=None, terminal=True)
-        if p[3] is not None:
-            p[0] = Node('var_list', args=[p[2], *p[3].args], terminal=False)
-        else:
-            p[0] = Node('var_list', args=[p[2]], terminal=False)
+        p[0] = p[2]
 
 def p_function_decl(p):
     '''
@@ -104,7 +100,8 @@ def p_body_prime(p):
 def p_stmt(p):
     '''
     stmt : expr SEMI
-         | if_kw LPAR bool_expr RPAR stmt else_stmt
+         | if_kw LPAR bool_expr RPAR stmt
+         | else_kw stmt
          | while_kw LPAR bool_expr RPAR stmt
          | read_kw var_list SEMI
          | write_kw write_expr_list SEMI
@@ -120,6 +117,9 @@ def p_stmt(p):
             if p[6] is not None:
                 p[0].args.extend(p[6].args)
 
+        elif p[1] == 'else':
+            p[0] = Node(p[1], args=[p[2]], terminal=True)
+
         elif p[1] == 'while':
             p[0] = Node(p[1], args=[p[3], p[5]], terminal=True)
 
@@ -131,16 +131,6 @@ def p_stmt(p):
 
         else:
             p[1] = Node(p[1], args=[p[2]], terminal=True)
-
-def p_else_stmt(p):
-    '''
-    else_stmt : else_kw stmt
-              | empty
-    '''
-    if len(p) == 2:
-        p[0] = None
-    else:
-        p[0] = Node(p[1], args=p[2])
 
 def p_write_expr_list(p):
     '''
@@ -168,7 +158,7 @@ def p_write_expr_list_prime(p):
     if len(p) == 2:
         p[0] = None
     else:
-        p[0].args.append(p[2])
+        p[0] = p[2]
 
 def p_factor(p):
     '''
@@ -181,17 +171,13 @@ def p_factor(p):
     if len(p) == 2:
         p[0] = Node(p[1], args=None, terminal=True)
     else:
-        p[0] = p[1]
+        p[0] = p[2]
 
 def p_bool_expr(p):
     '''
     bool_expr : expr boolop expr
     '''
-    logger.info(f'p[0] {p[0]}')
-    logger.info(f'p[1] {p[1]}')
-    logger.info(f'p[2] {p[2]}')
-    logger.info(f'p[3] {p[3]}')
-    p[0] = p[1]
+    p[0] = p[2]
     p[0].args = [p[1], p[3]]
 
 def p_function_call(p):
@@ -203,59 +189,34 @@ def p_function_call(p):
 
 def p_term(p):
     '''
-    term : uminus factor term_prime
+    term : uminus term_prime
     '''
-    if len(p) == 2:
-        p[0] = None
+    if p[2] is not None:
+        p[0] = p[2]
+        p[2].args = [p[1], *p[2].args]
     else:
-        # uminus
-        if p[1] is not None:
-            p[0] = p[1]
-            p[1].args.append(p[2])
-
-            # term_prime
-            if p[3] is not None:
-                p[0] = p[3]
-                p[3].args = [p[1], *p[3].args]
-        else:
-            if p[3] is not None:
-                p[0] = p[3]
-                p[3].args = [p[2], *p[3].args]
-            else:
-                p[0] = p[2]
+        p[0] = p[1]
 
 def p_term_prime(p):
     '''
-    term_prime : mulop uminus factor term_prime
+    term_prime : mulop term
                | empty
     '''
     if len(p) == 2:
         p[0] = None
     else:
         p[0] = p[1]
-
-        # uminus
-        if p[2] is not None:
-            p[1].args.append(p[2])
-            p[2].args.append(p[3])
-
-            if p[4] is not None:
-                p[1].args.extend(p[4].args)
-        else:
-            p[1].args.append(p[3])
-
-            if p[4] is not None:
-                p[0].args.extend(p[4].args)
+        p[0].args = [p[2]]
 
 def p_uminus(p):
     '''
-    uminus : MINUS %prec uminus
-           | empty
+    uminus : MINUS factor %prec uminus
+           | factor
     '''
-    if p[1] is None:
-        p[0] = None
+    if p[1] == '-':
+        p[0] = Node(p[1], args=[p[2]], terminal=True)
     else:
-        p[0] = Node(p[1], args=None, terminal=True)
+        p[0] = p[1]
 
 def p_mulop(p):
     '''

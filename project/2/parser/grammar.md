@@ -9,9 +9,10 @@ decl : kind var_list SEMI
 kind : int_kw
      | float_kw
 
-var_list : identifier var_list
-         | COMMA identifier var_list
-         | empty
+var_list : identifier var_list_prime
+
+var_list_prime: COMMA var_list
+              | empty
 
 function_decl : kind identifier LPAR kind RPAR SEMI
 
@@ -24,14 +25,12 @@ body_prime : decl body_prime
            | empty
 
 stmt : expr SEMI
-     | if_kw LPAR bool_expr RPAR stmt else_stmt
+     | if_kw LPAR bool_expr RPAR stmt
+     | else_kw stmt
      | while_kw LPAR bool_expr RPAR stmt
      | read_kw var_list SEMI
      | write_kw write_expr_list SEMI
      | return_kw expr SEMI
-
-else_stmt : else_kw stmt
-          | empty
 
 write_expr_list : expr write_expr_list_prime
                 | string write_expr_list_prime
@@ -49,13 +48,13 @@ bool_expr : expr boolop expr
 
 function_call : identifier LPAR expr RPAR
 
-term : uminus factor term_prime
+term : uminus term_prime
 
-term_prime : mulop uminus factor term_prime
+term_prime : mulop term
            | empty
 
-uminus : MINUS
-       | empty
+uminus : MINUS factor
+       | factor
 
 mulop : MULTIPLY
       | DIVIDE

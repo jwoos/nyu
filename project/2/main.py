@@ -3,7 +3,7 @@ from scanner.scanner import lexer
 
 
 def main():
-    s = open('test.txt').read()
+    s = open('test.c').read()
     result = parser.parse(s)
     print(result)
 
