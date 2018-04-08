@@ -21,51 +21,65 @@ def p_program(p):
             | function_decl program
             | empty
     '''
-    pass
+    if len(p) == 2:
+        p[0] = None
+    else:
+        if p[2] is None:
+            p[0] = Node('program', args=[p[1]], terminal=False)
+        else:
+            p[0] = Node('program', args=[p[1], *p[2].args], terminal=False)
 
 def p_decl(p):
     '''
     decl : kind var_list SEMI
     '''
-    pass
+    p[0] = Node('decl', args=[p[1], *p[2].args], terminal=False)
 
 def p_kind(p):
     '''
     kind : int_kw
          | float_kw
     '''
-    pass
+    p[0] = Node(p[0], args=None, terminal=True)
 
 def p_var_list(p):
     '''
-    var_list : identifier var_list_prime
+    var_list : identifier var_list
+             | COMMA var_list
+             | empty
     '''
-    pass
+    p[1] = Node(p[1], args=None, terminal=True)
 
-def p_var_list_prime(p):
-    '''
-    var_list_prime : COMMA var_list
-                   | empty
-    '''
-    pass
+    # empty
+    if len(p) == 2:
+        p[0] = None
+    else:
+        # comma
+        if p[1] == ',':
+            p[0] = p[2]
+        else:
+            if p[2] is not None:
+                p[0] = Node('var_list', args=[p[1], *p[2].args], terminal=False)
+            else:
+                p[0] = Node('var_list', args=[p[1]], terminal=False)
 
 def p_function_decl(p):
     '''
     function_decl : kind identifier LPAR kind RPAR SEMI
     '''
-    pass
+    p[0] = Node('function_decl', args=[p[1], p[2], p[4]], terminal=False)
 
 def p_function_def(p):
     '''
     function_def : kind identifier LPAR kind identifier RPAR body
     '''
-    pass
+    p[0] = Node('function_def', args=[p[1], p[2], p[4], p[5]], terminal=False)
 
 def p_body(p):
     '''
     body : LBRACE body_prime RBRACE
     '''
-    pass
+    p[0] = p[2]
 
 def p_body_prime(p):
     '''
@@ -73,7 +87,13 @@ def p_body_prime(p):
                | stmt body_prime
                | empty
     '''
-    pass
+    if len(p) == 2:
+        p[0] = None
+    else:
+        if p[2] is None:
+            p[0] = Node('body', args=p[1], terminal=False)
+        else:
+            p[0] = Node('', args=[p[1], *p[2].args], terminal=False)
 
 def p_stmt(p):
     '''
@@ -84,28 +104,65 @@ def p_stmt(p):
          | write_kw write_expr_list SEMI
          | return_kw expr SEMI
     '''
-    pass
+    # expr
+    if len(p) == 3:
+        p[0] = p[1]
+    else:
+        if p[1] == 'if':
+            p[1] = Node(p[1], args=[p[3], p[5]], terminal=True)
+            # else_stmt
+            if p[6] is not None:
+                p[1].args.append(p[6])
+
+        elif p[1] == 'while':
+            p[1] = Node(p[1], args=[p[3], p[5]], terminal=True)
+
+        elif p[1] == 'read':
+            p[1] = Node(p[1], args=[p[2]], terminal=True)
+
+        elif p[1] == 'write':
+            p[1] = Node(p[1], args=[p[2]], terminal=True)
+
+        else:
+            p[1] = Node(p[1], args=[p[2]], terminal=True)
 
 def p_else_stmt(p):
     '''
     else_stmt : else_kw stmt
               | empty
     '''
-    pass
+    if len(p) == 2:
+        p[0] = None
+    else:
+        p[0] = Node(p[0], )
 
 def p_write_expr_list(p):
     '''
     write_expr_list : expr write_expr_list_prime
                     | string write_expr_list_prime
     '''
-    pass
+    # expr
+    node = None
+    if isinstance(p[1], Node):
+        node = p[1]
+    else:
+        node = Node('write_expr_list', args=[p[1]], terminal=False)
+
+    if p[2] is None:
+        p[0] = node
+    else:
+        p[0] = p[2]
+        p[0].args = [p[1], *p[2].args]
 
 def p_write_expr_list_prime(p):
     '''
     write_expr_list_prime : COMMA write_expr_list
                           | empty
     '''
-    pass
+    if len(p) == 2:
+        p[0] = None
+    else:
+        p[0].args.append(p[2])
 
 def p_factor(p):
     '''
@@ -115,61 +172,114 @@ def p_factor(p):
            | function_call
            | LPAR expr RPAR
     '''
-    pass
+    if len(p) == 2:
+        p[0] = Node(p[1], args=None, terminal=True)
+    else:
+        p[0] = p[1]
 
 def p_bool_expr(p):
     '''
     bool_expr : expr boolop expr
     '''
-    pass
+    p[0] = p[1]
+    p[0].args = [p[1], p[2]]
 
 def p_function_call(p):
     '''
     function_call : identifier LPAR expr RPAR
     '''
-    pass
+    p[1] = Node(p[1], args=[p[1], p[3]], terminal=True)
 
 def p_term(p):
     '''
-    term : uminus factor term
-         | mulop uminus factor
-         | empty
+    term : uminus factor term_prime
     '''
-    pass
+    if len(p) == 2:
+        p[0] = None
+    else:
+        # uminus
+        if p[1] is not None:
+            p[0] = p[1]
+            p[1].args.append(p[2])
+
+            # term_prime
+            if p[3] is not None:
+                p[0] = p[3]
+                p[0].args = [p[1], *p[0].args]
+        else:
+            if p[3] is not None:
+                p[0] = p[3]
+                p[0].args = [p[1], *p[0].args]
+            else:
+                p[0] = p[2]
+
+def p_term_prime(p):
+    '''
+    term_prime : mulop uminus factor term_prime
+               | empty
+    '''
+    if len(p) == 2:
+        p[0] = None
+    else:
+        p[0] = p[1]
+
+        # uminus
+        if p[2] is not None:
+            p[0].args.append(p[2])
+            p[2].args.append(p[3])
+
+            if p[3] is not None:
+                p[2].args.append(p[3])
+        else:
+            p[0].args.append(p[3])
+
+            if p[3] is not None:
+                p[0].args.append(p[3])
 
 def p_uminus(p):
     '''
     uminus : MINUS %prec uminus
            | empty
     '''
-    pass
+    if p[1] is None:
+        p[0] = None
+    else:
+        p[0] = Node(p[1], args=None, terminal=True)
 
 def p_mulop(p):
     '''
     mulop : MULTIPLY
           | DIVIDE
     '''
-    pass
+    p[0] = Node(p[1], args=None, terminal=True)
 
 def p_expr1(p):
     '''
     expr1 : term expr1_prime
     '''
-    pass
+    if expr1_prime is None:
+        p[0] = p[1]
+    else:
+        p[0] = p[2]
+        p[0].args = [p[1], *p[0].args]
 
 def p_expr1_prime(p):
     '''
     expr1_prime : addop expr1
                 | empty
     '''
-    pass
+    if len(p) == 2:
+        p[0] = None
+    else:
+        p[0] = p[1]
+        p[0].args = [p[2]]
 
 def p_addop(p):
     '''
     addop : PLUS
           | MINUS
     '''
-    pass
+    p[0] = Node(p[1], args=None, terminal=False)
 
 def p_boolop(p):
     '''
@@ -179,14 +289,18 @@ def p_boolop(p):
            | LE
            | GE
     '''
-    pass
+    p[0] = Node(p[1], args=None, terminal=False)
 
 def p_expr(p):
     '''
     expr : identifier ASSIGN expr
          | expr1
     '''
-    pass
+    if len(p) == 4:
+        p[1] = Node(p[1], args=None, terminal=True)
+        p[0] = Node(p[2], args=[p[1], p[3]], terminal=False)
+    else:
+        p[0] = p[1]
 
 def p_empty(p):
     '''
