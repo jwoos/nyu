@@ -75,3 +75,21 @@ class SymbolTable:
     def clear(self):
         self.table = {}
 
+
+def info(symbol, usage=0):
+    msg = ''
+    if symbol.scope == SymbolType.FUNCTION:
+        if symbol.attrs['init']:
+            msg = f'Function {symbol.attrs["type"]} {symbol.attrs["name"]} ({symbol.attrs["arg_type"]}) declared in line {symbol.attrs["line"]}'
+        else:
+            msg = f'Function {symbol.attrs["type"]} {symbol.attrs["name"]} ({symbol.attrs["arg_type"]} {symbol.attrs["arg"]}) defined in line {symbol.attrs["line"]}'
+    else:
+        if symbol.scope == SymbolScope.GLOBAL:
+            msg = f'Global {symbol.attrs["type"]} variable {symbol.attrs["name"]} declared in line {symbol.attrs["line"]}'
+        else:
+            msg = f'Local {symbol.attrs["type"]} variable {symbol.attrs["name"]} declared in line {symbol.attrs["line"]}'
+
+    if usage:
+        msg += f' used in line {usage}'
+
+    print(msg)

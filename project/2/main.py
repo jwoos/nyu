@@ -3,7 +3,7 @@ from collections import deque
 from parser.ast import Node
 from parser.parser import parser
 from scanner.scanner import lexer
-from parser.table import SymbolTable, SymbolScope, SymbolType, Symbol
+from parser.table import SymbolTable, SymbolScope, SymbolType, Symbol, info
 from log import logger
 
 
@@ -28,6 +28,7 @@ def main():
                     'name': node.args[1],
                     'arg_type': node.args[2],
                     'arg': node.args[3],
+                    'line': node.attrs.get('line')
                 }
             ))
             if msg:
@@ -41,7 +42,8 @@ def main():
                 {
                     'value': None,
                     'type': node.args[2],
-                    'name': node.args[3]
+                    'name': node.args[3],
+                    'line': node.attrs.get('line')
                 }
             ))
             node_stack.append(Node('function_def_end'))
@@ -57,7 +59,8 @@ def main():
                     'type': node.args[0],
                     'name': node.args[1],
                     'arg_type': node.args[2],
-                    'arg': None
+                    'arg': None,
+                    'line': node.attrs.get('line')
                 }
             ))
             if msg:
@@ -70,15 +73,19 @@ def main():
                     {
                         'value': None,
                         'type': node.args[0],
-                        'name': var
+                        'name': var,
+                        'line': var.attrs.get('line')
                     }
                 ))
+                info(table_stack[-1].get(var.symbol), usage=False)
                 if msg:
                     logger.error(msg)
         else:
             if node.attrs.get('type') == 'identifier':
                 if table_stack[-1].get(node.symbol) is None:
                     logger.error(f'{node.symbol} referenced before declaration')
+                else:
+                    info(table_stack[-1].get(node.symbol), usage=node.attrs.get('line', True))
             else:
                 for child in reversed(node.args):
                     node_stack.append(child)

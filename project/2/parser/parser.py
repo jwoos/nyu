@@ -35,14 +35,14 @@ def p_decl(p):
     '''
     decl : kind var_list SEMI
     '''
-    p[0] = Node('decl', args=[p[1], *p[2].args], terminal=False)
+    p[0] = Node('decl', args=[p[1], *p[2].args], attrs={'line': p.lineno(2)}, terminal=False)
 
 def p_kind(p):
     '''
     kind : int_kw
          | float_kw
     '''
-    p[0] = Node(p[1], args=None, terminal=True)
+    p[0] = Node(p[1], args=None, attrs={'line': p.lineno(1)}, terminal=True)
 
 def p_var_list(p):
     '''
