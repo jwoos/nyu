@@ -1,7 +1,7 @@
 from flask import Flask
 from flask.json import jsonify
 from werkzeug.exceptions import HTTPException, default_exceptions
-from flask.views import MethodView
+from views.default import DefaultView
 
 
 app = Flask(__name__)
@@ -28,11 +28,6 @@ def default_error_handler(error):
 
 for code, error in default_exceptions.items():
     app.register_error_handler(error, default_error_handler)
-
-
-class DefaultView(MethodView):
-    def get(self):
-        return jsonify({'status': 'okay'}), 200
 
 
 view = DefaultView.as_view('default')
