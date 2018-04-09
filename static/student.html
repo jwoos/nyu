@@ -1,55 +1,54 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script src="script.js"></script>
+	<head>
+		<script src="scripts/main.js" async></script>
 
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css?family=PT+Sans" rel="stylesheet">
+		<link rel="stylesheet" href="styles/main.css">
+		<link href="https://fonts.googleapis.com/css?family=PT+Sans" rel="stylesheet">
 
-    <title>Student Feedback Page</title>
-	<meta charset="UTF-8">
-	<meta name="description" content="Student">
-	<meta name="author" content="Team Database">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
+		<title>Student Feedback Page</title>
+		<meta charset="UTF-8">
+		<meta name="author" content="Team Database">
+		<meta name="description" content="Student">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	</head>
 
-<body>
-   
-    <header>
-        Welcome,<span id="sname"> _InsertName_.</span>
-    </header>
+	<body>
 
-    <div class="form">
-        <form action="/action_page.php" id="userform">
-            <label for="course">Select your course</label>
-            <select id="course" name="course">
-                <option value="course1">course1</option>
-                <option value="course2">course2</option>
-            </select>
+		<header>
+			Welcome,<span id="sname"> _InsertName_.</span>
+		</header>
 
-            <label for="rating">Please rate the class from 1-5</label>
-            <input type="number" id="rating" min="0" max="5" name="rating" required placeholder="0 For disagree, 5 for agree">
+		<div class="form">
+			<form action="/action_page.php" id="userform">
+				<label for="course">Select your course</label>
+				<select id="course" name="course">
+					<option value="course1">course1</option>
+					<option value="course2">course2</option>
+				</select>
 
-            <label for="lrating">I learned from this class</label>
-            <input type="number" id="lrating" min="0" max="5" name="lrating" required placeholder="0 For disagree, 5 for agree">
+				<label for="rating">Please rate the class from 1-5</label>
+				<input type="number" id="rating" min="0" max="5" name="rating" required placeholder="0 For disagree, 5 for agree">
 
-            <label for="prating">Professor's mastery in teaching</label>
-            <input type="number" id="prating" min="0" max="5" name="prating" required placeholder="0 For disagree, 5 for agree">
-           
-            <label for="trating">TA's helpfulness</label>
-            <input type="number" id="trating" min="0" max="5" name="trating" required placeholder="0 For disagree, 5 for agree">
+				<label for="lrating">I learned from this class</label>
+				<input type="number" id="lrating" min="0" max="5" name="lrating" required placeholder="0 For disagree, 5 for agree">
 
-            <label for"feedbacks">Addtional feedbacks...</label>
-            <textarea id="feedbacks" name="feedbacks" form="userform">Some additional feedback are </textarea>
+				<label for="prating">Professor's mastery in teaching</label>
+				<input type="number" id="prating" min="0" max="5" name="prating" required placeholder="0 For disagree, 5 for agree">
 
-            <input type="submit" value="Submit Form">
-        </form>
-    </div>
+				<label for="trating">TA's helpfulness</label>
+				<input type="number" id="trating" min="0" max="5" name="trating" required placeholder="0 For disagree, 5 for agree">
 
-    <footer>
-        Yining Wang, Mohammad Rafi, Lyu Longtao, Johnson Mei, Jun Woo Shin
-    </footer>
+				<label for"feedbacks">Addtional feedbacks...</label>
+				<textarea id="feedbacks" name="feedbacks" form="userform">Some additional feedback are </textarea>
 
-</body>
+				<input type="submit" value="Submit Form">
+			</form>
+		</div>
+
+		<footer>
+			Yining Wang, Mohammad Rafi, Lyu Longtao, Johnson Mei, Jun Woo Shin
+		</footer>
+
+	</body>
 </html>

@@ -1,73 +1,68 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script src="script.js"></script>
+	<head>
+		<script src="scripts/main.js" async></script>
 
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css?family=PT+Sans" rel="stylesheet">
+		<link rel="stylesheet" href="styles/main.css">
+		<link href="https://fonts.googleapis.com/css?family=PT+Sans" rel="stylesheet">
 
-    <title>Database Project</title>
-	<meta charset="UTF-8">
-	<meta name="description" content="Database Project">
-	<meta name="author" content="Team Database">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
+		<title>Database Project</title>
+		<meta charset="UTF-8">
+		<meta name="author" content="Team Database">
+		<meta name="description" content="Database Project">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	</head>
 
-<body>
-   
-    <header>
-        Database Project - Student Survey
-    </header>
+	<body>
+		<header> Database Project - Student Survey </header>
 
-    <div class="intro">
-        I would like to...
-        <button id="logbut">Log In</button>
-        <button id="regbut">Register</button>
-    </div>
-    
-   
-    <div class="register form">
-        <p>Register</p>
-        <form action="/action_page.php">
-            <label for="fname">First Name</label>
-            <input type="text" id="fname" name="firstname" required placeholder="First name...">
-      
-            <label for="lname">Last Name</label>
-            <input type="text" id="lname" name="lastname" required placeholder="Last name...">
+		<div class="intro">
+			I would like to...
+			<button id="logbut">Log In</button>
+			<button id="regbut">Register</button>
+		</div>
 
-            <label for="email">Email</label>
-            <input type="email" id="email" name="email" required placeholder="abc@nyu.edu...">
 
-            <label for="pw">Password</label>
-            <input type="password" id="pw" name="pw" required placeholder="Password...">
-      
-            <label for="role">Your Role</label>
-            <select id="role" name="role">
-                <option value="student">Student</option>
-                <option value="Professor">Professor</option>
-            </select>
-        
-            <input type="submit" value="Register">
-        </form>
-    </div>
-   
-    <div class="login form">
-        <p>Log In</p>
-        <form action="/action_page.php">
-            <label for="email">Email</label>
-            <input type="email" id="email" name="email" required placeholder="abc@nyu.edu...">
+		<div class="register form">
+			<p>Register</p>
+			<form>
+				<label for="fname">First Name</label>
+				<input type="text" id="fname" name="firstname" required placeholder="First name...">
 
-            <label for="pw">Password</label>
-            <input type="password" id="pw" name="pw" required placeholder="Password...">
-         
-            <input type="submit" value="Log In">
-        </form>
-    </div>
+				<label for="lname">Last Name</label>
+				<input type="text" id="lname" name="lastname" required placeholder="Last name...">
 
-    <footer>
-        Yining Wang, Mohammad Rafi, Lyu Longtao, Johnson Mei, Jun Woo Shin
-    </footer>
+				<label for="email">Email</label>
+				<input type="email" id="email" name="email" required placeholder="abc@nyu.edu...">
 
-</body>
+				<label for="pw">Password</label>
+				<input type="password" id="pw" name="pw" required placeholder="Password...">
+
+				<label for="role">Your Role</label>
+				<select id="role" name="role">
+					<option value="student">Student</option>
+					<option value="Professor">Professor</option>
+				</select>
+
+				<input type="submit" value="Register">
+			</form>
+		</div>
+
+		<div class="login form">
+			<p>Log In</p>
+			<form>
+				<label for="email">Email</label>
+				<input type="email" id="email" name="email" required placeholder="abc@nyu.edu...">
+
+				<label for="pw">Password</label>
+				<input type="password" id="pw" name="pw" required placeholder="Password...">
+
+				<input type="submit" value="Log In">
+			</form>
+		</div>
+
+		<footer>
+			Yining Wang, Mohammad Rafi, Lyu Longtao, Johnson Mei, Jun Woo Shin
+		</footer>
+	</body>
 </html>
