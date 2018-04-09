@@ -78,11 +78,11 @@ class SymbolTable:
 
 def info(symbol, usage=0):
     msg = ''
-    if symbol.scope == SymbolType.FUNCTION:
+    if symbol.kind == SymbolType.FUNCTION:
         if symbol.attrs['init']:
-            msg = f'Function {symbol.attrs["type"]} {symbol.attrs["name"]} ({symbol.attrs["arg_type"]}) declared in line {symbol.attrs["line"]}'
-        else:
             msg = f'Function {symbol.attrs["type"]} {symbol.attrs["name"]} ({symbol.attrs["arg_type"]} {symbol.attrs["arg"]}) defined in line {symbol.attrs["line"]}'
+        else:
+            msg = f'Function {symbol.attrs["type"]} {symbol.attrs["name"]} ({symbol.attrs["arg_type"]}) declared in line {symbol.attrs["line"]}'
     else:
         if symbol.scope == SymbolScope.GLOBAL:
             msg = f'Global {symbol.attrs["type"]} variable {symbol.attrs["name"]} declared in line {symbol.attrs["line"]}'

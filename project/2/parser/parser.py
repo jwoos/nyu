@@ -48,7 +48,7 @@ def p_var_list(p):
     '''
     var_list : identifier var_list_prime
     '''
-    p[1] = Node(p[1], args=None, attrs={'type': 'identifier'}, terminal=True)
+    p[1] = Node(p[1], args=None, attrs={'type': 'identifier', 'line': p.lineno(1)}, terminal=True)
     p[0] = Node('var_list', args=[p[1]], terminal=False)
     if p[2] is not None:
         p[0].args.extend(p[2].args)
@@ -67,8 +67,8 @@ def p_function_decl(p):
     '''
     function_decl : kind identifier LPAR kind RPAR SEMI
     '''
-    p[2] = Node(p[2], args=None, attrs={'type': 'identifier'}, terminal=True)
-    p[0] = Node('function_decl', args=[p[1], p[2], p[4]], terminal=False)
+    p[2] = Node(p[2], args=None, attrs={'type': 'identifier', 'line': p.lineno(1)}, terminal=True)
+    p[0] = Node('function_decl', args=[p[1], p[2], p[4]], attrs={'line': p.lineno(2)}, terminal=False)
 
 def p_function_def(p):
     '''
@@ -76,7 +76,7 @@ def p_function_def(p):
     '''
     p[2] = Node(p[2], args=None, attrs={'type': 'identifier'}, terminal=True)
     p[5] = Node(p[5], args=None, attrs={'type': 'identifier'}, terminal=True)
-    p[0] = Node('function_def', args=[p[1], p[2], p[4], p[5], p[7]], terminal=False)
+    p[0] = Node('function_def', args=[p[1], p[2], p[4], p[5], p[7]], attrs={'line': p.lineno(2)}, terminal=False)
 
 def p_body(p):
     '''
@@ -277,7 +277,7 @@ def p_expr(p):
          | expr1
     '''
     if len(p) == 4:
-        p[1] = Node(p[1], args=None, attrs={'type': 'identifier'}, terminal=True)
+        p[1] = Node(p[1], args=None, attrs={'type': 'identifier', 'line': p.lineno(1)}, terminal=True)
         p[0] = Node(p[2], args=[p[1], p[3]], terminal=False)
     else:
         p[0] = p[1]

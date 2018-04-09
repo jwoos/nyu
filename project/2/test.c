@@ -17,7 +17,7 @@ int main(int x) {
 		*/
 	/*test(y);*/
 
-	what(x);
+	/*what(x);*/
 }
 
 float test(float x) {

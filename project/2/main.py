@@ -20,7 +20,7 @@ def main():
 
         if node.symbol == 'function_def':
             msg = table_stack[0].set(node.args[1].symbol, Symbol(
-                table_stack[-1].scope,
+                table_stack[0].scope,
                 SymbolType.FUNCTION,
                 {
                     'init': True,
@@ -31,7 +31,7 @@ def main():
                     'line': node.attrs.get('line')
                 }
             ))
-            info(table_stack[-1].get(node.args[1].symbol), usage=False)
+            info(table_stack[0].get(node.args[1].symbol), usage=False)
             if msg:
                 logger.error(msg)
                 continue
@@ -64,7 +64,7 @@ def main():
                     'line': node.attrs.get('line')
                 }
             ))
-            info(table_stack[-1].get(node.args[1].symbol), usage=False)
+            info(table_stack[0].get(node.args[1].symbol), usage=False)
             if msg:
                 logger.error(msg)
         elif node.symbol == 'decl':
@@ -91,6 +91,9 @@ def main():
             else:
                 for child in reversed(node.args):
                     node_stack.append(child)
+
+    if 'main' not in table_stack[0].table:
+        logger.error('main is not defined')
 
 
 if __name__ == '__main__':
