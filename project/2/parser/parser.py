@@ -24,11 +24,12 @@ def p_program(p):
     '''
     if len(p) == 2:
         p[0] = None
+        return
+
+    if p[2] is None:
+        p[0] = Node('program', args=[p[1]], terminal=False)
     else:
-        if p[2] is None:
-            p[0] = Node('program', args=[p[1]], terminal=False)
-        else:
-            p[0] = Node('program', args=[p[1], *p[2].args], terminal=False)
+        p[0] = Node('program', args=[p[1], *p[2].args], terminal=False)
 
 def p_decl(p):
     '''
@@ -47,7 +48,7 @@ def p_var_list(p):
     '''
     var_list : identifier var_list_prime
     '''
-    p[1] = Node(p[1], args=None, terminal=True)
+    p[1] = Node(p[1], args=None, attrs={'type': 'identifier'}, terminal=True)
     p[0] = Node('var_list', args=[p[1]], terminal=False)
     if p[2] is not None:
         p[0].args.extend(p[2].args)
@@ -66,15 +67,15 @@ def p_function_decl(p):
     '''
     function_decl : kind identifier LPAR kind RPAR SEMI
     '''
-    p[2] = Node(p[2], args=None, terminal=True)
+    p[2] = Node(p[2], args=None, attrs={'type': 'identifier'}, terminal=True)
     p[0] = Node('function_decl', args=[p[1], p[2], p[4]], terminal=False)
 
 def p_function_def(p):
     '''
     function_def : kind identifier LPAR kind identifier RPAR body
     '''
-    p[2] = Node(p[2], args=None, terminal=True)
-    p[5] = Node(p[5], args=None, terminal=True)
+    p[2] = Node(p[2], args=None, attrs={'type': 'identifier'}, terminal=True)
+    p[5] = Node(p[5], args=None, attrs={'type': 'identifier'}, terminal=True)
     p[0] = Node('function_def', args=[p[1], p[2], p[4], p[5], p[7]], terminal=False)
 
 def p_body(p):
@@ -169,7 +170,14 @@ def p_factor(p):
            | LPAR expr RPAR
     '''
     if len(p) == 2:
-        p[0] = Node(p[1], args=None, terminal=True)
+        if isinstance(p[1], str):
+            p[0] = Node(p[1], args=None, attrs={'type': 'identifier'}, terminal=True)
+        elif isinstance(p[1], float):
+            p[0] = Node(p[1], args=None, attrs={'type': 'float_literal'}, terminal=True)
+        elif isinstance(p[1], int):
+            p[0] = Node(p[1], args=None, attrs={'type': 'integer_literal'}, terminal=True)
+        else:
+            p[0] = p[1]
     else:
         p[0] = p[2]
 
@@ -184,8 +192,8 @@ def p_function_call(p):
     '''
     function_call : identifier LPAR expr RPAR
     '''
-    p[1] = Node(p[1], args=None, terminal=True)
-    p[0] = Node('func_call', args=[p[1], p[3]], terminal=False)
+    p[1] = Node(p[1], args=None, attrs={'type': 'identifier'}, terminal=True)
+    p[0] = Node('function_call', args=[p[1], p[3]], terminal=False)
 
 def p_term(p):
     '''
@@ -269,7 +277,7 @@ def p_expr(p):
          | expr1
     '''
     if len(p) == 4:
-        p[1] = Node(p[1], args=None, terminal=True)
+        p[1] = Node(p[1], args=None, attrs={'type': 'identifier'}, terminal=True)
         p[0] = Node(p[2], args=[p[1], p[3]], terminal=False)
     else:
         p[0] = p[1]
@@ -281,8 +289,12 @@ def p_empty(p):
     p[0] = None
 
 def p_error(p):
-    print(f'error: {p}')
     if p:
-        parser.errok()
+        logger.error(f'Syntax error on line {p.lineno} column {p.lexpos}: {p.type} {p.value}')
+        logger.error('Attempting to recover and continue')
+        while True:
+            token = parser.token()
+            if not token or token.type == 'SEMI':
+                break
 
 parser = yacc.yacc()

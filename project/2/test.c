@@ -1,6 +1,12 @@
+float a, b, c;
+int y;
+
+y = 10;
+
+float test(float);
+
 int main(int x) {
-	/*int a, b, c;*/
-	/*x = 10;*/
+	int a, b, c;
 
 	x = 1 + 2 - 3;
 	/*x = 1 / 2 * 3 / 4;*/
@@ -11,4 +17,11 @@ int main(int x) {
 	while (p>=-(x+y)*3.45/6-z)
 		z = z + 3;
 		*/
+	/*test(y);*/
+
+	what(x);
+}
+
+float test(float x) {
+	int c;
 }
