@@ -1,20 +1,18 @@
-# Go version 1.9.4
-# Alpine version 3.7
-FROM golang:1.9.4-alpine3.7
+FROM python:3-alpine3.6
 
-EXPOSE 8080
+COPY requirements.txt /opt/
+
+RUN apk add --no-cache \
+	alpine-sdk \
+	linux-headers \
+	python3-dev \
+	bash
+
+RUN pip3 install -r /opt/requirements.txt --use-wheel --no-cache-dir
+
+COPY . /opt
+
+WORKDIR /opt
 
 ENTRYPOINT []
-CMD $GOPATH/bin/cwc-go
-
-ENV SRC_PATH=/go/src/cs3083-project
-
-RUN mkdir -p $SRC_PATH
-
-COPY . $SRC_PATH
-
-WORKDIR $SRC_PATH
-
-RUN go install . && rm -rf $SRC_PATH
-
-WORKDIR $GOPATH/bin
+CMD uwsgi uwsgi.ini
