@@ -1,7 +1,7 @@
 from flask import Flask
 from flask.json import jsonify
 from werkzeug.exceptions import HTTPException, default_exceptions
-from views.default import DefaultView
+from src.views.default import DefaultView
 
 
 app = Flask(__name__)
