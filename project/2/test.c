@@ -1,8 +1,6 @@
 float a, b, c;
 int y;
 
-y = 10;
-
 float test(float);
 
 int main(int x) {

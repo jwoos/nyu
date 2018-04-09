@@ -20,7 +20,7 @@ def main():
 
         if node.symbol == 'function_def':
             msg = table_stack[0].set(node.args[1].symbol, Symbol(
-                SymbolScope.GLOBAL,
+                table_stack[-1].scope,
                 SymbolType.FUNCTION,
                 {
                     'init': True,
@@ -31,13 +31,14 @@ def main():
                     'line': node.attrs.get('line')
                 }
             ))
+            info(table_stack[-1].get(node.args[1].symbol), usage=False)
             if msg:
                 logger.error(msg)
                 continue
 
             table_stack.append(SymbolTable(SymbolScope.LOCAL))
             table_stack[-1].set(node.args[3].symbol, Symbol(
-                SymbolScope.GLOBAL,
+                table_stack[-1].scope,
                 SymbolType.VARIABLE,
                 {
                     'value': None,
@@ -63,12 +64,13 @@ def main():
                     'line': node.attrs.get('line')
                 }
             ))
+            info(table_stack[-1].get(node.args[1].symbol), usage=False)
             if msg:
                 logger.error(msg)
         elif node.symbol == 'decl':
             for var in node.args[1:]:
                 msg = table_stack[-1].set(var.symbol, Symbol(
-                    SymbolScope.GLOBAL,
+                    table_stack[-1].scope,
                     SymbolType.VARIABLE,
                     {
                         'value': None,
