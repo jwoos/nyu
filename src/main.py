@@ -1,7 +1,9 @@
 from flask import Flask
 from flask.json import jsonify
 from werkzeug.exceptions import HTTPException, default_exceptions
+
 from src.views.default import DefaultView
+from src.db import connection
 
 
 app = Flask(__name__)
@@ -32,3 +34,5 @@ for code, error in default_exceptions.items():
 
 view = DefaultView.as_view('default')
 app.add_url_rule('/', view_func=view, methods=['GET'])
+
+print(connection)
