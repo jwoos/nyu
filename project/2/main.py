@@ -18,6 +18,9 @@ def main():
         node = node_stack.pop()
         logger.debug(node)
 
+        if not node:
+            continue
+
         if node.symbol == 'function_def':
             msg = table_stack[0].set(node.args[1].symbol, Symbol(
                 table_stack[0].scope,
