@@ -8,4 +8,18 @@ window.addEventListener('load', () => {
 		document.querySelector('.login').style.display = 'none';
 		document.querySelector('.register').style.display = 'block';
 	});
+	document.querySelector('#loginSub').addEventListener('click',()=>{
+		let body = {};
+		body['email'] = document.getElementById('#email').value();
+		body['pw'] = document.getElementById('#pw').value();
+		fetch(`/api/login`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(data);
+		}).then((d)=>{
+			console.log("Logged in!!");
+		});
+	});
 });

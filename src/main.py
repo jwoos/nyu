@@ -2,7 +2,7 @@ from flask import Flask
 from flask.json import jsonify
 from werkzeug.exceptions import HTTPException, default_exceptions
 
-from src.views import default, evaluation
+from src.views import default, evaluation, login
 from src.db import connection
 
 
@@ -36,5 +36,10 @@ for code, error in default_exceptions.items():
 default_view = default.DefaultView.as_view('default')
 app.add_url_rule('/', view_func=default_view, methods=['GET'])
 
+view = login.LoginView.as_view('login')
+app.add_url_rule('/login', view_func=view, methods=['GET'])
+
 evaluation_view = evaluation.EvaluationView.as_view('evaluation')
 app.add_url_rule('/evaluation', view_func=evaluation_view, methods=['POST'])
+
+print(connection)
