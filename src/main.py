@@ -2,7 +2,7 @@ from flask import Flask
 from flask.json import jsonify
 from werkzeug.exceptions import HTTPException, default_exceptions
 
-from src.views.default import DefaultView
+from src.views import default, evaluation
 from src.db import connection
 
 
@@ -28,11 +28,13 @@ def default_error_handler(error):
 
     return context, code
 
+
 for code, error in default_exceptions.items():
     app.register_error_handler(error, default_error_handler)
 
 
-view = DefaultView.as_view('default')
-app.add_url_rule('/', view_func=view, methods=['GET'])
+default_view = default.DefaultView.as_view('default')
+app.add_url_rule('/', view_func=default_view, methods=['GET'])
 
-print(connection)
+evaluation_view = evaluation.EvaluationView.as_view('evaluation')
+app.add_url_rule('/evaluation', view_func=evaluation_view, methods=['POST'])
