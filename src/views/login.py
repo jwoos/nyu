@@ -7,9 +7,11 @@ class LoginView(MethodView):
     def get(self):
         body = request.get_json();
         with connection.cursor() as cursor:
-            cursor.callproc('login_user',body['email'],body['pw']);
-            data = cursor.fetchall();
-            if len(data) == 1:
+            cursor.execute("SELECT email, password FROM accounts WHERE email=? AND password=?",(body['email'],body['pw']));
+            rows = cursor.fetchall();
+            if len(rows) == 0:
+                return jsonify({'status': 'not okay'}), 403
+            elif len(data) == 1:
                 return jsonify({'status': 'okay'}), 200
             else
-                return jsonify({'status': 'not okay'}), 200
+                return jsonify({'status': 'not okay'}), 403
