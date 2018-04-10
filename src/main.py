@@ -36,8 +36,17 @@ for code, error in default_exceptions.items():
 default_view = default.DefaultView.as_view('default')
 app.add_url_rule('/', view_func=default_view, methods=['GET'])
 
+<<<<<<< Updated upstream
 login_view = LoginView.as_view('login')
 app.add_url_rule('/login', view_func=login_view, methods=['GET'])
 
+=======
+<<<<<<< Updated upstream
+=======
+login_view = login.LoginView.as_view('login')
+app.add_url_rule('/login', view_func=login_view, methods=['POST'])
+
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 evaluation_view = evaluation.EvaluationView.as_view('evaluation')
 app.add_url_rule('/evaluation', view_func=evaluation_view, methods=['POST'])

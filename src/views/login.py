@@ -4,14 +4,18 @@ from flask import request
 from src.db import connection
 
 class LoginView(MethodView):
-    def get(self):
+    def post(self):
         body = request.get_json();
+
+        if not body:
+            return jsonify({}), 400
+
         with connection.cursor() as cursor:
-            cursor.execute("SELECT email, password FROM accounts WHERE email=? AND password=?",(body['email'],body['pw']));
+            cursor.execute("SELECT email, password FROM accounts WHERE email=%(email)s AND password=%(pw)s", body);
             rows = cursor.fetchall();
             if len(rows) == 0:
                 return jsonify({'status': 'not okay'}), 403
             elif len(data) == 1:
                 return jsonify({'status': 'okay'}), 200
-            else
+            else:
                 return jsonify({'status': 'not okay'}), 403
