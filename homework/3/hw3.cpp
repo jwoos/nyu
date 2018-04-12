@@ -71,13 +71,13 @@ float distance(const vec3& a, const vec3& b) {
 void readFile() {
 	string filename;
 
-	cout << "Enter the file to read - 8 is shortcut for sphere.8 and 128 is shortcut for sphere.128" << endl;
+	cout << "Enter the file to read - 1 is shortcut for sphere.256 and 2 is shortcut for sphere.1024" << endl;
 	cin >> filename;
 
-	if (filename == "8") {
-		filename = "sphere.8";
-	} else if (filename == "128") {
-		filename = "sphere.128";
+	if (filename == "1") {
+		filename = "sphere.256";
+	} else if (filename == "2") {
+		filename = "sphere.1024";
 	}
 
 	ifstream file;
@@ -131,9 +131,9 @@ void drawObj(GLuint buffer, int num_vertices) {
 	glEnableVertexAttribArray(vPosition);
 	glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
 
-	GLuint vColor = glGetAttribLocation(program, "vColor");
-	glEnableVertexAttribArray(vColor);
-	glVertexAttribPointer(vColor, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(vec3) * num_vertices));
+	GLuint vNormal = glGetAttribLocation(program, "vNormal");
+	glEnableVertexAttribArray(vNormal);
+	glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(vec4) * num_vertices));
 	// the offset is the (total) size of the previous vertex attribute array(s)
 
 	/* Draw a sequence of geometric objs (triangles) from the vertex buffer
@@ -142,7 +142,7 @@ void drawObj(GLuint buffer, int num_vertices) {
 
 	/*--- Disable each vertex attribute array being enabled ---*/
 	glDisableVertexAttribArray(vPosition);
-	glDisableVertexAttribArray(vColor);
+	glDisableVertexAttribArray(vNormal);
 }
 
 // set up floor
@@ -184,7 +184,7 @@ void axis(void) {
 
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
-			_axis.colors[i + j] = axisColors[i];
+			_axis.colors[i * 3 + j] = axisColors[i];
 		}
 	}
 }
@@ -252,7 +252,7 @@ void display(void) {
 
 	glUseProgram(program);
 
-	GLuint model_view = glGetUniformLocation(program, "model_view");
+	GLuint modelView = glGetUniformLocation(program, "modelView");
 	GLuint projection = glGetUniformLocation(program, "projection");
 
 	// set up model view matrix
@@ -266,7 +266,7 @@ void display(void) {
 	vec4 up(0, 1, 0, 0);
 
 	mat4 mv = LookAt(eye, at, up);
-	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
+	glUniformMatrix4fv(modelView, 1, GL_TRUE, mv);
 
 	// set up projection matrix
 	GLfloat fovy = 45;
@@ -289,7 +289,7 @@ void display(void) {
 	rotationMatrix = Rotate(rate, rotationAxes[sphereIndex].x, rotationAxes[sphereIndex].y, rotationAxes[sphereIndex].z) * rotationMatrix;
 	mv *= Translate(sphereCenter.x, sphereCenter.y, sphereCenter.z) * rotationMatrix;
 
-	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
+	glUniformMatrix4fv(modelView, 1, GL_TRUE, mv);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	drawObj(_sphere.buffer, _sphere.size);
 
