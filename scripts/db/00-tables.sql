@@ -1,69 +1,71 @@
 CREATE TABLE levels (
-	id INT,
+	id INT AUTO_INCREMENT,
 	name TINYTEXT,
-	description TINYTEXT,
 
 	PRIMARY KEY(id)
 );
 
 CREATE TABLE accounts (
-	id INT,
+	id INT AUTO_INCREMENT,
 	level_id INT,
-	email TEXT, -- sha256
-	username CHAR(64), -- sha256
-	salt TINYTEXT,
-	password BINARY(60), -- bcrypt
-	created DATETIME,
-	updated DATETIME,
+	email TEXT,
+	password CHAR(60), -- bcrypt
+
+	created DATETIME DEFAULT CURRENT_TIMESTAMP,
+	updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
 	PRIMARY KEY(id),
 	FOREIGN KEY(level_id) REFERENCES levels(id)
 );
 
 CREATE TABLE professors  (
-	id INT,
+	id INT AUTO_INCREMENT,
 	account_id INT,
 	first_name TINYTEXT,
 	last_name TINYTEXT,
-	created DATETIME,
-	updated DATETIME,
+
+	created DATETIME DEFAULT CURRENT_TIMESTAMP,
+	updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
 	PRIMARY KEY(id),
 	FOREIGN KEY(account_id) REFERENCES accounts(id)
 );
 
 CREATE TABLE students (
-	id INT,
+	id INT AUTO_INCREMENT,
 	account_id INT,
-	university_number CHAR(64), -- sha256
-	created DATETIME,
-	updated DATETIME,
+	university_number CHAR(9), -- sha256
+
+	created DATETIME DEFAULT CURRENT_TIMESTAMP,
+	updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
 	PRIMARY KEY(id),
 	FOREIGN KEY(account_id) REFERENCES accounts(id)
 );
 
 CREATE TABLE courses (
-	id INT,
+	id INT AUTO_INCREMENT,
 	name TINYTEXT,
 	description TEXT,
 	professor_id INT,
-	created DATETIME,
-	updated DATETIME,
+
+	created DATETIME DEFAULT CURRENT_TIMESTAMP,
+	updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
 	PRIMARY KEY(id),
 	FOREIGN KEY(professor_id) REFERENCES professors(id)
 );
 
 CREATE TABLE enrollments (
-	id INT,
+	id INT AUTO_INCREMENT,
 	student_id INT,
 	course_id INT,
 	year INT,
 	semester INT,
 	section VARCHAR(16),
-	created DATETIME,
-	updated DATETIME,
+
+	created DATETIME DEFAULT CURRENT_TIMESTAMP,
+	updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
 	PRIMARY KEY(id),
 	FOREIGN KEY(student_id) REFERENCES students(id),
@@ -71,14 +73,15 @@ CREATE TABLE enrollments (
 );
 
 CREATE TABLE evaluations (
-	id INT,
+	id INT AUTO_INCREMENT,
 	enrollment_id INT,
 	name TEXT,
 	comments TEXT,
 	percentage INT,
 	rating INT,
-	created DATETIME,
-	updated DATETIME,
+
+	created DATETIME DEFAULT CURRENT_TIMESTAMP,
+	updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
 	PRIMARY KEY(id),
 	FOREIGN KEY(enrollment_id) REFERENCES enrollments(id)
