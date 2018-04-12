@@ -1,21 +1,13 @@
-CREATE TABLE levels (
-	id INT AUTO_INCREMENT,
-	name TINYTEXT,
-
-	PRIMARY KEY(id)
-);
-
 CREATE TABLE accounts (
 	id INT AUTO_INCREMENT,
-	level_id INT,
+	class TINYTEXT,
 	email TEXT,
 	password CHAR(60), -- bcrypt
 
 	created DATETIME DEFAULT CURRENT_TIMESTAMP,
 	updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-	PRIMARY KEY(id),
-	FOREIGN KEY(level_id) REFERENCES levels(id)
+	PRIMARY KEY(id)
 );
 
 CREATE TABLE professors  (
