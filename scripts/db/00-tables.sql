@@ -1,7 +1,7 @@
 CREATE TABLE accounts (
 	id INT AUTO_INCREMENT,
 	class TINYTEXT,
-	email TEXT,
+	email TEXT UNIQUE,
 	password CHAR(60), -- bcrypt
 
 	created DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -26,7 +26,7 @@ CREATE TABLE professors  (
 CREATE TABLE students (
 	id INT AUTO_INCREMENT,
 	account_id INT,
-	university_number CHAR(9), -- sha256
+	university_number CHAR(9) UNIQUE, -- sha256
 
 	created DATETIME DEFAULT CURRENT_TIMESTAMP,
 	updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
