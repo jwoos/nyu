@@ -8,6 +8,7 @@ bool flagAnimation;
 bool flagStarted;
 
 GLuint program;
+GLuint programLight;
 
 vec4 originalEye(7, 3, -10, 1);
 vec4 eye = originalEye;
@@ -56,6 +57,13 @@ int sphereIndex = 0;
 float sphereRadius = 1;
 float sphereRate = 1;
 mat4 sphereRotationMatrix(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(0, 0, 0, 1));
+
+
+Entity _shadow;
+vec3 shadowColor(0.25, 0.25, 0.25);
+vector<vec3> shadowVertices;
+
+vec4 lightPosition(-14, -12, -3, 1);
 
 
 #endif

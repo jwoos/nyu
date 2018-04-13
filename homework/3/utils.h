@@ -15,7 +15,7 @@ using namespace std;
 
 
 typedef struct Entity {
-	vec3* points;
+	vec3* vertices;
 	vec3* colors;
 
 	GLuint buffer;
@@ -26,7 +26,7 @@ typedef struct Entity {
 
 void drawObj(GLuint, int, GLuint);
 
-void readFile(const string&, const string&, vector<vec3>&);
+void readFile(const string&, const string&, vector<vec3>&, vector<vec3>&);
 
 float distance(const vec3&, const vec3&);
 

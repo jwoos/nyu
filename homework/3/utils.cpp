@@ -25,7 +25,7 @@ void drawObj(GLuint buffer, int num_vertices, GLuint program) {
 }
 
 // reads in points into spherePoints
-void readFile(const string& a, const string& b, vector<vec3>& spherePoints) {
+void readFile(const string& a, const string& b, vector<vec3>& spherePoints, vector<vec3>& shadowPoints) {
 	string filename;
 
 	cout << "Enter the file to read - 1 is shortcut for ";
@@ -65,6 +65,7 @@ void readFile(const string& a, const string& b, vector<vec3>& spherePoints) {
 			file >> x >> y >> z;
 
 			spherePoints.push_back(vec3(x, y, z));
+			shadowPoints.push_back(vec3(x, y, z));
 		}
 	}
 
