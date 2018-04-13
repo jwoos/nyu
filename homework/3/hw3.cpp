@@ -20,36 +20,35 @@ extern bool flagWire;
 extern bool flagLight;
 
 extern GLuint program;
-extern GLuint programLight;
 
 extern vec4 originalEye;
 extern vec4 eye;
 extern GLuint aspect;
 
 extern Entity _floor;
-extern vec3 floorColor;
-extern vec3 floorVertices[4];
+extern vec4 floorColor;
+extern vec4 floorVertices[4];
 
 extern Entity _axes;
-extern vec3 axesColors[3];
-extern vec3 axesVertices[9];
+extern vec4 axesColors[3];
+extern vec4 axesVertices[9];
 
 extern Entity _sphere;
-extern vec3 sphereColor;
-extern vector<vec3> sphereVertices;
+extern vec4 sphereColor;
+extern vector<vec4> sphereVertices;
 
-extern vec3 sphereMovementVertices[3];
-extern vec3 sphereMovementVectors[3];
-extern vec3 sphereRotationAxes[3];
-extern vec3 sphereCenter;
+extern vec4 sphereMovementVertices[3];
+extern vec4 sphereMovementVectors[3];
+extern vec4 sphereRotationAxes[3];
+extern vec4 sphereCenter;
 extern int sphereIndex;
 extern float sphereRadius;
 extern float sphereRate;
 extern mat4 sphereRotationMatrix;
 
 extern Entity _shadow;
-extern vec3 shadowColor;
-extern vector<vec3> shadowVertices;
+extern vec4 shadowColor;
+extern vector<vec4> shadowVertices;
 
 extern vec4 lightPosition;
 
@@ -57,8 +56,8 @@ extern vec4 lightPosition;
 // set up floor
 void floor(void) {
 	_floor.size = 6;
-	_floor.vertices = new vec3[_floor.size];
-	_floor.colors = new vec3[_floor.size];
+	_floor.vertices = new vec4[_floor.size];
+	_floor.colors = new vec4[_floor.size];
 
 	_floor.vertices[0] = floorVertices[0];
 	_floor.vertices[1] = floorVertices[1];
@@ -73,17 +72,17 @@ void floor(void) {
 
 	glGenBuffers(1, &_floor.buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, _floor.buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * _floor.size * 2, NULL, GL_STATIC_DRAW);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec3) * _floor.size, _floor.vertices);
-	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec3) * _floor.size, sizeof(vec3) * _floor.size, _floor.colors);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vec4) * _floor.size * 2, NULL, GL_STATIC_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec4) * _floor.size, _floor.vertices);
+	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec4) * _floor.size, sizeof(vec4) * _floor.size, _floor.colors);
 }
 
 // set up lines for axes
 void axes(void) {
 	_axes.size = 9;
 
-	_axes.vertices = (vec3*)&axesVertices;
-	_axes.colors = new vec3[_axes.size];
+	_axes.vertices = (vec4*)&axesVertices;
+	_axes.colors = new vec4[_axes.size];
 
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
@@ -93,9 +92,9 @@ void axes(void) {
 
 	glGenBuffers(1, &_axes.buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, _axes.buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * _axes.size * 2, NULL, GL_STATIC_DRAW);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec3) * _axes.size, _axes.vertices);
-	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec3) * _axes.size, sizeof(vec3) * _axes.size, _axes.colors);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vec4) * _axes.size * 2, NULL, GL_STATIC_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec4) * _axes.size, _axes.vertices);
+	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec4) * _axes.size, sizeof(vec4) * _axes.size, _axes.colors);
 }
 
 // set up sphere
@@ -103,13 +102,13 @@ void sphere(void) {
 	_sphere.size = sphereVertices.size();
 
 	_sphere.vertices = &sphereVertices[0];
-	_sphere.colors = new vec3[_sphere.size];
+	_sphere.colors = new vec4[_sphere.size];
 
 	for (int i = 0; i < _sphere.size; i++) {
 		_sphere.colors[i] = sphereColor;
 	}
 
-	vec3 y(0, 1, 0);
+	vec4 y(0, 1, 0);
 
 	for (int i = 0; i < 3; i++) {
 		sphereMovementVectors[i] = normalize(sphereMovementVertices[(i + 1) % 3] - sphereMovementVertices[i]);
@@ -120,9 +119,9 @@ void sphere(void) {
 
 	glGenBuffers(1, &_sphere.buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, _sphere.buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * _sphere.size * 2, NULL, GL_STATIC_DRAW);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec3) * _sphere.size, _sphere.vertices);
-	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec3) * _sphere.size, sizeof(vec3) * _sphere.size, _sphere.colors);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vec4) * _sphere.size * 2, NULL, GL_STATIC_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec4) * _sphere.size, _sphere.vertices);
+	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec4) * _sphere.size, sizeof(vec4) * _sphere.size, _sphere.colors);
 }
 
 // set up shadow
@@ -130,7 +129,7 @@ void shadow(void) {
 	_shadow.size = sphereVertices.size();
 
 	_shadow.vertices = &sphereVertices[0];
-	_shadow.colors = new vec3[_shadow.size];
+	_shadow.colors = new vec4[_shadow.size];
 
 	for (int i = 0; i < _shadow.size; i++) {
 		_shadow.colors[i] = shadowColor;
@@ -138,9 +137,9 @@ void shadow(void) {
 
 	glGenBuffers(1, &_shadow.buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, _shadow.buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * _shadow.size * 2, NULL, GL_STATIC_DRAW);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec3) * _shadow.size, _shadow.vertices);
-	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec3) * _shadow.size, sizeof(vec3) * _shadow.size, _shadow.colors);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vec4) * _shadow.size * 2, NULL, GL_STATIC_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec4) * _shadow.size, _shadow.vertices);
+	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec4) * _shadow.size, sizeof(vec4) * _shadow.size, _shadow.colors);
 }
 
 void init(void) {
@@ -153,8 +152,9 @@ void init(void) {
 	shadow();
 
 	// initialize the shader
-	program = InitShader("vshader42.glsl", "fshader42.glsl");
-	programLight = InitShader("vshader53.glsl", "fshader53.glsl");
+	program = InitShader("vshader53.glsl", "fshader53.glsl");
+
+	glUniform1f(glGetUniformLocation(program, "flagLight"), flagLight);
 
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -339,10 +339,12 @@ void menu(int index) {
 
 		case 2:
 			flagLight = false;
+			glUniform1f(glGetUniformLocation(program, "flagLight"), flagLight);
 			break;
 
 		case 3:
 			flagLight = true;
+			glUniform1f(glGetUniformLocation(program, "flagLight"), flagLight);
 			break;
 
 		case 4:

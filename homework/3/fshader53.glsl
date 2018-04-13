@@ -5,7 +5,7 @@ File Name: "fshader53.glsl":
 
 #version 150
 
-in  vec4 color;
+in vec4 color;
 out vec4 fColor;
 
 void main() {

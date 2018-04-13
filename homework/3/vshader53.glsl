@@ -8,8 +8,10 @@ Vertex shader:
 
 #version 150
 
+uniform bool flagLight;
+
 in vec4 vPosition;
-in vec3 vNormal;
+in vec4 vNormal;
 out vec4 color;
 
 uniform vec4 ambientProduct, diffuseProduct, specularProduct;
@@ -24,35 +26,39 @@ uniform float linearAtt; // Linear Attenuation
 uniform float quadAtt;   // Quadratic Attenuation
 
 void main() {
-	// Transform vertex  position into eye coordinates
-	vec3 pos = (modelView * vPosition).xyz;
-
-	vec3 L = normalize(lightPosition.xyz - pos);
-	vec3 E = normalize(-pos);
-	vec3 H = normalize(L + E);
-
-	// Transform vertex normal into eye coordinates
-	// vec3 N = normalize( ModelView*vec4(vNormal, 0.0) ).xyz;
-	vec3 N = normalize(normalMatrix * vNormal);
-
-	/*--- To Do: Compute attenuation ---*/
-	float attenuation = 1.0;
-
-	// Compute terms in the illumination equation
-	vec4 ambient = ambientProduct;
-
-	float d = max(dot(L, N), 0.0);
-	vec4 diffuse = d * diffuseProduct;
-
-	float s = pow(max(dot(N, H), 0.0), shininess);
-	vec4 specular = s * specularProduct;
-
-	if (dot(L, N) < 0.0) {
-		specular = vec4(0.0, 0.0, 0.0, 1.0);
-	}
-
 	gl_Position = projection * modelView * vPosition;
 
-	/*--- attenuation below must be computed properly ---*/
-	color = attenuation * (ambient + diffuse + specular);
+	if (flagLight) {
+		// Transform vertex  position into eye coordinates
+		vec3 pos = (modelView * vPosition).xyz;
+
+		vec3 L = normalize(lightPosition.xyz - pos);
+		vec3 E = normalize(-pos);
+		vec3 H = normalize(L + E);
+
+		// Transform vertex normal into eye coordinates
+		// vec3 N = normalize( ModelView*vec4(vNormal, 0.0) ).xyz;
+		vec3 N = normalize(normalMatrix * vNormal.xyz);
+
+		/*--- To Do: Compute attenuation ---*/
+		float attenuation = 1.0;
+
+		// Compute terms in the illumination equation
+		vec4 ambient = ambientProduct;
+
+		float d = max(dot(L, N), 0.0);
+		vec4 diffuse = d * diffuseProduct;
+
+		float s = pow(max(dot(N, H), 0.0), shininess);
+		vec4 specular = s * specularProduct;
+
+		if (dot(L, N) < 0.0) {
+			specular = vec4(0.0, 0.0, 0.0, 1.0);
+		}
+
+		/*--- attenuation below must be computed properly ---*/
+		color = attenuation * (ambient + diffuse + specular);
+	} else {
+		color = vNormal;
+	}
 }

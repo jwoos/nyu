@@ -8,11 +8,11 @@ void drawObj(GLuint buffer, int num_vertices, GLuint program) {
 	/*----- Set up vertex attribute arrays for each vertex attribute -----*/
 	GLuint vPosition = glGetAttribLocation(program, "vPosition");
 	glEnableVertexAttribArray(vPosition);
-	glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
 
 	GLuint vNormal = glGetAttribLocation(program, "vNormal");
 	glEnableVertexAttribArray(vNormal);
-	glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(vec3) * num_vertices));
+	glVertexAttribPointer(vNormal, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(vec4) * num_vertices));
 	// the offset is the (total) size of the previous vertex attribute array(s)
 
 	/* Draw a sequence of geometric objs (triangles) from the vertex buffer
@@ -25,7 +25,7 @@ void drawObj(GLuint buffer, int num_vertices, GLuint program) {
 }
 
 // reads in points into spherePoints
-void readFile(const string& a, const string& b, vector<vec3>& spherePoints, vector<vec3>& shadowPoints) {
+void readFile(const string& a, const string& b, vector<vec4>& spherePoints, vector<vec4>& shadowPoints) {
 	string filename;
 
 	cout << "Enter the file to read - 1 is shortcut for ";
@@ -64,8 +64,8 @@ void readFile(const string& a, const string& b, vector<vec3>& spherePoints, vect
 		for (int j = 0; j < points; j++) {
 			file >> x >> y >> z;
 
-			spherePoints.push_back(vec3(x, y, z));
-			shadowPoints.push_back(vec3(x, y, z));
+			spherePoints.push_back(vec4(x, y, z, 1));
+			shadowPoints.push_back(vec4(x, y, z, 1));
 		}
 	}
 
@@ -73,7 +73,7 @@ void readFile(const string& a, const string& b, vector<vec3>& spherePoints, vect
 }
 
 // distance between two points
-float distance(const vec3& a, const vec3& b) {
-	vec3 dist = a - b;
+float distance(const vec4& a, const vec4& b) {
+	vec4 dist = a - b;
 	return sqrt(dot(dist, dist));
 }
