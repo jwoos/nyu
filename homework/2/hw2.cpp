@@ -237,7 +237,7 @@ void init(void) {
 	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec3) * _sphere.size, sizeof(vec3) * _sphere.size, _sphere.colors);
 
 	// initialize the shader
-	program = InitShader("vshader.glsl", "fshader.glsl");
+	program = InitShader("vshader42.glsl", "fshader42.glsl");
 
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0.0, 0.0, 0.0, 1.0);
