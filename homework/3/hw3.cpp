@@ -43,7 +43,7 @@ vec3 floorVertices[4] = {
 };
 Entity _floor;
 
-Entity _axis;
+Entity _axes;
 
 const vec3 pathPoints[3] = {
 	vec3(-4, 1, 4),
@@ -161,32 +161,44 @@ void floor(void) {
 	for (int i = 0; i < _floor.size; i++) {
 		_floor.colors[i] = colorFloor;
 	}
+
+	glGenBuffers(1, &_floor.buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, _floor.buffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * _floor.size * 2, NULL, GL_STATIC_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec3) * _floor.size, _floor.points);
+	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec3) * _floor.size, sizeof(vec3) * _floor.size, _floor.colors);
 }
 
 // set up lines for axes
-void axis(void) {
-	_axis.size = 9;
+void axes(void) {
+	_axes.size = 9;
 
-	_axis.points = new vec3[_axis.size];
-	_axis.colors = new vec3[_axis.size];
+	_axes.points = new vec3[_axes.size];
+	_axes.colors = new vec3[_axes.size];
 
-	_axis.points[0] = vec3(0, 0, 0);
-	_axis.points[1] = vec3(10, 0, 0);
-	_axis.points[2] = vec3(20, 0, 0);
+	_axes.points[0] = vec3(0, 0, 0);
+	_axes.points[1] = vec3(10, 0, 0);
+	_axes.points[2] = vec3(20, 0, 0);
 
-	_axis.points[3] = vec3(0, 0, 0);
-	_axis.points[4] = vec3(0, 10, 0);
-	_axis.points[5] = vec3(0, 20, 0);
+	_axes.points[3] = vec3(0, 0, 0);
+	_axes.points[4] = vec3(0, 10, 0);
+	_axes.points[5] = vec3(0, 20, 0);
 
-	_axis.points[6] = vec3(0, 0, 0);
-	_axis.points[7] = vec3(0, 0, 10);
-	_axis.points[8] = vec3(0, 0, 20);
+	_axes.points[6] = vec3(0, 0, 0);
+	_axes.points[7] = vec3(0, 0, 10);
+	_axes.points[8] = vec3(0, 0, 20);
 
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
-			_axis.colors[i * 3 + j] = axisColors[i];
+			_axes.colors[i * 3 + j] = axisColors[i];
 		}
 	}
+
+	glGenBuffers(1, &_axes.buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, _axes.buffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * _axes.size * 2, NULL, GL_STATIC_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec3) * _axes.size, _axes.points);
+	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec3) * _axes.size, sizeof(vec3) * _axes.size, _axes.colors);
 }
 
 // set up sphere
@@ -199,10 +211,8 @@ void sphere(void) {
 	for (int i = 0; i < _sphere.size; i++) {
 		_sphere.colors[i] = colorSphere;
 	}
-}
 
-// set up things needed for sphere rotation
-void sphereRotation(void) {
+	// rotation
 	vec3 y(0, 1, 0);
 
 	for (int i = 0; i < 3; i++) {
@@ -211,30 +221,20 @@ void sphereRotation(void) {
 	}
 
 	sphereCenter = pathPoints[sphereIndex];
-}
 
-void init(void) {
-	floor();
-	glGenBuffers(1, &_floor.buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, _floor.buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * _floor.size * 2, NULL, GL_STATIC_DRAW);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec3) * _floor.size, _floor.points);
-	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec3) * _floor.size, sizeof(vec3) * _floor.size, _floor.colors);
-
-	axis();
-	glGenBuffers(1, &_axis.buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, _axis.buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * _axis.size * 2, NULL, GL_STATIC_DRAW);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec3) * _axis.size, _axis.points);
-	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec3) * _axis.size, sizeof(vec3) * _axis.size, _axis.colors);
-
-	sphere();
-	sphereRotation();
 	glGenBuffers(1, &_sphere.buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, _sphere.buffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * _sphere.size * 2, NULL, GL_STATIC_DRAW);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec3) * _sphere.size, _sphere.points);
 	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec3) * _sphere.size, sizeof(vec3) * _sphere.size, _sphere.colors);
+}
+
+void init(void) {
+	floor();
+
+	axes();
+
+	sphere();
 
 	// initialize the shader
 	program = InitShader("vshader53.glsl", "fshader53.glsl");
@@ -282,7 +282,7 @@ void display(void) {
 
 	// draw axes lines
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	drawObj(_axis.buffer, _axis.size);
+	drawObj(_axes.buffer, _axes.size);
 
 	// draw sphere
 	// the rightmost rotations ones are applied first
