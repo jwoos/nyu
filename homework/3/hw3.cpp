@@ -69,6 +69,12 @@ void floor(void) {
 	for (int i = 0; i < _floor.size; i++) {
 		_floor.colors[i] = colorFloor;
 	}
+
+	glGenBuffers(1, &_floor.buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, _floor.buffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * _floor.size * 2, NULL, GL_STATIC_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec3) * _floor.size, _floor.points);
+	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec3) * _floor.size, sizeof(vec3) * _floor.size, _floor.colors);
 }
 
 // set up lines for axes
@@ -95,6 +101,12 @@ void axes(void) {
 			_axes.colors[i * 3 + j] = axisColors[i];
 		}
 	}
+
+	glGenBuffers(1, &_axes.buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, _axes.buffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * _axes.size * 2, NULL, GL_STATIC_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec3) * _axes.size, _axes.points);
+	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec3) * _axes.size, sizeof(vec3) * _axes.size, _axes.colors);
 }
 
 // set up sphere
@@ -107,10 +119,7 @@ void sphere(void) {
 	for (int i = 0; i < _sphere.size; i++) {
 		_sphere.colors[i] = colorSphere;
 	}
-}
 
-// set up things needed for sphere rotation
-void sphereRotation(void) {
 	vec3 y(0, 1, 0);
 
 	for (int i = 0; i < 3; i++) {
@@ -119,30 +128,20 @@ void sphereRotation(void) {
 	}
 
 	sphereCenter = pathPoints[sphereIndex];
-}
 
-void init(void) {
-	floor();
-	glGenBuffers(1, &_floor.buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, _floor.buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * _floor.size * 2, NULL, GL_STATIC_DRAW);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec3) * _floor.size, _floor.points);
-	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec3) * _floor.size, sizeof(vec3) * _floor.size, _floor.colors);
-
-	axes();
-	glGenBuffers(1, &_axes.buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, _axes.buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * _axes.size * 2, NULL, GL_STATIC_DRAW);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec3) * _axes.size, _axes.points);
-	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec3) * _axes.size, sizeof(vec3) * _axes.size, _axes.colors);
-
-	sphere();
-	sphereRotation();
 	glGenBuffers(1, &_sphere.buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, _sphere.buffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * _sphere.size * 2, NULL, GL_STATIC_DRAW);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec3) * _sphere.size, _sphere.points);
 	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec3) * _sphere.size, sizeof(vec3) * _sphere.size, _sphere.colors);
+}
+
+void init(void) {
+	floor();
+
+	axes();
+
+	sphere();
 
 	// initialize the shader
 	program = InitShader("vshader42.glsl", "fshader42.glsl");
@@ -160,7 +159,7 @@ void display(void) {
 
 	glUseProgram(program);
 
-	GLuint model_view = glGetUniformLocation(program, "model_view");
+	GLuint modelView = glGetUniformLocation(program, "modelView");
 	GLuint projection = glGetUniformLocation(program, "projection");
 
 	// set up model view matrix
@@ -174,7 +173,7 @@ void display(void) {
 	vec4 up(0, 1, 0, 0);
 
 	mat4 mv = LookAt(eye, at, up);
-	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
+	glUniformMatrix4fv(modelView, 1, GL_TRUE, mv);
 
 	// set up projection matrix
 	GLfloat fovy = 45;
@@ -197,7 +196,7 @@ void display(void) {
 	rotationMatrix = Rotate(rate, rotationAxes[sphereIndex].x, rotationAxes[sphereIndex].y, rotationAxes[sphereIndex].z) * rotationMatrix;
 	mv *= Translate(sphereCenter.x, sphereCenter.y, sphereCenter.z) * rotationMatrix;
 
-	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
+	glUniformMatrix4fv(modelView, 1, GL_TRUE, mv);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	drawObj(_sphere.buffer, _sphere.size, program);
 
