@@ -5,110 +5,41 @@
 #include <cmath>
 
 #include "Angel-yjc.h"
+#include "utils.h"
+#include "globals.h"
 
 
 using namespace std;
 
 
-typedef struct Entity {
-	vec3* points;
-	vec3* colors;
+extern GLuint program;
+extern vec4 originalEye;
+extern vec4 eye;
+extern bool animation;
+extern bool started;
+extern GLuint aspect;
 
-	GLuint buffer;
+extern vec3 colorSphere;
+extern vec3 colorFloor;
+extern vec3 axisColors[3];
 
-	int size;
-} Entity;
+extern vec3 floorVertices[4];
 
+extern Entity _floor;
 
-GLuint program;
-vec4 originalEye(7, 3, -10, 1);
-vec4 eye = originalEye;
-bool animation;
-bool started;
-GLuint aspect;
+extern Entity _axes;
 
-vec3 colorSphere(1, 0.84, 0);
-vec3 colorFloor(0, 1, 0);
-vec3 axisColors[3] = {
-	vec3(1, 0, 0),
-	vec3(1, 0, 1),
-	vec3(0, 0, 1)
-};
-
-vec3 floorVertices[4] = {
-	vec3(5, 0, 8),
-	vec3(5, 0, -4),
-	vec3(-5, 0, -4),
-	vec3(-5, 0, 8)
-};
-Entity _floor;
-
-Entity _axes;
-
-const vec3 pathPoints[3] = {
-	vec3(-4, 1, 4),
-	vec3(3, 1, -4),
-	vec3(-3, 1, -3)
-};
-vector<vec3> spherePoints;
-vec3 movementVectors[3];
-vec3 rotationAxes[3];
-vec3 sphereCenter;
-int sphereIndex = 0;
-float radius = 1;
-float angle = 0;
-float rate = 1;
-mat4 rotationMatrix(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(0, 0, 0, 1));
-Entity _sphere;
-
-// distance between two points
-float distance(const vec3& a, const vec3& b) {
-	vec3 dist = a - b;
-	return sqrt(dot(dist, dist));
-}
-
-// reads in points into spherePoints
-void readFile() {
-	string filename;
-
-	cout << "Enter the file to read - 1 is shortcut for sphere.256 and 2 is shortcut for sphere.1024" << endl;
-	cin >> filename;
-
-	if (filename == "1") {
-		filename = "sphere.256";
-	} else if (filename == "2") {
-		filename = "sphere.1024";
-	}
-
-	ifstream file;
-	file.open(filename);
-
-	if (!file) {
-		cerr << "Unable to open file" << endl;
-		exit(EXIT_FAILURE);
-	}
-
-	int n;
-	file >> n;
-
-	for (int i = 0; i < n; i++) {
-		int points;
-
-		float x;
-		float y;
-		float z;
-
-		file >> points;
-
-		for (int j = 0; j < points; j++) {
-			file >> x >> y >> z;
-
-			spherePoints.push_back(vec3(x, y, z));
-		}
-	}
-
-	file.close();
-}
+extern vec3 pathPoints[3];
+extern vector<vec3> spherePoints;
+extern vec3 movementVectors[3];
+extern vec3 rotationAxes[3];
+extern vec3 sphereCenter;
+extern int sphereIndex;
+extern float radius;
+extern float angle;
+extern float rate;
+extern mat4 rotationMatrix;
+extern Entity _sphere;
 
 void menu(int index) {
 	switch (index) {
@@ -120,29 +51,6 @@ void menu(int index) {
 			exit(EXIT_SUCCESS);
 			break;
 	}
-}
-
-void drawObj(GLuint buffer, int num_vertices) {
-	//--- Activate the vertex buffer object to be drawn ---//
-	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-
-	/*----- Set up vertex attribute arrays for each vertex attribute -----*/
-	GLuint vPosition = glGetAttribLocation(program, "vPosition");
-	glEnableVertexAttribArray(vPosition);
-	glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
-
-	GLuint vColor = glGetAttribLocation(program, "vColor");
-	glEnableVertexAttribArray(vColor);
-	glVertexAttribPointer(vColor, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(vec3) * num_vertices));
-	// the offset is the (total) size of the previous vertex attribute array(s)
-
-	/* Draw a sequence of geometric objs (triangles) from the vertex buffer
-	   (using the attributes specified in each enabled vertex attribute array) */
-	glDrawArrays(GL_TRIANGLES, 0, num_vertices);
-
-	/*--- Disable each vertex attribute array being enabled ---*/
-	glDisableVertexAttribArray(vPosition);
-	glDisableVertexAttribArray(vColor);
 }
 
 // set up floor
@@ -278,11 +186,11 @@ void display(void) {
 
 	// draw floor
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	drawObj(_floor.buffer, _floor.size);
+	drawObj(_floor.buffer, _floor.size, program);
 
 	// draw axes lines
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	drawObj(_axes.buffer, _axes.size);
+	drawObj(_axes.buffer, _axes.size, program);
 
 	// draw sphere
 	// the rightmost rotations ones are applied first
@@ -291,7 +199,7 @@ void display(void) {
 
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	drawObj(_sphere.buffer, _sphere.size);
+	drawObj(_sphere.buffer, _sphere.size, program);
 
 	glutSwapBuffers();
 }
@@ -388,7 +296,7 @@ void mouse(int button, int state, int x, int y) {
 }
 
 int main(int argc, char** argv) {
-	readFile();
+	readFile("sphere.256", "sphere.1024", spherePoints);
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
