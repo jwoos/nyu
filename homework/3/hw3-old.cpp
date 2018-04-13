@@ -11,8 +11,8 @@ using namespace std;
 
 
 typedef struct Entity {
-	vec3* points;
-	vec3* colors;
+	vec4* points;
+	vec4* colors;
 
 	GLuint buffer;
 
@@ -21,39 +21,42 @@ typedef struct Entity {
 
 
 GLuint program;
+GLuint programLight;
+
 vec4 originalEye(7, 3, -10, 1);
 vec4 eye = originalEye;
 bool animation;
 bool started;
 GLuint aspect;
 
-vec3 colorSphere(1, 0.84, 0);
-vec3 colorFloor(0, 1, 0);
-vec3 axisColors[3] = {
-	vec3(1, 0, 0),
-	vec3(1, 0, 1),
-	vec3(0, 0, 1)
+vec4 colorSphere(1, 0.84, 0, 1);
+vec4 colorFloor(0, 1, 0, 1);
+vec4 colorShadow(0.25, 0.25, 0.25, 0.65);
+vec4 axisColors[3] = {
+	vec4(1, 0, 0, 1),
+	vec4(1, 0, 1, 1),
+	vec4(0, 0, 1, 1)
 };
 
-vec3 floorVertices[4] = {
-	vec3(5, 0, 8),
-	vec3(5, 0, -4),
-	vec3(-5, 0, -4),
-	vec3(-5, 0, 8)
+vec4 floorVertices[4] = {
+	vec4(5, 0, 8, 1),
+	vec4(5, 0, -4, 1),
+	vec4(-5, 0, -4, 1),
+	vec4(-5, 0, 8, 1)
 };
 Entity _floor;
 
 Entity _axes;
 
-const vec3 pathPoints[3] = {
-	vec3(-4, 1, 4),
-	vec3(3, 1, -4),
-	vec3(-3, 1, -3)
+const vec4 pathPoints[3] = {
+	vec4(-4, 1, 4, 1),
+	vec4(3, 1, -4, 1),
+	vec4(-3, 1, -3, 1)
 };
-vector<vec3> spherePoints;
-vec3 movementVectors[3];
-vec3 rotationAxes[3];
-vec3 sphereCenter;
+vector<vec4> spherePoints;
+vec4 movementVectors[3];
+vec4 rotationAxes[3];
+vec4 sphereCenter;
 int sphereIndex = 0;
 float radius = 1;
 float angle = 0;
@@ -61,9 +64,12 @@ float rate = 1;
 mat4 rotationMatrix(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(0, 0, 0, 1));
 Entity _sphere;
 
+Entity _shadow;
+vec4 lightPosition(-14, 12, -3, 1);
+
 // distance between two points
-float distance(const vec3& a, const vec3& b) {
-	vec3 dist = a - b;
+float distance(const vec4& a, const vec4& b) {
+	vec4 dist = a - b;
 	return sqrt(dot(dist, dist));
 }
 
@@ -103,7 +109,7 @@ void readFile() {
 		for (int j = 0; j < points; j++) {
 			file >> x >> y >> z;
 
-			spherePoints.push_back(vec3(x, y, z));
+			spherePoints.push_back(vec4(x, y, z));
 		}
 	}
 
@@ -131,9 +137,9 @@ void drawObj(GLuint buffer, int num_vertices) {
 	glEnableVertexAttribArray(vPosition);
 	glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
 
-	GLuint vColor = glGetAttribLocation(program, "vColor");
-	glEnableVertexAttribArray(vColor);
-	glVertexAttribPointer(vColor, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(vec3) * num_vertices));
+	GLuint vNormal = glGetAttribLocation(program, "vNormal");
+	glEnableVertexAttribArray(vNormal);
+	glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(vec4) * num_vertices));
 	// the offset is the (total) size of the previous vertex attribute array(s)
 
 	/* Draw a sequence of geometric objs (triangles) from the vertex buffer
@@ -142,14 +148,14 @@ void drawObj(GLuint buffer, int num_vertices) {
 
 	/*--- Disable each vertex attribute array being enabled ---*/
 	glDisableVertexAttribArray(vPosition);
-	glDisableVertexAttribArray(vColor);
+	glDisableVertexAttribArray(vNormal);
 }
 
 // set up floor
 void floor(void) {
 	_floor.size = 6;
-	_floor.points = new vec3[_floor.size];
-	_floor.colors = new vec3[_floor.size];
+	_floor.points = new vec4[_floor.size];
+	_floor.colors = new vec4[_floor.size];
 
 	_floor.points[0] = floorVertices[0];
 	_floor.points[1] = floorVertices[1];
@@ -161,32 +167,48 @@ void floor(void) {
 	for (int i = 0; i < _floor.size; i++) {
 		_floor.colors[i] = colorFloor;
 	}
+
+	glGenBuffers(1, &_floor.buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, _floor.buffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vec4) * _floor.size * 2, NULL, GL_STATIC_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec4) * _floor.size, _floor.points);
+	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec4) * _floor.size, sizeof(vec4) * _floor.size, _floor.colors);
+}
+
+// set up floor material
+void floorMaterial(void) {
 }
 
 // set up lines for axes
 void axes(void) {
 	_axes.size = 9;
 
-	_axes.points = new vec3[_axes.size];
-	_axes.colors = new vec3[_axes.size];
+	_axes.points = new vec4[_axes.size];
+	_axes.colors = new vec4[_axes.size];
 
-	_axes.points[0] = vec3(0, 0, 0);
-	_axes.points[1] = vec3(10, 0, 0);
-	_axes.points[2] = vec3(20, 0, 0);
+	_axes.points[0] = vec4(0, 0, 0, 1);
+	_axes.points[1] = vec4(10, 0, 0, 1);
+	_axes.points[2] = vec4(20, 0, 0, 1);
 
-	_axes.points[3] = vec3(0, 0, 0);
-	_axes.points[4] = vec3(0, 10, 0);
-	_axes.points[5] = vec3(0, 20, 0);
+	_axes.points[3] = vec4(0, 0, 0, 1);
+	_axes.points[4] = vec4(0, 10, 0, 1);
+	_axes.points[5] = vec4(0, 20, 0, 1);
 
-	_axes.points[6] = vec3(0, 0, 0);
-	_axes.points[7] = vec3(0, 0, 10);
-	_axes.points[8] = vec3(0, 0, 20);
+	_axes.points[6] = vec4(0, 0, 0, 1);
+	_axes.points[7] = vec4(0, 0, 10, 1);
+	_axes.points[8] = vec4(0, 0, 20, 1);
 
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
 			_axes.colors[i * 3 + j] = axisColors[i];
 		}
 	}
+
+	glGenBuffers(1, &_axes.buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, _axes.buffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vec4) * _axes.size * 2, NULL, GL_STATIC_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec4) * _axes.size, _axes.points);
+	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec4) * _axes.size, sizeof(vec4) * _axes.size, _axes.colors);
 }
 
 // set up sphere
@@ -194,16 +216,14 @@ void sphere(void) {
 	_sphere.size = spherePoints.size();
 
 	_sphere.points = &spherePoints[0];
-	_sphere.colors = new vec3[_sphere.size];
+	_sphere.colors = new vec4[_sphere.size];
 
 	for (int i = 0; i < _sphere.size; i++) {
 		_sphere.colors[i] = colorSphere;
 	}
-}
 
-// set up things needed for sphere rotation
-void sphereRotation(void) {
-	vec3 y(0, 1, 0);
+	// rotation
+	vec4 y(0, 1, 0, 1);
 
 	for (int i = 0; i < 3; i++) {
 		movementVectors[i] = normalize(pathPoints[(i + 1) % 3] - pathPoints[i]);
@@ -211,33 +231,48 @@ void sphereRotation(void) {
 	}
 
 	sphereCenter = pathPoints[sphereIndex];
+
+	glGenBuffers(1, &_sphere.buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, _sphere.buffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vec4) * _sphere.size * 2, NULL, GL_STATIC_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec4) * _sphere.size, _sphere.points);
+	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec4) * _sphere.size, sizeof(vec4) * _sphere.size, _sphere.colors);
+}
+
+void sphereMaterial(void) {
+
+}
+
+void shadow(void) {
+	_shadow.size = spherePoints.size();
+
+	_shadow.points = new vec4[_shadow.size];
+	_shadow.colors = new vec4[_shadow.size];
+
+	for (int i = 0; i < _shadow.size; i++) {
+		_shadow.points[i] = spherePoints[i];
+		_shadow.colors[i] = colorShadow;
+	}
+
+	glGenBuffers(1, &_shadow.buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, _shadow.buffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vec4) * _shadow.size * 2, NULL, GL_STATIC_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec4) * _shadow.size, _shadow.points);
+	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec4) * _shadow.size, sizeof(vec4) * _shadow.size, _shadow.colors);
 }
 
 void init(void) {
 	floor();
-	glGenBuffers(1, &_floor.buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, _floor.buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * _floor.size * 2, NULL, GL_STATIC_DRAW);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec3) * _floor.size, _floor.points);
-	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec3) * _floor.size, sizeof(vec3) * _floor.size, _floor.colors);
 
 	axes();
-	glGenBuffers(1, &_axes.buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, _axes.buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * _axes.size * 2, NULL, GL_STATIC_DRAW);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec3) * _axes.size, _axes.points);
-	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec3) * _axes.size, sizeof(vec3) * _axes.size, _axes.colors);
 
 	sphere();
-	sphereRotation();
-	glGenBuffers(1, &_sphere.buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, _sphere.buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * _sphere.size * 2, NULL, GL_STATIC_DRAW);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec3) * _sphere.size, _sphere.points);
-	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec3) * _sphere.size, sizeof(vec3) * _sphere.size, _sphere.colors);
+
+	shadow();
 
 	// initialize the shader
 	program = InitShader("vshader42.glsl", "fshader42.glsl");
+	programLight = InitShader("vshader53.glsl", "fshader53.glsl");
 
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -252,33 +287,38 @@ void display(void) {
 
 	glUseProgram(program);
 
-	GLuint model_view = glGetUniformLocation(program, "model_view");
-	GLuint projection = glGetUniformLocation(program, "projection");
-
 	// set up model view matrix
 	// VRP (view reference points)
 	// eye is global
-
-	// VPN (view plane normal) -7, -3, 10, 0;
-	vec4 at(0, 0, 0, 1);
-
-	// VUP (view up vector)
-	vec4 up(0, 1, 0, 0);
-
+	GLuint modelView = glGetUniformLocation(program, "modelView");
+	vec4 at(0, 0, 0, 1); // VPN (view plane normal) -7, -3, 10, 0;
+	vec4 up(0, 1, 0, 0); // VUP (view up vector)
 	mat4 mv = LookAt(eye, at, up);
-	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
+	glUniformMatrix4fv(modelView, 1, GL_TRUE, mv);
 
 	// set up projection matrix
+	GLuint projection = glGetUniformLocation(program, "projection");
 	GLfloat fovy = 45;
 	GLfloat zNear = 0.5;
 	GLfloat zFar = 13;
-
 	mat4 p = Perspective(fovy, aspect, zNear, zFar);
 	glUniformMatrix4fv(projection, 1, GL_TRUE, p);
 
+	// set up normal matrix
+	GLuint normalMatrix = glGetUniformLocation(program, "normalMatrix");
+	mat3 nm = NormalMatrix(mv, 1);
+	glUniformMatrix3fv(normalMatrix, 1, GL_TRUE, nm);
+
+	// disable writing to z-buffer
+	glDisable(GL_DEPTH_TEST);
+
 	// draw floor
+	floorMaterial();
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	drawObj(_floor.buffer, _floor.size);
+
+	// enable writing to z-buffer again
+	glEnable(GL_DEPTH_TEST);
 
 	// draw axes lines
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -289,9 +329,22 @@ void display(void) {
 	rotationMatrix = Rotate(rate, rotationAxes[sphereIndex].x, rotationAxes[sphereIndex].y, rotationAxes[sphereIndex].z) * rotationMatrix;
 	mv *= Translate(sphereCenter.x, sphereCenter.y, sphereCenter.z) * rotationMatrix;
 
-	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
+	glUniformMatrix4fv(modelView, 1, GL_TRUE, mv);
+	sphereMaterial();
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	drawObj(_sphere.buffer, _sphere.size);
+
+	/*
+	 *mat4 shadowMatrix(
+	 *    vec4(1, 0, 0, 0),
+	 *    vec4(0, 1, 0, -1 / lightPosition.y),
+	 *    vec4(0, 0, 1, 1),
+	 *    vec4(0, 0, 0, 0)
+	 *);
+	 *mv = LookAt(eye, at, up) * Translate(lightPosition) * shadowMatrix * Translate(-lightPosition) * rotationMatrix;
+	 *glUniformMatrix4fv(modelView, 1, GL_TRUE, mv);
+	 *drawObj(_shadow.buffer, _shadow.size);
+	 */
 
 	glutSwapBuffers();
 }
