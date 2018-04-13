@@ -4,8 +4,12 @@
 
 #include "utils.h"
 
-bool flagAnimation;
-bool flagStarted;
+bool flagAnimation = false;
+bool flagStarted = false;
+bool flagShadow = true;
+bool flagShading = false;
+bool flagWire = false;
+bool flagLight = true;
 
 GLuint program;
 GLuint programLight;

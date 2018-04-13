@@ -14,6 +14,10 @@ using namespace std;
 
 extern bool flagAnimation;
 extern bool flagStarted;
+extern bool flagShadow;
+extern bool flagShading;
+extern bool flagWire;
+extern bool flagLight;
 
 extern GLuint program;
 extern GLuint programLight;
@@ -49,18 +53,6 @@ extern vector<vec3> shadowVertices;
 
 extern vec4 lightPosition;
 
-
-void menu(int index) {
-	switch (index) {
-		case 0:
-			eye = originalEye;
-			break;
-
-		case 1:
-			exit(EXIT_SUCCESS);
-			break;
-	}
-}
 
 // set up floor
 void floor(void) {
@@ -201,9 +193,11 @@ void display(void) {
 	mat4 p = Perspective(fovy, aspect, zNear, zFar);
 	glUniformMatrix4fv(projection, 1, GL_TRUE, p);
 
-	// draw floor
+	// draw floor only to frame buffer
+	glDepthMask(GL_FALSE);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	drawObj(_floor.buffer, _floor.size, program);
+	glDepthMask(GL_TRUE);
 
 	// draw axes lines
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -219,17 +213,31 @@ void display(void) {
 	// the rightmost rotations ones are applied first
 	mv *= Translate(sphereCenter.x, sphereCenter.y, sphereCenter.z) * sphereRotationMatrix;
 	glUniformMatrix4fv(modelView, 1, GL_TRUE, mv);
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	if (flagWire) {
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	} else {
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
 	drawObj(_sphere.buffer, _sphere.size, program);
 
 	// draw shadow
-	// FIXME get the correct shadow matrix
-	mv = LookAt(eye, at, up) *  mat4(12, 0, 0, 0, 14, 0, 3, -1, 0, 0, 12, 0, 0, 0, 0, 12) * Translate(sphereCenter.x, sphereCenter.y, sphereCenter.z) * sphereRotationMatrix;
-	glUniformMatrix4fv(modelView, 1, GL_TRUE, mv);
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	if (flagShadow) {
+		// FIXME get the correct shadow matrix
+		mv = LookAt(eye, at, up) *  mat4(12, 0, 0, 0, 14, 0, 3, -1, 0, 0, 12, 0, 0, 0, 0, 12) * Translate(sphereCenter.x, sphereCenter.y, sphereCenter.z) * sphereRotationMatrix;
+		glUniformMatrix4fv(modelView, 1, GL_TRUE, mv);
+		if (flagWire) {
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		} else {
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		}
+		drawObj(_shadow.buffer, _shadow.size, program);
+	}
+
+	// draw floor only to z buffer
+	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	drawObj(_shadow.buffer, _shadow.size, program);
+	drawObj(_floor.buffer, _floor.size, program);
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
 	glutSwapBuffers();
 }
@@ -319,6 +327,50 @@ void mouse(int button, int state, int x, int y) {
 	}
 }
 
+void menu(int index) {
+	switch (index) {
+		case 0:
+			flagShadow = false;
+			break;
+
+		case 1:
+			flagShadow = true;
+			break;
+
+		case 2:
+			flagLight = false;
+			break;
+
+		case 3:
+			flagLight = true;
+			break;
+
+		case 4:
+			// flat
+			flagShading = false;
+			break;
+
+		case 5:
+			// smooth
+			flagShading = true;
+			break;
+
+		case 6:
+			eye = originalEye;
+			break;
+
+		case 7:
+			flagWire = !flagWire;
+			break;
+
+		case 8:
+			exit(EXIT_SUCCESS);
+			break;
+	}
+
+	display();
+}
+
 int main(int argc, char** argv) {
 	readFile("sphere.256", "sphere.1024", sphereVertices, shadowVertices);
 
@@ -338,9 +390,25 @@ int main(int argc, char** argv) {
 	printf("Renderer: %s\n", glGetString(GL_RENDERER));
 	printf("OpenGL version supported %s\n", glGetString(GL_VERSION));
 
+	GLuint shadowMenu = glutCreateMenu(menu);
+	glutAddMenuEntry("No", 0);
+	glutAddMenuEntry("Yes", 1);
+
+	GLuint lightingMenu = glutCreateMenu(menu);
+	glutAddMenuEntry("No", 2);
+	glutAddMenuEntry("Yes", 3);
+
+	GLuint shadingMenu = glutCreateMenu(menu);
+	glutAddMenuEntry("Flat shading", 4);
+	glutAddMenuEntry("Smooth shading", 5);
+
 	glutCreateMenu(menu);
-	glutAddMenuEntry("Default View Point", 0);
-	glutAddMenuEntry("Quit", 1);
+	glutAddMenuEntry("Default View Point", 6);
+	glutAddMenuEntry("Wire Frame Sphere", 7);
+	glutAddSubMenu("Shadow", shadowMenu);
+	glutAddSubMenu("Enable Lighting", lightingMenu);
+	glutAddSubMenu("Shading", shadingMenu);
+	glutAddMenuEntry("Quit", 8);
 	glutAttachMenu(GLUT_LEFT_BUTTON);
 
 	glutDisplayFunc(display);
