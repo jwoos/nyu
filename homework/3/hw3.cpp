@@ -12,34 +12,36 @@
 using namespace std;
 
 
+extern bool flagAnimation;
+extern bool flagStarted;
+
 extern GLuint program;
+
 extern vec4 originalEye;
 extern vec4 eye;
-extern bool animation;
-extern bool started;
 extern GLuint aspect;
 
-extern vec3 colorSphere;
-extern vec3 colorFloor;
-extern vec3 axisColors[3];
-
+extern Entity _floor;
+extern vec3 floorColor;
 extern vec3 floorVertices[4];
 
-extern Entity _floor;
-
 extern Entity _axes;
+extern vec3 axesColors[3];
+extern vec3 axesVertices[9];
 
-extern vec3 pathPoints[3];
-extern vector<vec3> spherePoints;
-extern vec3 movementVectors[3];
-extern vec3 rotationAxes[3];
+extern Entity _sphere;
+extern vec3 sphereColor;
+extern vector<vec3> sphereVertices;
+
+extern vec3 sphereMovementVertices[3];
+extern vec3 sphereMovementVectors[3];
+extern vec3 sphereRotationAxes[3];
 extern vec3 sphereCenter;
 extern int sphereIndex;
-extern float radius;
-extern float angle;
-extern float rate;
-extern mat4 rotationMatrix;
-extern Entity _sphere;
+extern float sphereRadius;
+extern float sphereRate;
+extern mat4 sphereRotationMatrix;
+
 
 void menu(int index) {
 	switch (index) {
@@ -67,7 +69,7 @@ void floor(void) {
 	_floor.points[5] = floorVertices[3];
 
 	for (int i = 0; i < _floor.size; i++) {
-		_floor.colors[i] = colorFloor;
+		_floor.colors[i] = floorColor;
 	}
 
 	glGenBuffers(1, &_floor.buffer);
@@ -81,24 +83,12 @@ void floor(void) {
 void axes(void) {
 	_axes.size = 9;
 
-	_axes.points = new vec3[_axes.size];
+	_axes.points = (vec3*)&axesVertices;
 	_axes.colors = new vec3[_axes.size];
-
-	_axes.points[0] = vec3(0, 0, 0);
-	_axes.points[1] = vec3(10, 0, 0);
-	_axes.points[2] = vec3(20, 0, 0);
-
-	_axes.points[3] = vec3(0, 0, 0);
-	_axes.points[4] = vec3(0, 10, 0);
-	_axes.points[5] = vec3(0, 20, 0);
-
-	_axes.points[6] = vec3(0, 0, 0);
-	_axes.points[7] = vec3(0, 0, 10);
-	_axes.points[8] = vec3(0, 0, 20);
 
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
-			_axes.colors[i * 3 + j] = axisColors[i];
+			_axes.colors[i * 3 + j] = axesColors[i];
 		}
 	}
 
@@ -111,23 +101,23 @@ void axes(void) {
 
 // set up sphere
 void sphere(void) {
-	_sphere.size = spherePoints.size();
+	_sphere.size = sphereVertices.size();
 
-	_sphere.points = &spherePoints[0];
+	_sphere.points = &sphereVertices[0];
 	_sphere.colors = new vec3[_sphere.size];
 
 	for (int i = 0; i < _sphere.size; i++) {
-		_sphere.colors[i] = colorSphere;
+		_sphere.colors[i] = sphereColor;
 	}
 
 	vec3 y(0, 1, 0);
 
 	for (int i = 0; i < 3; i++) {
-		movementVectors[i] = normalize(pathPoints[(i + 1) % 3] - pathPoints[i]);
-		rotationAxes[i] = cross(y, movementVectors[i]);
+		sphereMovementVectors[i] = normalize(sphereMovementVertices[(i + 1) % 3] - sphereMovementVertices[i]);
+		sphereRotationAxes[i] = cross(y, sphereMovementVectors[i]);
 	}
 
-	sphereCenter = pathPoints[sphereIndex];
+	sphereCenter = sphereMovementVertices[sphereIndex];
 
 	glGenBuffers(1, &_sphere.buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, _sphere.buffer);
@@ -193,8 +183,8 @@ void display(void) {
 
 	// draw sphere
 	// the rightmost rotations ones are applied first
-	rotationMatrix = Rotate(rate, rotationAxes[sphereIndex].x, rotationAxes[sphereIndex].y, rotationAxes[sphereIndex].z) * rotationMatrix;
-	mv *= Translate(sphereCenter.x, sphereCenter.y, sphereCenter.z) * rotationMatrix;
+	sphereRotationMatrix = Rotate(sphereRate, sphereRotationAxes[sphereIndex].x, sphereRotationAxes[sphereIndex].y, sphereRotationAxes[sphereIndex].z) * sphereRotationMatrix;
+	mv *= Translate(sphereCenter.x, sphereCenter.y, sphereCenter.z) * sphereRotationMatrix;
 
 	glUniformMatrix4fv(modelView, 1, GL_TRUE, mv);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -204,22 +194,16 @@ void display(void) {
 }
 
 void idle(void) {
-	angle += rate;
+	float offset = sphereRadius * sphereRate * (M_PI / 180);
 
-	if (angle >= 360) {
-		angle = 0;
-	}
-
-	float offset = radius * rate * (M_PI / 180);
-
-	sphereCenter.x += movementVectors[sphereIndex].x * offset;
-	sphereCenter.y += movementVectors[sphereIndex].y * offset;
-	sphereCenter.z += movementVectors[sphereIndex].z * offset;
+	sphereCenter.x += sphereMovementVectors[sphereIndex].x * offset;
+	sphereCenter.y += sphereMovementVectors[sphereIndex].y * offset;
+	sphereCenter.z += sphereMovementVectors[sphereIndex].z * offset;
 
 	// check for when the sphere should turn
-	if (distance(sphereCenter, pathPoints[sphereIndex]) >= distance(pathPoints[(sphereIndex + 1) % 3], pathPoints[sphereIndex])) {
+	if (distance(sphereCenter, sphereMovementVertices[sphereIndex]) >= distance(sphereMovementVertices[(sphereIndex + 1) % 3], sphereMovementVertices[sphereIndex])) {
 		sphereIndex = (sphereIndex + 1) % 3;
-		sphereCenter = pathPoints[sphereIndex];
+		sphereCenter = sphereMovementVertices[sphereIndex];
 	}
 
 	glutPostRedisplay();
@@ -264,10 +248,10 @@ void keyboard(unsigned char key, int x, int y) {
 
 		case 'b':
 		case 'B':
-			started = true;
-			animation = !animation;
+			flagStarted = true;
+			flagAnimation = !flagAnimation;
 
-			if (animation) {
+			if (flagAnimation) {
 				glutIdleFunc(idle);
 			} else {
 				glutIdleFunc(NULL);
@@ -283,11 +267,11 @@ void keyboard(unsigned char key, int x, int y) {
 }
 
 void mouse(int button, int state, int x, int y) {
-	if (button == GLUT_RIGHT_BUTTON && state == GLUT_UP && started) {
-		animation = !animation;
+	if (button == GLUT_RIGHT_BUTTON && state == GLUT_UP && flagStarted) {
+		flagAnimation = !flagAnimation;
 	}
 
-	if (animation) {
+	if (flagAnimation) {
 		glutIdleFunc(idle);
 	} else {
 		glutIdleFunc(NULL);
@@ -295,7 +279,7 @@ void mouse(int button, int state, int x, int y) {
 }
 
 int main(int argc, char** argv) {
-	readFile("sphere.256", "sphere.1024", spherePoints);
+	readFile("sphere.256", "sphere.1024", sphereVertices);
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
