@@ -137,7 +137,7 @@ void sphere(void) {
 		_sphere.normals[x + 2] = normal;
 	}
 
-	vec4 y(0, 1, 0);
+	vec4 y(0, 1, 0, 0);
 
 	for (int i = 0; i < 3; i++) {
 		sphereMovementVectors[i] = normalize(sphereMovementVertices[(i + 1) % 3] - sphereMovementVertices[i]);
@@ -245,6 +245,7 @@ void display(void) {
 	mat4 p = Perspective(fovy, aspect, zNear, zFar);
 	glUniformMatrix4fv(projection, 1, GL_TRUE, p);
 
+	// FIXME
 	//glUniformMatrix4fv(glGetUniformLocation(program, "lightPosition"), 1, GL_TRUE, p * mv * directionalLight.direction);
 	glUniformMatrix4fv(glGetUniformLocation(program, "lightPosition"), 1, GL_TRUE, directionalLight.direction);
 
@@ -281,7 +282,7 @@ void display(void) {
 	// draw shadow
 	if (flagShadow) {
 		// FIXME get the correct shadow matrix
-		mv = LookAt(eye, at, up) *  mat4(12, 0, 0, 0, 14, 0, 3, -1, 0, 0, 12, 0, 0, 0, 0, 12) * Translate(sphereCenter.x, sphereCenter.y, sphereCenter.z) * sphereRotationMatrix;
+		mv = LookAt(eye, at, up) * mat4(12, 0, 0, 0, 14, 0, 3, -1, 0, 0, 12, 0, 0, 0, 0, 12) * Translate(sphereCenter.x, sphereCenter.y, sphereCenter.z) * sphereRotationMatrix;
 		glUniformMatrix4fv(modelView, 1, GL_TRUE, mv);
 		if (flagWire) {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
