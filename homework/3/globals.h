@@ -4,6 +4,7 @@
 
 #include "utils.h"
 
+
 bool flagAnimation = false;
 bool flagStarted = false;
 bool flagShadow = true;
@@ -17,6 +18,24 @@ vec4 originalEye(7, 3, -10, 1);
 vec4 eye = originalEye;
 GLuint aspect;
 
+Light ambientLight = {
+	.position = vec4(0),
+	.direction = vec4(0),
+
+	.ambient = vec4(1, 1, 1, 1),
+	.diffuse = vec4(0),
+	.specular = vec4(0)
+};
+
+Light directionalLight = {
+	.position = vec4(-14, -12, -3, 1),
+	.direction = vec4(0.1, 0, -1, 0),
+
+	.ambient = vec4(0, 0, 0, 1),
+	.diffuse = vec4(0.8, 0.8, 0.8, 1),
+	.specular = vec4(0.2, 0.2, 0.2, 1),
+};
+
 Entity _floor;
 vec4 floorColor(0, 1, 0, 1);
 vec4 floorVertices[4] = {
@@ -24,6 +43,14 @@ vec4 floorVertices[4] = {
 	vec4(5, 0, -4, 1),
 	vec4(-5, 0, -4, 1),
 	vec4(-5, 0, 8, 1)
+};
+Light floorLight = {
+	.position = vec4(0),
+	.direction = vec4(0),
+
+	.ambient = vec4(0.2, 0.2, 0.2, 1),
+	.diffuse = vec4(0, 1, 0, 1),
+	.specular = vec4(0, 0, 0, 1)
 };
 
 Entity _axes;
@@ -47,6 +74,20 @@ vec4 axesVertices[9] = {
 Entity _sphere;
 vec4 sphereColor(1, 0.84, 0, 1);
 vector<vec4> sphereVertices;
+Light sphereLight = {
+	.position = vec4(0),
+	.direction = vec4(0),
+
+	.ambient = vec4(0.2, 0.2, 0.2, 1),
+	.diffuse = vec4(1, 0.84, 0, 1),
+	.specular = vec4(1, 0.84, 0, 1),
+
+	.attenuationConstant = 0,
+	.attenuationLinear = 0,
+	.attenuationQuadratic = 0,
+
+	.shininess = 125
+};
 
 vec4 sphereMovementVectors[3];
 vec4 sphereMovementVertices[3] = {
@@ -70,8 +111,6 @@ mat4 sphereRotationMatrix(
 Entity _shadow;
 vec4 shadowColor(0.25, 0.25, 0.25, 0.65);
 vector<vec4> shadowVertices;
-
-vec4 lightPosition(-14, -12, -3, 1);
 
 
 #endif

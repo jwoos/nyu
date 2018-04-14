@@ -10,9 +10,13 @@ void drawObj(GLuint buffer, int num_vertices, GLuint program) {
 	glEnableVertexAttribArray(vPosition);
 	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
 
+	GLuint vColor = glGetAttribLocation(program, "vColor");
+	glEnableVertexAttribArray(vColor);
+	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(vec4) * num_vertices));
+
 	GLuint vNormal = glGetAttribLocation(program, "vNormal");
 	glEnableVertexAttribArray(vNormal);
-	glVertexAttribPointer(vNormal, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(vec4) * num_vertices));
+	glVertexAttribPointer(vNormal, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(vec4) * num_vertices * 2));
 	// the offset is the (total) size of the previous vertex attribute array(s)
 
 	/* Draw a sequence of geometric objs (triangles) from the vertex buffer
@@ -21,6 +25,7 @@ void drawObj(GLuint buffer, int num_vertices, GLuint program) {
 
 	/*--- Disable each vertex attribute array being enabled ---*/
 	glDisableVertexAttribArray(vPosition);
+	glDisableVertexAttribArray(vColor);
 	glDisableVertexAttribArray(vNormal);
 }
 

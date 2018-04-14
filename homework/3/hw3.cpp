@@ -21,13 +21,20 @@ extern bool flagLight;
 
 extern GLuint program;
 
+extern GLuint positionalLight;
+extern GLuint uniformLight;
+
 extern vec4 originalEye;
 extern vec4 eye;
 extern GLuint aspect;
 
+extern Light ambientLight;
+extern Light directionalLight;
+
 extern Entity _floor;
 extern vec4 floorColor;
 extern vec4 floorVertices[4];
+extern Light floorLight;
 
 extern Entity _axes;
 extern vec4 axesColors[3];
@@ -36,6 +43,7 @@ extern vec4 axesVertices[9];
 extern Entity _sphere;
 extern vec4 sphereColor;
 extern vector<vec4> sphereVertices;
+extern Light sphereLight;
 
 extern vec4 sphereMovementVertices[3];
 extern vec4 sphereMovementVectors[3];
@@ -50,14 +58,13 @@ extern Entity _shadow;
 extern vec4 shadowColor;
 extern vector<vec4> shadowVertices;
 
-extern vec4 lightPosition;
-
 
 // set up floor
 void floor(void) {
 	_floor.size = 6;
 	_floor.vertices = new vec4[_floor.size];
 	_floor.colors = new vec4[_floor.size];
+	_floor.normals = new vec4[_floor.size];
 
 	_floor.vertices[0] = floorVertices[0];
 	_floor.vertices[1] = floorVertices[1];
@@ -66,15 +73,22 @@ void floor(void) {
 	_floor.vertices[4] = floorVertices[2];
 	_floor.vertices[5] = floorVertices[3];
 
+	vec4 normal = normalize(cross(
+		_floor.vertices[0] - _floor.vertices[1],
+		_floor.vertices[2] - _floor.vertices[3]
+	));
+
 	for (int i = 0; i < _floor.size; i++) {
 		_floor.colors[i] = floorColor;
+		_floor.normals[i] = normal;
 	}
 
 	glGenBuffers(1, &_floor.buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, _floor.buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vec4) * _floor.size * 2, NULL, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vec4) * _floor.size * 3, NULL, GL_STATIC_DRAW);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec4) * _floor.size, _floor.vertices);
 	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec4) * _floor.size, sizeof(vec4) * _floor.size, _floor.colors);
+	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec4) * _floor.size * 2, sizeof(vec4) * _floor.size, _floor.normals);
 }
 
 // set up lines for axes
@@ -95,6 +109,7 @@ void axes(void) {
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vec4) * _axes.size * 2, NULL, GL_STATIC_DRAW);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec4) * _axes.size, _axes.vertices);
 	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec4) * _axes.size, sizeof(vec4) * _axes.size, _axes.colors);
+	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec4) * _axes.size * 2, sizeof(vec4) * _axes.size, _axes.normals);
 }
 
 // set up sphere
@@ -103,9 +118,23 @@ void sphere(void) {
 
 	_sphere.vertices = &sphereVertices[0];
 	_sphere.colors = new vec4[_sphere.size];
+	_sphere.normals = new vec4[_sphere.size];
 
 	for (int i = 0; i < _sphere.size; i++) {
 		_sphere.colors[i] = sphereColor;
+	}
+
+	for (int i = 0; i < _sphere.size; i += 3) {
+		int x = i * 3;
+
+		vec4 normal = normalize(cross(
+			_sphere.vertices[x + 1] - _sphere.vertices[x],
+			_sphere.vertices[x + 2] - _sphere.vertices[x]
+		));
+
+		_sphere.normals[x] = normal;
+		_sphere.normals[x + 1] = normal;
+		_sphere.normals[x + 2] = normal;
 	}
 
 	vec4 y(0, 1, 0);
@@ -122,6 +151,7 @@ void sphere(void) {
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vec4) * _sphere.size * 2, NULL, GL_STATIC_DRAW);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec4) * _sphere.size, _sphere.vertices);
 	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec4) * _sphere.size, sizeof(vec4) * _sphere.size, _sphere.colors);
+	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec4) * _sphere.size * 2, sizeof(vec4) * _sphere.size, _sphere.normals);
 }
 
 // set up shadow
@@ -154,11 +184,29 @@ void init(void) {
 	// initialize the shader
 	program = InitShader("vshader53.glsl", "fshader53.glsl");
 
-	glUniform1f(glGetUniformLocation(program, "flagLight"), flagLight);
+	glUniform1i(glGetUniformLocation(program, "flagLight"), flagLight);
 
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glLineWidth(2.0);
+}
+
+void light(const Light& global, const Light& light, const Light& material) {
+	vec4 ambientProduct = light.ambient * material.ambient;
+	vec4 diffuseProduct = light.diffuse * material.diffuse;
+	vec4 specularProduct = light.specular * material.specular;
+
+	glUniformMatrix4fv(glGetUniformLocation(program, "globalLight"), 1, GL_TRUE, global.ambient * material.ambient);
+
+	glUniformMatrix4fv(glGetUniformLocation(program, "ambientProduct"), 1, GL_TRUE, ambientProduct);
+	glUniformMatrix4fv(glGetUniformLocation(program, "diffuseProduct"), 1, GL_TRUE, diffuseProduct);
+	glUniformMatrix4fv(glGetUniformLocation(program, "specularProduct"), 1, GL_TRUE, specularProduct);
+
+	glUniform1f(glGetUniformLocation(program, "constAtt"), light.attenuationConstant);
+	glUniform1f(glGetUniformLocation(program, "linearAtt"), light.attenuationLinear);
+	glUniform1f(glGetUniformLocation(program, "quadAtt"), light.attenuationQuadratic);
+
+	glUniform1f(glGetUniformLocation(program, "shininess"), material.shininess);
 }
 
 void display(void) {
@@ -171,6 +219,7 @@ void display(void) {
 
 	GLuint modelView = glGetUniformLocation(program, "modelView");
 	GLuint projection = glGetUniformLocation(program, "projection");
+	GLuint normalMatrix = glGetUniformLocation(program, "normalMatrix");
 
 	// set up model view matrix
 	// VRP (view reference vertices)
@@ -185,6 +234,9 @@ void display(void) {
 	mat4 mv = LookAt(eye, at, up);
 	glUniformMatrix4fv(modelView, 1, GL_TRUE, mv);
 
+	mat3 nm = NormalMatrix(mv, 1);
+	glUniformMatrix3fv(normalMatrix, 1, GL_TRUE, nm);
+
 	// set up projection matrix
 	GLfloat fovy = 45;
 	GLfloat zNear = 0.5;
@@ -193,15 +245,21 @@ void display(void) {
 	mat4 p = Perspective(fovy, aspect, zNear, zFar);
 	glUniformMatrix4fv(projection, 1, GL_TRUE, p);
 
+	//glUniformMatrix4fv(glGetUniformLocation(program, "lightPosition"), 1, GL_TRUE, p * mv * directionalLight.direction);
+	glUniformMatrix4fv(glGetUniformLocation(program, "lightPosition"), 1, GL_TRUE, directionalLight.direction);
+
 	// draw floor only to frame buffer
 	glDepthMask(GL_FALSE);
+	light(ambientLight, directionalLight, floorLight);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	drawObj(_floor.buffer, _floor.size, program);
 	glDepthMask(GL_TRUE);
 
 	// draw axes lines
+	glUniform1i(glGetUniformLocation(program, "flagLight"), false);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	drawObj(_axes.buffer, _axes.size, program);
+	glUniform1i(glGetUniformLocation(program, "flagLight"), flagLight);
 
 	// draw sphere
 	sphereRotationMatrix = Rotate(
@@ -210,9 +268,9 @@ void display(void) {
 		sphereRotationAxes[sphereIndex].y,
 		sphereRotationAxes[sphereIndex].z
 	) * sphereRotationMatrix;
-	// the rightmost rotations ones are applied first
 	mv *= Translate(sphereCenter.x, sphereCenter.y, sphereCenter.z) * sphereRotationMatrix;
 	glUniformMatrix4fv(modelView, 1, GL_TRUE, mv);
+	//light(ambientLight, directionalLight, sphereLight);
 	if (flagWire) {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	} else {
@@ -235,6 +293,7 @@ void display(void) {
 
 	// draw floor only to z buffer
 	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+	light(ambientLight, directionalLight, floorLight);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	drawObj(_floor.buffer, _floor.size, program);
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
@@ -339,22 +398,24 @@ void menu(int index) {
 
 		case 2:
 			flagLight = false;
-			glUniform1f(glGetUniformLocation(program, "flagLight"), flagLight);
+			glUniform1i(glGetUniformLocation(program, "flagLight"), flagLight);
 			break;
 
 		case 3:
 			flagLight = true;
-			glUniform1f(glGetUniformLocation(program, "flagLight"), flagLight);
+			glUniform1i(glGetUniformLocation(program, "flagLight"), flagLight);
 			break;
 
 		case 4:
 			// flat
 			flagShading = false;
+			glUniform1f(glGetUniformLocation(program, "flagShading"), flagShading);
 			break;
 
 		case 5:
 			// smooth
 			flagShading = true;
+			glUniform1f(glGetUniformLocation(program, "flagShading"), flagShading);
 			break;
 
 		case 6:
