@@ -18,6 +18,7 @@ extern bool flagShadow;
 extern bool flagShading;
 extern bool flagWire;
 extern bool flagLight;
+extern bool flagLightType;
 
 extern GLuint program;
 
@@ -44,6 +45,9 @@ extern Entity _sphere;
 extern vec4 sphereColor;
 extern vector<vec4> sphereVertices;
 extern Light sphereLight;
+
+extern vec4* sphereShadeFlat;
+extern vec4* sphereShadeSmooth;
 
 extern vec4 sphereMovementVertices[3];
 extern vec4 sphereMovementVectors[3];
@@ -74,8 +78,8 @@ void floor(void) {
 	_floor.vertices[5] = floorVertices[3];
 
 	vec4 normal = normalize(cross(
-		_floor.vertices[0] - _floor.vertices[1],
-		_floor.vertices[2] - _floor.vertices[3]
+		_floor.vertices[2] - _floor.vertices[3],
+		_floor.vertices[0] - _floor.vertices[1]
 	));
 
 	for (int i = 0; i < _floor.size; i++) {
@@ -118,24 +122,31 @@ void sphere(void) {
 
 	_sphere.vertices = &sphereVertices[0];
 	_sphere.colors = new vec4[_sphere.size];
-	_sphere.normals = new vec4[_sphere.size];
+
+	sphereShadeFlat = new vec4[_sphere.size];
+	sphereShadeSmooth = new vec4[_sphere.size];
+
+	_sphere.normals = sphereShadeFlat;
 
 	for (int i = 0; i < _sphere.size; i++) {
 		_sphere.colors[i] = sphereColor;
 	}
 
 	for (int i = 0; i < _sphere.size; i += 3) {
-		int x = i * 3;
-
-		vec4 normal = normalize(cross(
-			_sphere.vertices[x + 1] - _sphere.vertices[x],
-			_sphere.vertices[x + 2] - _sphere.vertices[x]
+		vec4 flatNormal = normalize(cross(
+			_sphere.vertices[i + 1] - _sphere.vertices[i],
+			_sphere.vertices[i + 2] - _sphere.vertices[i]
 		));
 
-		_sphere.normals[x] = normal;
-		_sphere.normals[x + 1] = normal;
-		_sphere.normals[x + 2] = normal;
+		sphereShadeFlat[i] = flatNormal;
+		sphereShadeFlat[i + 1] = flatNormal;
+		sphereShadeFlat[i + 2] = flatNormal;
+
+		sphereShadeSmooth[i] = normalize(_sphere.vertices[i]);;
+		sphereShadeSmooth[i + 1] = normalize(_sphere.vertices[i + 1]);;
+		sphereShadeSmooth[i + 2] = normalize(_sphere.vertices[i + 2]);;
 	}
+
 
 	vec4 y(0, 1, 0, 0);
 
@@ -148,7 +159,7 @@ void sphere(void) {
 
 	glGenBuffers(1, &_sphere.buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, _sphere.buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vec4) * _sphere.size * 2, NULL, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vec4) * _sphere.size * 3, NULL, GL_STATIC_DRAW);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec4) * _sphere.size, _sphere.vertices);
 	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec4) * _sphere.size, sizeof(vec4) * _sphere.size, _sphere.colors);
 	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec4) * _sphere.size * 2, sizeof(vec4) * _sphere.size, _sphere.normals);
@@ -185,6 +196,7 @@ void init(void) {
 	program = InitShader("vshader53.glsl", "fshader53.glsl");
 
 	glUniform1i(glGetUniformLocation(program, "flagLight"), flagLight);
+	glUniform1f(glGetUniformLocation(program, "flagShading"), flagShading);
 
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -192,15 +204,11 @@ void init(void) {
 }
 
 void light(const Light& global, const Light& light, const Light& material) {
-	vec4 ambientProduct = light.ambient * material.ambient;
-	vec4 diffuseProduct = light.diffuse * material.diffuse;
-	vec4 specularProduct = light.specular * material.specular;
-
 	glUniformMatrix4fv(glGetUniformLocation(program, "globalLight"), 1, GL_TRUE, global.ambient * material.ambient);
 
-	glUniformMatrix4fv(glGetUniformLocation(program, "ambientProduct"), 1, GL_TRUE, ambientProduct);
-	glUniformMatrix4fv(glGetUniformLocation(program, "diffuseProduct"), 1, GL_TRUE, diffuseProduct);
-	glUniformMatrix4fv(glGetUniformLocation(program, "specularProduct"), 1, GL_TRUE, specularProduct);
+	glUniform4fv(glGetUniformLocation(program, "ambientProduct"), 1, light.ambient * material.ambient);
+	glUniform4fv(glGetUniformLocation(program, "diffuseProduct"), 1, light.diffuse * material.diffuse);
+	glUniform4fv(glGetUniformLocation(program, "specularProduct"), 1, light.specular * material.specular);
 
 	glUniform1f(glGetUniformLocation(program, "constAtt"), light.attenuationConstant);
 	glUniform1f(glGetUniformLocation(program, "linearAtt"), light.attenuationLinear);
@@ -245,9 +253,7 @@ void display(void) {
 	mat4 p = Perspective(fovy, aspect, zNear, zFar);
 	glUniformMatrix4fv(projection, 1, GL_TRUE, p);
 
-	// FIXME
-	//glUniformMatrix4fv(glGetUniformLocation(program, "lightPosition"), 1, GL_TRUE, p * mv * directionalLight.direction);
-	glUniformMatrix4fv(glGetUniformLocation(program, "lightPosition"), 1, GL_TRUE, directionalLight.direction);
+	glUniform4fv(glGetUniformLocation(program, "lightDirection"), 1, directionalLight.direction);
 
 	// draw floor only to frame buffer
 	glDepthMask(GL_FALSE);
@@ -271,17 +277,22 @@ void display(void) {
 	) * sphereRotationMatrix;
 	mv *= Translate(sphereCenter.x, sphereCenter.y, sphereCenter.z) * sphereRotationMatrix;
 	glUniformMatrix4fv(modelView, 1, GL_TRUE, mv);
-	//light(ambientLight, directionalLight, sphereLight);
+	glUniformMatrix3fv(normalMatrix, 1, GL_TRUE, NormalMatrix(mv, 1));
+	light(ambientLight, directionalLight, sphereLight);
 	if (flagWire) {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		glUniform1i(glGetUniformLocation(program, "flagLight"), false);
+		drawObj(_sphere.buffer, _sphere.size, program);
+		glUniform1i(glGetUniformLocation(program, "flagLight"), flagLight);
 	} else {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		drawObj(_sphere.buffer, _sphere.size, program);
 	}
-	drawObj(_sphere.buffer, _sphere.size, program);
 
 	// draw shadow
 	if (flagShadow) {
 		// FIXME get the correct shadow matrix
+		glUniform1i(glGetUniformLocation(program, "flagLight"), false);
 		mv = LookAt(eye, at, up) * mat4(12, 0, 0, 0, 14, 0, 3, -1, 0, 0, 12, 0, 0, 0, 0, 12) * Translate(sphereCenter.x, sphereCenter.y, sphereCenter.z) * sphereRotationMatrix;
 		glUniformMatrix4fv(modelView, 1, GL_TRUE, mv);
 		if (flagWire) {
@@ -290,6 +301,7 @@ void display(void) {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}
 		drawObj(_shadow.buffer, _shadow.size, program);
+		glUniform1i(glGetUniformLocation(program, "flagLight"), flagLight);
 	}
 
 	// draw floor only to z buffer
@@ -408,15 +420,19 @@ void menu(int index) {
 			break;
 
 		case 4:
-			// flat
 			flagShading = false;
+			_sphere.normals = sphereShadeFlat;
 			glUniform1f(glGetUniformLocation(program, "flagShading"), flagShading);
+			glBindBuffer(GL_ARRAY_BUFFER, _sphere.buffer);
+			glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec4) * _sphere.size * 2, sizeof(vec4) * _sphere.size, _sphere.normals);
 			break;
 
 		case 5:
-			// smooth
 			flagShading = true;
+			_sphere.normals = sphereShadeSmooth;
 			glUniform1f(glGetUniformLocation(program, "flagShading"), flagShading);
+			glBindBuffer(GL_ARRAY_BUFFER, _sphere.buffer);
+			glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec4) * _sphere.size * 2, sizeof(vec4) * _sphere.size, _sphere.normals);
 			break;
 
 		case 6:

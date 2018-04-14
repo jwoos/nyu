@@ -28,7 +28,7 @@ Light ambientLight = {
 };
 
 Light directionalLight = {
-	.position = vec4(-14, -12, -3, 1),
+	.position = vec4(0),
 	.direction = vec4(0.1, 0, -1, 0),
 
 	.ambient = vec4(0, 0, 0, 1),
@@ -88,6 +88,9 @@ Light sphereLight = {
 
 	.shininess = 125
 };
+
+vec4* sphereShadeFlat;
+vec4* sphereShadeSmooth;
 
 vec4 sphereMovementVectors[3];
 vec4 sphereMovementVertices[3] = {
