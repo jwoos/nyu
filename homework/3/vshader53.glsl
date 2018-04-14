@@ -55,8 +55,7 @@ uniform float pAngle;
 uniform float pExponent;
 
 
-vec4 directional() {
-	// Transform vertex  position into eye coordinates
+vec4 directional(void) {
 	vec3 pos = (modelView * vPosition).xyz;
 
 	//vec3 L = normalize(dDirection.xyz - pos);
@@ -84,11 +83,55 @@ vec4 directional() {
 	return attenuation * (ambient + diffuse + specular);
 }
 
-void main() {
+vec4 positional(void) {
+	vec3 pos = (modelView * vPosition).xyz;
+
+	vec3 L = normalize(pPosition.xyz - pos);
+	vec3 E = normalize(-pos);
+	vec3 H = normalize(L + E);
+
+	vec3 N = normalize(normalMatrix * vNormal.xyz);
+
+	float dist = distance(pPosition.xyz, pos);
+	float attenuation = 1 / (pQuadAtt * pow(dist, 2) + pLinearAtt * dist + pConstAtt);
+
+	vec4 ambient = pAmbientProduct;
+
+	float d = max(dot(L, N), 0.0);
+	vec4 diffuse = d * pDiffuseProduct;
+
+	float s = pow(max(dot(N, H), 0.0), shininess);
+	vec4 specular = s * pSpecularProduct;
+
+	if (dot(L, N) < 0.0) {
+		specular = vec4(0.0, 0.0, 0.0, 1.0);
+	}
+
+	if (flagLightType) {
+		return attenuation * (ambient + diffuse + specular);
+	} else {
+		vec4 point = attenuation * (ambient + diffuse + specular);
+
+		vec3 spotL = -L;
+		vec3 spotFocus = normalize(pDirection.xyz - pPosition.xyz);
+
+		float spotAttenuation = pow(dot(spotL, spotFocus), pExponent);
+
+		vec4 spot = spotAttenuation * point;
+
+		if (dot(spotL, spotFocus) < pAngle) {
+			spot = vec4(0, 0, 0, 1);
+		}
+
+		return point + spot;
+	}
+}
+
+void main(void) {
 	gl_Position = projection * modelView * vPosition;
 
 	if (flagLight && !flagWire) {
-		color = globalLight + directional();
+		color = globalLight + directional() + positional();
 	} else {
 		color = vColor;
 	}

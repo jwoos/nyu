@@ -203,14 +203,14 @@ void init(void) {
 	glLineWidth(2.0);
 }
 
-void light(const Light& global, const Light& dLight, const Light& pLight, const Light& material) {
+void light(mat4 mv, const Light& global, const Light& dLight, const Light& pLight, const Light& material) {
 	glUniform1f(glGetUniformLocation(program, "shininess"), material.shininess);
 
 	// global
 	glUniformMatrix4fv(glGetUniformLocation(program, "globalLight"), 1, GL_TRUE, global.ambient * material.ambient);
 
 	// directional
-	glUniform4fv(glGetUniformLocation(program, "dPosition"), 1, dLight.direction);
+	glUniform4fv(glGetUniformLocation(program, "dPosition"), 1, dLight.position);
 	glUniform4fv(glGetUniformLocation(program, "dDirection"), 1, dLight.direction);
 
 	glUniform4fv(glGetUniformLocation(program, "dAmbientProduct"), 1, dLight.ambient * material.ambient);
@@ -222,8 +222,8 @@ void light(const Light& global, const Light& dLight, const Light& pLight, const 
 	glUniform1f(glGetUniformLocation(program, "dQuadAtt"), dLight.attenuationQuadratic);
 
 	// positional
-	glUniform4fv(glGetUniformLocation(program, "pPosition"), 1, pLight.direction);
-	glUniform4fv(glGetUniformLocation(program, "pDirection"), 1, pLight.direction);
+	glUniform4fv(glGetUniformLocation(program, "pPosition"), 1, mv * pLight.position);
+	glUniform4fv(glGetUniformLocation(program, "pDirection"), 1, mv * pLight.direction);
 
 	glUniform4fv(glGetUniformLocation(program, "pAmbientProduct"), 1, pLight.ambient * material.ambient);
 	glUniform4fv(glGetUniformLocation(program, "pDiffuseProduct"), 1, pLight.diffuse * material.diffuse);
@@ -234,7 +234,7 @@ void light(const Light& global, const Light& dLight, const Light& pLight, const 
 	glUniform1f(glGetUniformLocation(program, "pQuadAtt"), pLight.attenuationQuadratic);
 
 	glUniform1f(glGetUniformLocation(program, "pExponent"), pLight.exponent);
-	glUniform1f(glGetUniformLocation(program, "pAngle"), pLight.angle);
+	glUniform1f(glGetUniformLocation(program, "pAngle"), cos(pLight.angle * (M_PI / 180)));
 }
 
 void display(void) {
@@ -276,9 +276,9 @@ void display(void) {
 	// draw floor only to frame buffer
 	glDepthMask(GL_FALSE);
 	if (flagLightType) {
-		light(ambientLight, directionalLight, pointLight, floorLight);
+		light(mv, ambientLight, directionalLight, pointLight, floorLight);
 	} else {
-		light(ambientLight, directionalLight, spotLight, floorLight);
+		light(mv, ambientLight, directionalLight, spotLight, floorLight);
 	}
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	drawObj(_floor.buffer, _floor.size, program);
@@ -301,9 +301,9 @@ void display(void) {
 	glUniformMatrix4fv(modelView, 1, GL_TRUE, mv);
 	glUniformMatrix3fv(normalMatrix, 1, GL_TRUE, NormalMatrix(mv, 1));
 	if (flagLightType) {
-		light(ambientLight, directionalLight, pointLight, sphereLight);
+		light(mv, ambientLight, directionalLight, pointLight, sphereLight);
 	} else {
-		light(ambientLight, directionalLight, spotLight, sphereLight);
+		light(mv, ambientLight, directionalLight, spotLight, sphereLight);
 	}
 	if (flagWire) {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -333,9 +333,9 @@ void display(void) {
 	// draw floor only to z buffer
 	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 	if (flagLightType) {
-		light(ambientLight, directionalLight, pointLight, floorLight);
+		light(mv, ambientLight, directionalLight, pointLight, floorLight);
 	} else {
-		light(ambientLight, directionalLight, spotLight, floorLight);
+		light(mv, ambientLight, directionalLight, spotLight, floorLight);
 	}
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	drawObj(_floor.buffer, _floor.size, program);
