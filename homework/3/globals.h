@@ -11,6 +11,7 @@ bool flagShadow = true;
 bool flagShading = false;
 bool flagWire = false;
 bool flagLight = true;
+bool flagLightType = false;
 
 GLuint program;
 
@@ -35,6 +36,38 @@ Light directionalLight = {
 	.diffuse = vec4(0.8, 0.8, 0.8, 1),
 	.specular = vec4(0.2, 0.2, 0.2, 1),
 };
+
+Light pointLight = {
+	.position = vec4(-14, 12, -3, 1),
+	.direction = vec4(0),
+
+	.ambient = vec4(0, 0, 0, 1),
+	.diffuse = vec4(1, 1, 1, 1),
+	.specular = vec4(1, 1, 1, 1),
+
+	.attenuationConstant = 2,
+	.attenuationLinear = 0.01,
+	.attenuationQuadratic = 0.01
+};
+
+Light spotLight = {
+	.position = vec4(-14, 12, -3, 1),
+	.direction = vec4(-6, 0, -4.5, 1),
+
+	.ambient = vec4(0, 0, 0, 1),
+	.diffuse = vec4(1, 1, 1, 1),
+	.specular = vec4(1, 1, 1, 1),
+
+	.attenuationConstant = 2,
+	.attenuationLinear = 0.01,
+	.attenuationQuadratic = 0.01,
+
+	.shininess = 0,
+
+	.exponent = 15,
+	.angle = 20
+};
+
 
 Entity _floor;
 vec4 floorColor(0, 1, 0, 1);

@@ -38,6 +38,9 @@ typedef struct Light {
 	float attenuationQuadratic;
 
 	float shininess;
+
+	float exponent;
+	float angle;
 } Light;
 
 

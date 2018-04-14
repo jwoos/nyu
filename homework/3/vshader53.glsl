@@ -11,6 +11,7 @@ Vertex shader:
 uniform bool flagWire;
 uniform bool flagLight;
 uniform bool flagShading;
+uniform bool flagLightType;
 
 in vec4 vPosition;
 in vec4 vColor;
@@ -20,50 +21,74 @@ out vec4 color;
 uniform mat4 modelView;
 uniform mat4 projection;
 uniform mat3 normalMatrix;
-uniform vec4 lightDirection;   // Must be in Eye Frame
+
+// global
 uniform vec4 globalLight;
 
-uniform vec4 ambientProduct;
-uniform vec4 diffuseProduct;
-uniform vec4 specularProduct;
+// directional
+uniform vec4 dDirection;
+uniform vec4 dPosition;
 
-uniform float constAtt;  // Constant Attenuation
-uniform float linearAtt; // Linear Attenuation
-uniform float quadAtt;   // Quadratic Attenuation
+uniform vec4 dAmbientProduct;
+uniform vec4 dDiffuseProduct;
+uniform vec4 dSpecularProduct;
+
+uniform float dConstAtt;
+uniform float dLinearAtt;
+uniform float dQuadAtt;
+
 uniform float shininess;
+
+// positional
+uniform vec4 pDirection;
+uniform vec4 pPosition;
+
+uniform vec4 pAmbientProduct;
+uniform vec4 pDiffuseProduct;
+uniform vec4 pSpecularProduct;
+
+uniform float pConstAtt;
+uniform float pLinearAtt;
+uniform float pQuadAtt;
+
+uniform float pAngle;
+uniform float pExponent;
+
+
+vec4 directional() {
+	// Transform vertex  position into eye coordinates
+	vec3 pos = (modelView * vPosition).xyz;
+
+	//vec3 L = normalize(dDirection.xyz - pos);
+	vec3 L = normalize(-dDirection.xyz);
+	vec3 E = normalize(-pos);
+	vec3 H = normalize(L + E);
+
+	// Transform vertex normal into eye coordinates
+	vec3 N = normalize(normalMatrix * vNormal.xyz);
+
+	float attenuation = 1.0;
+
+	vec4 ambient = dAmbientProduct;
+
+	float d = max(dot(L, N), 0.0);
+	vec4 diffuse = d * dDiffuseProduct;
+
+	float s = pow(max(dot(N, H), 0.0), shininess);
+	vec4 specular = s * dSpecularProduct;
+
+	if (dot(L, N) < 0.0) {
+		specular = vec4(0.0, 0.0, 0.0, 1.0);
+	}
+
+	return attenuation * (ambient + diffuse + specular);
+}
 
 void main() {
 	gl_Position = projection * modelView * vPosition;
 
 	if (flagLight && !flagWire) {
-		// Transform vertex  position into eye coordinates
-		vec3 pos = (modelView * vPosition).xyz;
-
-		//vec3 L = normalize(lightDirection.xyz - pos);
-		vec3 L = normalize(-lightDirection.xyz);
-		vec3 E = normalize(-pos);
-		vec3 H = normalize(L + E);
-
-		// Transform vertex normal into eye coordinates
-		vec3 N = normalize(normalMatrix * vNormal.xyz);
-
-		float attenuation = 1.0;
-
-		vec4 ambient = ambientProduct;
-
-		float d = max(dot(L, N), 0.0);
-		vec4 diffuse = d * diffuseProduct;
-
-		float s = pow(max(dot(N, H), 0.0), shininess);
-		vec4 specular = s * specularProduct;
-
-		if (dot(L, N) < 0.0) {
-			specular = vec4(0.0, 0.0, 0.0, 1.0);
-		}
-
-		vec4 initialColor = attenuation * (ambient + diffuse + specular);
-
-		color = globalLight + initialColor;
+		color = globalLight + directional();
 	} else {
 		color = vColor;
 	}
