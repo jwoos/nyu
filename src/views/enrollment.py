@@ -11,11 +11,11 @@ class EnrollmentView(MethodView):
             if enrollment_id is None:
                 # all
                 cursor.execute('SELECT * FROM enrollments')
+                return jsonify(cursor.fetchall()), 200
             else:
                 # singular
                 cursor.execute('SELECT * FROM enrollments WHERE id=%(id)s', {'id': enrollment_id})
-
-            return jsonify(cursor.fetchall()), 200
+                return jsonify(cursor.fetchone()), 200
 
     def post(self):
         raise NotImplementedError()
