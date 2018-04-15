@@ -88,7 +88,10 @@ def main():
         else:
             if node.attrs.get('type') == 'identifier':
                 if table_stack[-1].get(node.symbol) is None:
-                    logger.error(f'{node.symbol} referenced before declaration')
+                    if table_stack[0].get(node.symbol) is None:
+                        logger.error(f'{node.symbol} referenced before declaration')
+                    else:
+                        info(table_stack[0].get(node.symbol), usage=node.attrs.get('line', True))
                 else:
                     info(table_stack[-1].get(node.symbol), usage=node.attrs.get('line', True))
             else:
