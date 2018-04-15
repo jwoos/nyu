@@ -6,10 +6,14 @@ from src.db import connection
 
 
 class EvaluationView(MethodView):
-    def post(self):
-        data = request.get_json()
-
+    def get(self, evaluation_id=None):
         with connection.cursor() as cursor:
-            cursor.execute()
+            if evaluation_id is None:
+                cursor.execute('SELECT * FROM evaluations')
+                return jsonify(cursor.fetchall()), 200
+            else:
+                cursor.execute('SELECT * FROM evaluations WHERE id=%(id)s', {'id': evaluation_id})
+                return jsonify(cursor.fetchone()), 200
 
-        return None, 201
+    def post(self):
+        raise NotImplementedError()

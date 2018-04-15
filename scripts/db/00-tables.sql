@@ -1,7 +1,7 @@
 CREATE TABLE accounts (
 	id INT AUTO_INCREMENT,
 	class TINYTEXT,
-	email TEXT UNIQUE,
+	email VARCHAR(255) UNIQUE,
 	password CHAR(60), -- bcrypt
 
 	created DATETIME DEFAULT CURRENT_TIMESTAMP,

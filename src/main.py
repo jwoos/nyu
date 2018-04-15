@@ -2,7 +2,7 @@ from flask import Flask
 from flask.json import jsonify
 from werkzeug.exceptions import HTTPException, default_exceptions
 
-from src.views import default, evaluation, login, register
+from src.views import default, evaluation, login, register, student, professor
 from src.db import connection
 
 
@@ -40,7 +40,19 @@ login_view = login.LoginView.as_view('login')
 app.add_url_rule('/login', view_func=login_view, methods=['POST'])
 
 register_view = register.RegisterView.as_view('register')
-app.add_url_rule('/register', view_func=regist_view, methods=['POST'])
+app.add_url_rule('/register', view_func=register_view, methods=['POST'])
 
 evaluation_view = evaluation.EvaluationView.as_view('evaluation')
-app.add_url_rule('/evaluation', view_func=evaluation_view, methods=['POST'])
+app.add_url_rule('/evaluations', view_func=evaluation_view, methods=['POST'])
+
+student_view = student.StudentView.as_view('student')
+app.add_url_rule('/students', view_func=student_view, methods=['GET'])
+app.add_url_rule('/students/<int:student_id>', view_func=student_view, methods=['GET'])
+
+professor_view = professor.ProfessorView.as_view('professor')
+app.add_url_rule('/professors', view_func=professor_view, methods=['GET'])
+app.add_url_rule('/professors/<int:professor_id>', view_func=professor_view, methods=['GET'])
+
+enrollment_view = enrollment.EnrollmentView.as_view('enrollment')
+app.add_url_rule('/enrollments', view_func=enrollment_view, methods=['GET', 'POST'])
+app.add_url_rule('/enrollments', view_func=enrollment_view, methods=['GET', 'PATCH', 'DELETE'])
