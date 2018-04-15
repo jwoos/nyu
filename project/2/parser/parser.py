@@ -107,6 +107,7 @@ def p_stmt(p):
          | read_kw var_list SEMI
          | write_kw write_expr_list SEMI
          | return_kw expr SEMI
+         | LBRACE stmt_prime RBRACE
     '''
     # expr
     if len(p) == 3:
@@ -130,8 +131,24 @@ def p_stmt(p):
         elif p[1] == 'write':
             p[0] = Node(p[1], args=[p[2]], terminal=True)
 
-        else:
+        elif p[1] == 'return':
             p[1] = Node(p[1], args=[p[2]], terminal=True)
+
+        else:
+            p[0] = p[1]
+
+def p_stmt_prime(p):
+    '''
+    stmt_prime : stmt stmt_prime
+               | empty
+    '''
+    if len(p) == 2:
+        p[0] = None
+    else:
+        if p[2] is None:
+            p[0] = p[1]
+        else:
+            p[0] = Node('stmt_prime', args=[p[1], p[2]], terminal=False)
 
 def p_write_expr_list(p):
     '''
