@@ -30,7 +30,17 @@ class StudentEnrollmentView(MethodView):
             return jsonify(cursor.fetchall()), 200
 
 
-
 class StudentEvaluationEview(MethodView):
     def get(self, student_id, evaluation_id=None):
-        raise NotImplementedError()
+        with connection.cursor() as cursor:
+            # all
+            cursor.execute(
+                '''
+                SELECT * FROM evaluations WHERE enrollment_id IN (
+                    SELECT id FROM enrollment WHERE student_id=%(student_id)s
+                )
+                ''',
+                {'student_id': student_id}
+            )
+
+            return jsonify(cursor.fetchall()), 200

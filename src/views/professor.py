@@ -32,4 +32,16 @@ class ProfessorCourseView(MethodView):
 
 class ProfessorEvaluationView(MethodView):
     def get(self, professor_id):
-        raise NotImplementedError()
+        with connection.cursor() as cursor:
+            # all
+            cursor.execute(
+                '''
+                SELECT * FROM evaluations WHERE enrollment_id IN (
+                    SELECT enrollments.id FROM courses INNER JOIN enrollments ON courses.id = enrollments.course_id
+                    WHERE professor_id=%(professor_id)s
+                )
+                ''',
+                {'professor_id': professor_id}
+            )
+
+            return jsonify(cursor.fetchall()), 200
