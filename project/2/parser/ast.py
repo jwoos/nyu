@@ -1,5 +1,5 @@
 class Node:
-    def __init__(self, symbol, args=None, attrs=None, terminal=False):
+    def __init__(self, symbol, args=None, attrs=None):
         # what is the symbol
         self.symbol = symbol
 
@@ -7,9 +7,6 @@ class Node:
         self.args = args
         if self.args is None:
             self.args = []
-
-        # terminal
-        self.terminal = terminal
 
         self.attrs = attrs
         if self.attrs is None:
