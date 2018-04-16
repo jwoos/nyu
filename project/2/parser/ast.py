@@ -8,9 +8,14 @@ class Node:
         if self.args is None:
             self.args = []
 
-        self.attrs = attrs
-        if self.attrs is None:
-            self.attrs = {}
+        self.attrs = {
+            'name': None,
+            'type': None,
+            'line': None,
+            'terminal': False,
+        }
+        if attrs is not None:
+            self.attrs.update(attrs)
 
     def __str__(self):
         if not self.args:

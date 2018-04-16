@@ -35,20 +35,58 @@ def p_decl(p):
     '''
     decl : kind var_list SEMI
     '''
-    p[0] = Node('decl', args=[p[1], *p[2].args], attrs={'line': p.lineno(2)})
+    p[0] = Node(
+        'decl',
+        args=[*p[2].args],
+        attrs={
+            'name': 'decl',
+            'line': p.lineno(2),
+            'type': p[1].symbol,
+            'terminal': False
+        }
+    )
 
 def p_kind(p):
     '''
     kind : int_kw
          | float_kw
     '''
-    p[0] = Node(p[1], args=None, attrs={'line': p.lineno(1)})
+    if p[1] == 'int':
+        p[0] = Node(
+            int,
+            args=None,
+            attrs={
+                'name': 'int_kw',
+                'type': int,
+                'line': p.lineno(1),
+                'terminal': True
+            }
+        )
+    else:
+        p[0] = Node(
+            float,
+            args=None,
+            attrs={
+                'name': 'float_kw',
+                'type': float,
+                'line': p.lineno(1),
+                'terminal': True
+            }
+        )
 
 def p_var_list(p):
     '''
     var_list : identifier var_list_prime
     '''
-    p[1] = Node(p[1], args=None, attrs={'type': 'identifier', 'line': p.lineno(1)})
+    p[1] = Node(
+        p[1],
+        args=None,
+        attrs={
+            'name': 'identifier',
+            'line': p.lineno(1),
+            'terminal': True
+        }
+    )
     p[0] = Node('var_list', args=[p[1]])
     if p[2] is not None:
         p[0].args.extend(p[2].args)
@@ -67,16 +105,54 @@ def p_function_decl(p):
     '''
     function_decl : kind identifier LPAR kind RPAR SEMI
     '''
-    p[2] = Node(p[2], args=None, attrs={'type': 'identifier', 'line': p.lineno(1)})
-    p[0] = Node('function_decl', args=[p[1], p[2], p[4]], attrs={'line': p.lineno(2)})
+    p[2] = Node(
+        p[2],
+        args=None,
+        attrs={
+            'type': p[1].symbol,
+            'name': 'identifier',
+            'line': p.lineno(1),
+            'terminal': True
+        }
+    )
+    p[0] = Node(
+        'function_decl',
+        args=[p[2]],
+        attrs={
+            'type': p[4].symbol,
+            'line': p.lineno(2)
+        }
+    )
 
 def p_function_def(p):
     '''
     function_def : kind identifier LPAR kind identifier RPAR body
     '''
-    p[2] = Node(p[2], args=None, attrs={'type': 'identifier'})
-    p[5] = Node(p[5], args=None, attrs={'type': 'identifier'})
-    p[0] = Node('function_def', args=[p[1], p[2], p[4], p[5], p[7]], attrs={'line': p.lineno(2)})
+    p[2] = Node(
+        p[2],
+        args=None,
+        attrs={
+            'type': p[1].symbol,
+            'name': 'identifier',
+            'terminal': True
+        }
+    )
+    p[5] = Node(
+        p[5],
+        args=None,
+        attrs={
+            'type': p[4].symbol,
+            'name': 'identifier',
+            'terminal': True
+        }
+    )
+    p[0] = Node(
+        'function_def',
+        args=[p[2], p[5], p[7]],
+        attrs={
+            'line': p.lineno(2)
+        }
+    )
 
 def p_body(p):
     '''
@@ -93,10 +169,9 @@ def p_body_prime(p):
     if len(p) == 2:
         p[0] = None
     else:
-        if p[2] is None:
-            p[0] = Node('body', args=[p[1]])
-        else:
-            p[0] = Node('body', args=[p[1], *p[2].args])
+        p[0] = Node('body', args=[p[1]])
+        if p[2] is not None:
+            p[0].args.extend(p[2].args)
 
 def p_stmt(p):
     '''
@@ -188,11 +263,37 @@ def p_factor(p):
     '''
     if len(p) == 2:
         if isinstance(p[1], str):
-            p[0] = Node(p[1], args=None, attrs={'type': 'identifier'})
+            p[0] = Node(
+                p[1],
+                args=None,
+                attrs={
+                    'name': 'identifier',
+                    'line': p.lineno(1),
+                    'terminal': True
+                }
+            )
         elif isinstance(p[1], float):
-            p[0] = Node(p[1], args=None, attrs={'type': 'float_literal'})
+            p[0] = Node(
+                p[1],
+                args=None,
+                attrs={
+                    'name': 'float_literal',
+                    'line': p.lineno(1),
+                    'terminal': True,
+                    'type': float
+                }
+            )
         elif isinstance(p[1], int):
-            p[0] = Node(p[1], args=None, attrs={'type': 'integer_literal'})
+            p[0] = Node(
+                p[1],
+                args=None,
+                attrs={
+                    'name': 'integer_literal',
+                    'line': p.lineno(1),
+                    'terminal': True,
+                    'type': int
+                }
+            )
         else:
             p[0] = p[1]
     else:
@@ -209,7 +310,11 @@ def p_function_call(p):
     '''
     function_call : identifier LPAR expr RPAR
     '''
-    p[1] = Node(p[1], args=None, attrs={'type': 'identifier'})
+    p[1] = Node(p[1], args=None, attrs={
+        'name': 'identifier',
+        'line': p.lineno(1),
+        'terminal': True
+    })
     p[0] = Node('function_call', args=[p[1], p[3]])
 
 def p_term(p):
@@ -248,7 +353,26 @@ def p_mulop(p):
     mulop : MULTIPLY
           | DIVIDE
     '''
-    p[0] = Node(p[1], args=None)
+    if p[1] == '*':
+        p[0] = Node(
+            p[1],
+            args=None,
+            attrs={
+                'name': 'MULTIPLY',
+                'line': p.lineno(1),
+                'terminal': True
+            }
+        )
+    else:
+        p[0] = Node(
+            p[1],
+            args=None,
+            attrs={
+                'name': 'DIVIDE',
+                'line': p.lineno(1),
+                'terminal': True
+            }
+        )
 
 def p_expr1(p):
     '''
@@ -276,7 +400,26 @@ def p_addop(p):
     addop : PLUS
           | MINUS
     '''
-    p[0] = Node(p[1], args=None)
+    if p[1] == '+':
+        p[0] = Node(
+            p[1],
+            args=None,
+            attrs={
+                'name': 'PLUS',
+                'line': p.lineno(1),
+                'terminal': True
+            }
+        )
+    else:
+        p[0] = Node(
+            p[1],
+            args=None,
+            attrs={
+                'name': 'MINUS',
+                'line': p.lineno(1),
+                'terminal': True
+            }
+        )
 
 def p_boolop(p):
     '''
@@ -286,7 +429,22 @@ def p_boolop(p):
            | LE
            | GE
     '''
-    p[0] = Node(p[1], args=None)
+    name_map = {
+        '<': 'LT',
+        '>': 'GT',
+        '==': 'EQUAL',
+        '<=': 'LE',
+        '>=': 'GE'
+    }
+    p[0] = Node(
+        p[1],
+        args=None,
+        attrs={
+            'name': name_map[p[1]],
+            'line': p.lineno(1),
+            'terminal': True
+        }
+    )
 
 def p_expr(p):
     '''
@@ -294,8 +452,22 @@ def p_expr(p):
          | expr1
     '''
     if len(p) == 4:
-        p[1] = Node(p[1], args=None, attrs={'type': 'identifier', 'line': p.lineno(1)})
-        p[0] = Node(p[2], args=[p[1], p[3]])
+        p[1] = Node(
+            p[1],
+            args=None,
+            attrs={
+                'name': 'identifier',
+                'line': p.lineno(1)
+            }
+        )
+        p[0] = Node(
+            p[2],
+            args=[p[1], p[3]],
+            attrs={
+                'name': 'ASSIGN',
+                'line': p.lineno(1)
+            }
+        )
     else:
         p[0] = p[1]
 

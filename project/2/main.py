@@ -18,68 +18,65 @@ def main():
         node = node_stack.pop()
         logger.debug(node)
 
-        if not node:
-            continue
-
         if node.symbol == 'function_def':
-            msg = table_stack[0].set(node.args[1].symbol, Symbol(
+            msg = table_stack[0].set(node.args[0].symbol, Symbol(
                 table_stack[0].scope,
                 SymbolType.FUNCTION,
                 {
                     'init': True,
-                    'type': node.args[0],
-                    'name': node.args[1],
-                    'arg_type': node.args[2],
-                    'arg': node.args[3],
-                    'line': node.attrs.get('line')
+                    'type': node.args[0].attrs['type'],
+                    'name': node.args[0],
+                    'arg_type': node.args[1].attrs['type'],
+                    'arg': node.args[1],
+                    'line': node.attrs['line']
                 }
             ))
-            info(table_stack[0].get(node.args[1].symbol), usage=False)
+            info(table_stack[0].get(node.args[0].symbol), usage=False)
             if msg:
                 logger.error(msg)
                 continue
 
             table_stack.append(SymbolTable(SymbolScope.LOCAL))
-            table_stack[-1].set(node.args[3].symbol, Symbol(
+            table_stack[-1].set(node.args[1].symbol, Symbol(
                 table_stack[-1].scope,
                 SymbolType.VARIABLE,
                 {
                     'value': None,
-                    'type': node.args[2],
-                    'name': node.args[3],
+                    'type': node.args[1].attrs['type'],
+                    'name': node.args[1],
                     'line': node.attrs.get('line')
                 }
             ))
             node_stack.append(Node('function_def_end'))
-            node_stack.append(node.args[4])
+            node_stack.append(node.args[1])
         elif node.symbol == 'function_def_end':
             table_stack.pop()
         elif node.symbol == 'function_decl':
-            msg = table_stack[0].set(node.args[1].symbol, Symbol(
+            msg = table_stack[0].set(node.args[0].symbol, Symbol(
                 SymbolScope.GLOBAL,
                 SymbolType.FUNCTION,
                 {
                     'init': False,
-                    'type': node.args[0],
-                    'name': node.args[1],
-                    'arg_type': node.args[2],
+                    'type': node.args[0].attrs['type'],
+                    'name': node.args[0],
+                    'arg_type': node.attrs['type'],
                     'arg': None,
-                    'line': node.attrs.get('line')
+                    'line': node.attrs['line']
                 }
             ))
-            info(table_stack[0].get(node.args[1].symbol), usage=False)
+            info(table_stack[0].get(node.args[0].symbol), usage=False)
             if msg:
                 logger.error(msg)
         elif node.symbol == 'decl':
-            for var in node.args[1:]:
+            for var in node.args:
                 msg = table_stack[-1].set(var.symbol, Symbol(
                     table_stack[-1].scope,
                     SymbolType.VARIABLE,
                     {
                         'value': None,
-                        'type': node.args[0],
+                        'type': node.attrs['type'],
                         'name': var,
-                        'line': var.attrs.get('line')
+                        'line': var.attrs['line']
                     }
                 ))
                 info(table_stack[-1].get(var.symbol), usage=False)
@@ -96,7 +93,8 @@ def main():
                     info(table_stack[-1].get(node.symbol), usage=node.attrs.get('line', True))
             else:
                 for child in reversed(node.args):
-                    node_stack.append(child)
+                    if child:
+                        node_stack.append(child)
 
     if 'main' not in table_stack[0].table:
         logger.error('main is not defined')
