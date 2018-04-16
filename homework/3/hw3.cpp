@@ -31,6 +31,8 @@ extern GLuint aspect;
 
 extern Light ambientLight;
 extern Light directionalLight;
+extern Light pointLight;
+extern Light spotLight;
 
 extern Entity _floor;
 extern vec4 floorColor;
@@ -317,9 +319,14 @@ void display(void) {
 
 	// draw shadow
 	if (flagShadow) {
-		// FIXME get the correct shadow matrix
 		glUniform1i(glGetUniformLocation(program, "flagLight"), false);
-		mv = LookAt(eye, at, up) * mat4(12, 0, 0, 0, 14, 0, 3, -1, 0, 0, 12, 0, 0, 0, 0, 12) * Translate(sphereCenter.x, sphereCenter.y, sphereCenter.z) * sphereRotationMatrix;
+		mat4 shadowMatrix(
+			vec4(1, 0, 0, 0),
+			vec4(0, 1, 0, 0),
+			vec4(0, 0, 1, 0),
+			vec4(0, -1 / spotLight.position.y, 0, 0)
+		);
+		mv = LookAt(eye, at, up) * Translate(spotLight.position) * shadowMatrix * Translate(-spotLight.position) * Translate(sphereCenter.x, sphereCenter.y, sphereCenter.z) * sphereRotationMatrix;
 		glUniformMatrix4fv(modelView, 1, GL_TRUE, mv);
 		if (flagWire) {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
