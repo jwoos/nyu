@@ -319,24 +319,24 @@ def p_function_call(p):
 
 def p_term(p):
     '''
-    term : uminus term_prime
+    term : term_prime uminus
     '''
-    if p[2] is not None:
-        p[0] = p[2]
-        p[2].args = [p[1], *p[2].args]
-    else:
+    if p[1] is not None:
         p[0] = p[1]
+        p[1].args.append(p[2])
+    else:
+        p[0] = p[2]
 
 def p_term_prime(p):
     '''
-    term_prime : mulop term
+    term_prime : term mulop
                | empty
     '''
     if len(p) == 2:
         p[0] = None
     else:
-        p[0] = p[1]
-        p[0].args = [p[2]]
+        p[0] = p[2]
+        p[0].args = [p[1]]
 
 def p_uminus(p):
     '''
@@ -376,24 +376,24 @@ def p_mulop(p):
 
 def p_expr1(p):
     '''
-    expr1 : term expr1_prime
+    expr1 : expr1_prime term
     '''
-    if p[2] is None:
-        p[0] = p[1]
-    else:
+    if p[1] is None:
         p[0] = p[2]
-        p[0].args = [p[1], *p[0].args]
+    else:
+        p[0] = p[1]
+        p[0].args.append(p[2])
 
 def p_expr1_prime(p):
     '''
-    expr1_prime : addop expr1
+    expr1_prime : expr1 addop
                 | empty
     '''
     if len(p) == 2:
         p[0] = None
     else:
-        p[0] = p[1]
-        p[0].args = [p[2]]
+        p[0] = p[2]
+        p[0].args = [p[1]]
 
 def p_addop(p):
     '''

@@ -10,6 +10,7 @@ from log import logger
 def main():
     s = open('test.c').read()
     result = parser.parse(s)
+    print(result)
 
     node_stack = [result]
     table_stack = [SymbolTable(SymbolScope.GLOBAL)]
