@@ -9,9 +9,9 @@ decl : kind var_list SEMI
 kind : int_kw
      | float_kw
 
-var_list : identifier var_list_prime
+var_list : var_list_prime identifier 
 
-var_list_prime: COMMA var_list
+var_list_prime: var_list COMMA
               | empty
 
 function_decl : kind identifier LPAR kind RPAR SEMI
@@ -48,9 +48,9 @@ bool_expr : expr boolop expr
 
 function_call : identifier LPAR expr RPAR
 
-term : uminus term_prime
+term : term_prime uminus
 
-term_prime : mulop term
+term_prime : term mulop
            | empty
 
 uminus : MINUS factor
@@ -59,9 +59,9 @@ uminus : MINUS factor
 mulop : MULTIPLY
       | DIVIDE
 
-expr1 : term expr1_prime
+expr1 : expr1_prime term
 
-expr1_prime : addop expr1
+expr1_prime : expr1 addop
             | empty
 
 addop : PLUS

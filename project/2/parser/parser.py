@@ -76,30 +76,31 @@ def p_kind(p):
 
 def p_var_list(p):
     '''
-    var_list : identifier var_list_prime
-    '''
-    p[1] = Node(
-        p[1],
-        args=None,
-        attrs={
-            'name': 'identifier',
-            'line': p.lineno(1),
-            'terminal': True
-        }
-    )
-    p[0] = Node('var_list', args=[p[1]])
-    if p[2] is not None:
-        p[0].args.extend(p[2].args)
-
-def p_var_list_prime(p):
-    '''
-    var_list_prime : COMMA var_list
-                   | empty
+    var_list : identifier
+             | var_list COMMA identifier
     '''
     if len(p) == 2:
-        p[0] = None
+        p[1] = Node(
+            p[1],
+            args=None,
+            attrs={
+                'name': 'identifier',
+                'line': p.lineno(1),
+                'terminal': True
+            }
+        )
+        p[0] = Node('var_list', args=[p[1]])
     else:
-        p[0] = p[2]
+        p[0] = p[1]
+        p[1].args.append(Node(
+            p[3],
+            args=None,
+            attrs={
+                'name': 'identifier',
+                'line': p.lineno(3),
+                'terminal': True
+            }
+        ))
 
 def p_function_decl(p):
     '''
@@ -319,24 +320,15 @@ def p_function_call(p):
 
 def p_term(p):
     '''
-    term : term_prime uminus
-    '''
-    if p[1] is not None:
-        p[0] = p[1]
-        p[1].args.append(p[2])
-    else:
-        p[0] = p[2]
-
-def p_term_prime(p):
-    '''
-    term_prime : term mulop
-               | empty
+    term : uminus
+         | term mulop uminus
     '''
     if len(p) == 2:
-        p[0] = None
+        p[0] = p[1]
     else:
         p[0] = p[2]
-        p[0].args = [p[1]]
+        p[0].args = [p[1], p[3]]
+    # print(p[0])
 
 def p_uminus(p):
     '''
@@ -376,24 +368,15 @@ def p_mulop(p):
 
 def p_expr1(p):
     '''
-    expr1 : expr1_prime term
-    '''
-    if p[1] is None:
-        p[0] = p[2]
-    else:
-        p[0] = p[1]
-        p[0].args.append(p[2])
-
-def p_expr1_prime(p):
-    '''
-    expr1_prime : expr1 addop
-                | empty
+    expr1 : term
+          | expr1 addop term
     '''
     if len(p) == 2:
-        p[0] = None
+        p[0] = p[1]
     else:
         p[0] = p[2]
-        p[0].args = [p[1]]
+        p[0].args = [p[1], p[3]]
+    print(p[0])
 
 def p_addop(p):
     '''
