@@ -328,7 +328,6 @@ def p_term(p):
     else:
         p[0] = p[2]
         p[0].args = [p[1], p[3]]
-    # print(p[0])
 
 def p_uminus(p):
     '''
@@ -376,7 +375,6 @@ def p_expr1(p):
     else:
         p[0] = p[2]
         p[0].args = [p[1], p[3]]
-    print(p[0])
 
 def p_addop(p):
     '''

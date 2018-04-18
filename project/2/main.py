@@ -58,7 +58,7 @@ def main():
                 }
             ))
             node_stack.append(Node('function_def_end'))
-            node_stack.append(node.args[1])
+            node_stack.append(node.args[2])
         elif node.symbol == 'function_def_end':
             table_stack.pop()
         elif node.symbol == 'function_decl':
@@ -93,9 +93,9 @@ def main():
                 if msg:
                     logger.error(msg)
         else:
-            if node.attrs.get('type') == 'identifier':
+            if node.attrs.get('name') == 'identifier':
                 if table_stack[-1].get(node.symbol) is None:
-                    if table_stack[0].get(node.symbol) is None:
+                    if table_stack[-1].scope == SymbolScope.LOCAL and table_stack[0].get(node.symbol) is None:
                         logger.error(f'{node.symbol} referenced before declaration')
                     else:
                         info(table_stack[0].get(node.symbol), usage=node.attrs.get('line', True))

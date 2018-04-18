@@ -1,3 +1,12 @@
+from enum import Enum
+
+
+class OperationType(Enum):
+    UNARY = 1
+    BINARY = 2
+    OTHER = 3
+
+
 class Node:
     def __init__(self, symbol, args=None, attrs=None):
         # what is the symbol
