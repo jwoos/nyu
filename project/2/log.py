@@ -3,7 +3,7 @@ import logging
 
 logging.basicConfig(
     format='[%(levelname)s] %(message)s',
-    level=logging.ERROR
+    level=logging.INFO
 )
 logger = logging.getLogger('')
 

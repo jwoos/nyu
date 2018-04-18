@@ -1,4 +1,5 @@
-from collections import deque
+import sys
+import os
 
 from parser.ast import Node
 from parser.parser import parser
@@ -8,9 +9,17 @@ from log import logger
 
 
 def main():
-    s = open('test.c').read()
+    s = None
+    if len(sys.argv) > 1:
+        s = open(sys.argv[1]).read()
+    else:
+        s = open('test.c').read()
     result = parser.parse(s)
-    print(result)
+    logger.info(result)
+
+    if result is None:
+        logger.error('AST is None - exiting')
+        return
 
     node_stack = [result]
     table_stack = [SymbolTable(SymbolScope.GLOBAL)]

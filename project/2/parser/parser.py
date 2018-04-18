@@ -350,8 +350,8 @@ def p_uminus(p):
 
 def p_mulop(p):
     '''
-    mulop : MULTIPLY
-          | DIVIDE
+    mulop : DIVIDE
+          | MULTIPLY
     '''
     if p[1] == '*':
         p[0] = Node(
@@ -483,7 +483,10 @@ def p_error(p):
         logger.error('Attempting to recover and continue')
         while True:
             token = parser.token()
-            if not token or token.type == 'SEMI':
+            logger.error(f'Discarding token {token.type}')
+            if not token or token.type in ('SEMI', 'RBRACE', 'RPAR'):
+                logger.error(f'Synchronized on {token}')
                 break
+
 
 parser = yacc.yacc()
