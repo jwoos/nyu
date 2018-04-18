@@ -2,7 +2,7 @@ from flask import Flask
 from flask.json import jsonify
 from werkzeug.exceptions import HTTPException, default_exceptions
 
-from src.views import default, evaluation, login, register, student, professor
+from src.views import default, evaluation, login, register, student, professor, enrollment
 from src.db import connection
 
 
