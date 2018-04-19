@@ -1,4 +1,5 @@
 from enum import Enum
+import inspect
 import json
 
 from parser.ast import Node
@@ -6,7 +7,9 @@ from parser.ast import Node
 
 class CustomEncoder(json.JSONEncoder):
     def default(self, o):
-        if isinstance(o, Symbol) or isinstance(o, Node):
+        if inspect.isclass(o):
+            return o.__name__
+        elif isinstance(o, Symbol) or isinstance(o, Node):
             return o.__str__()
         else:
             return super().default(o)
@@ -63,12 +66,12 @@ class SymbolTable:
                 # make sure all properties are good
                 for prop in ('type', 'arg_type'):
                     if symbol.attrs[prop] != table_symbol.attrs[prop]:
-                        return f'Type mistmatch - declared is {table_symbol.attrs[prop]} and defined is {symbol.attrs[prop]}'
+                        return f'Type error mistmatch - declared is {table_symbol.attrs[prop]} and defined is {symbol.attrs[prop]}'
 
                 table_symbol.attrs = symbol.attrs
         else:
             if self.table.get(key):
-                return 'Already defined'
+                return f'{key} already defined'
 
         self.table[key] = symbol
 

@@ -85,12 +85,3 @@ def handle_decl(node_stack, table_stack, table_cache, node):
         info(table_stack[-1].get(var.symbol), usage=False)
         if msg:
             logger.error(msg)
-
-def handle_identifier(node_stack, table_stack, table_cache, node):
-    if table_stack[-1].get(node.symbol) is None:
-        if table_stack[-1].scope == SymbolScope.LOCAL and table_stack[0].get(node.symbol) is None:
-            logger.error(f'{node.symbol} referenced before declaration')
-        else:
-            info(table_stack[0].get(node.symbol), usage=node.attrs.get('line', True))
-    else:
-        info(table_stack[-1].get(node.symbol), usage=node.attrs.get('line', True))

@@ -44,16 +44,33 @@ def main():
         elif node.symbol == 'decl':
             handler.handle_decl(node_stack, table_stack, table_cache, node)
 
-        elif node.attrs.get('name') == 'identifier':
-            handler.handle_identifier(node_stack, table_stack, table_cache, node)
-
         else:
             # if node.attrs.symbol in ('=', 'function_call', '+', '-', '/', '*'):
+            if node.attrs.get('name') == 'identifier':
+                if table_stack[-1].get(node.symbol) is None:
+                    if table_stack[-1].scope == SymbolScope.LOCAL and table_stack[0].get(node.symbol) is None:
+                        logger.error(f'{node.symbol} referenced before declaration')
+                    else:
+                        info(table_stack[0].get(node.symbol), usage=node.attrs.get('line', True))
+                else:
+                    info(table_stack[-1].get(node.symbol), usage=node.attrs.get('line', True))
+                continue
+
+            if node.symbol == 'function_call':
+                func = table_stack[0].get(node.args[0].symbol)
+                if func:
+                    func.attrs['call'] = True
 
             for child in reversed(node.args):
                 if child:
                     node_stack.append(child)
 
+    # check if a declared function was called, it was later defined
+    for v in table_stack[0].table.values():
+        if not v.attrs.get('init') and v.attrs.get('call'):
+            logger.error(f'Function {v} declared and called but never defined')
+
+    # check if main was defined
     if 'main' not in table_stack[0].table:
         logger.error('main is not defined')
 

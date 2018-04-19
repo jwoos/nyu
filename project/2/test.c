@@ -3,6 +3,8 @@ int y;
 
 float test(float);
 
+int declared(int);
+
 int main(int x) {
 	int x,y:z; /* ERROR here: colon instead of a comma */
 	int a, b, c;
@@ -17,7 +19,9 @@ int main(int x) {
 		*/
 	/*test(y);*/
 
-	/*what(x);*/
+	what(x);
+
+	declared(a);
 }
 
 float test(float x) {
