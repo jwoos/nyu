@@ -2,10 +2,12 @@ import enum
 
 
 @enum.unique
-class OperationType(enum.Enum):
+class OperatorType(enum.Enum):
     UNARY = 1
     BINARY = 2
-    OTHER = 3
+    TRINARY = 3
+    N_ARY = 4
+    OTHER = 5
 
 
 class Node:
@@ -23,7 +25,7 @@ class Node:
             'type': None,
             'line': None,
             'terminal': False,
-            'inferred_type': None,
+            'operator': None,
         }
         if attrs is not None:
             self.attrs.update(attrs)

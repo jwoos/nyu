@@ -1,7 +1,7 @@
 from ply import yacc
 
 from scanner import scanner
-from parser.ast import Node
+from parser.ast import Node, OperatorType
 from log import logger
 
 
@@ -95,7 +95,13 @@ def p_var_list(p):
                 'terminal': True
             }
         )
-        p[0] = Node('var_list', args=[p[1]])
+        p[0] = Node(
+            'var_list',
+            args=[p[1]],
+            attrs={
+                'operator': OperatorType.N_ARY
+            }
+        )
     else:
         p[0] = p[1]
         p[1].args.append(Node(
@@ -127,7 +133,8 @@ def p_function_decl(p):
         args=[p[2]],
         attrs={
             'type': p[4].symbol,
-            'line': p.lineno(2)
+            'line': p.lineno(2),
+            'operator': OperatorType.UNARY
         }
     )
 
@@ -157,7 +164,8 @@ def p_function_def(p):
         'function_def',
         args=[p[2], p[5], p[7]],
         attrs={
-            'line': p.lineno(2)
+            'line': p.lineno(2),
+            'operator': OperatorType.TRINARY
         }
     )
 
@@ -208,19 +216,58 @@ def p_stmt(p):
                 p[0].args.extend(p[6].args)
 
         elif p[1] == 'else':
-            p[0] = Node(p[1], args=[p[2]])
+            p[0] = Node(
+                p[1],
+                args=[p[2]],
+                attrs={
+                    'terminal': True,
+                    'line': p.lineno(1)
+                }
+            )
 
         elif p[1] == 'while':
-            p[0] = Node(p[1], args=[p[3], p[5]])
+            p[0] = Node(
+                p[1],
+                args=[p[3], p[5]],
+                attrs={
+                    'terminal': True,
+                    'line': p.lineno(1),
+                    'operator': OperatorType.BINARY
+                }
+            )
 
         elif p[1] == 'read':
-            p[0] = Node(p[1], args=[p[2]])
+            p[0] = Node(
+                p[1],
+                args=[p[2]],
+                attrs={
+                    'terminal': True,
+                    'line': p.lineno(1),
+                    'operator': OperatorType.N_ARY
+                }
+            )
 
         elif p[1] == 'write':
-            p[0] = Node(p[1], args=[p[2]])
+            p[0] = Node(
+                p[1],
+                args=[p[2]],
+                attrs={
+                    'terminal': True,
+                    'line': p.lineno(1),
+                    'operator': OperatorType.N_ARY
+                }
+            )
 
         elif p[1] == 'return':
-            p[1] = Node(p[1], args=[p[2]])
+            p[1] = Node(
+                p[1],
+                args=[p[2]],
+                attrs={
+                    'terminal': True,
+                    'line': p.lineno(1),
+                    'operator': OperatorType.UNARY
+                }
+            )
 
         else:
             p[0] = p[1]
@@ -334,7 +381,14 @@ def p_function_call(p):
         'line': p.lineno(1),
         'terminal': True
     })
-    p[0] = Node('function_call', args=[p[1], p[3]])
+    p[0] = Node(
+        'function_call',
+        args=[p[1], p[3]],
+        attrs={
+            'line': p.lineno(1),
+            'operator': OperatorType.BINARY
+        }
+    )
 
 def p_term(p):
     '''
@@ -353,7 +407,15 @@ def p_uminus(p):
            | factor
     '''
     if p[1] == '-':
-        p[0] = Node(p[1], args=[p[2]])
+        p[0] = Node(
+            p[1],
+            args=[p[2]],
+            attrs={
+                'terminal': True,
+                'line': p.lineno(1),
+                'operator': OperatorType.UNARY
+            }
+        )
     else:
         p[0] = p[1]
 
@@ -369,7 +431,8 @@ def p_mulop(p):
             attrs={
                 'name': 'MULTIPLY',
                 'line': p.lineno(1),
-                'terminal': True
+                'terminal': True,
+                'operator': OperatorType.BINARY
             }
         )
     else:
@@ -379,7 +442,8 @@ def p_mulop(p):
             attrs={
                 'name': 'DIVIDE',
                 'line': p.lineno(1),
-                'terminal': True
+                'terminal': True,
+                'operator': OperatorType.BINARY
             }
         )
 
@@ -406,7 +470,8 @@ def p_addop(p):
             attrs={
                 'name': 'PLUS',
                 'line': p.lineno(1),
-                'terminal': True
+                'terminal': True,
+                'operator': OperatorType.BINARY
             }
         )
     else:
@@ -416,7 +481,8 @@ def p_addop(p):
             attrs={
                 'name': 'MINUS',
                 'line': p.lineno(1),
-                'terminal': True
+                'terminal': True,
+                'operator': OperatorType.BINARY
             }
         )
 
@@ -441,7 +507,8 @@ def p_boolop(p):
         attrs={
             'name': name_map[p[1]],
             'line': p.lineno(1),
-            'terminal': True
+            'terminal': True,
+            'operator': OperatorType.BINARY
         }
     )
 
@@ -464,7 +531,8 @@ def p_expr(p):
             args=[p[1], p[3]],
             attrs={
                 'name': 'ASSIGN',
-                'line': p.lineno(1)
+                'line': p.lineno(1),
+                'operator': OperatorType.BINARY
             }
         )
     else:
@@ -483,7 +551,6 @@ def p_empty(p):
     p[0] = None
 
 def p_error(p):
-    pass
     if not p:
         logger.info('End of file')
         return
