@@ -1,11 +1,12 @@
-from enum import Enum
+import enum
 
 from parser.ast import Node
 from semantics.symbol_table import SymbolTable, SymbolScope, SymbolType, Symbol, info
 from log import logger
 
 
-class Signal(Enum):
+@enum.unique
+class Signal(enum.Enum):
     CONTINUE = 1
     STOP = 2
     NULL = 3

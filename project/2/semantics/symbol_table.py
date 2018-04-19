@@ -1,4 +1,4 @@
-from enum import Enum
+import enum
 import inspect
 import json
 
@@ -15,13 +15,15 @@ class CustomEncoder(json.JSONEncoder):
             return super().default(o)
 
 
-class SymbolScope(Enum):
+@enum.unique
+class SymbolScope(enum.Enum):
     LOCAL = 1
     GLOBAL = 2
     ANY = 3
 
 
-class SymbolType(Enum):
+@enum.unique
+class SymbolType(enum.Enum):
     FUNCTION = 1
     VARIABLE = 2
 

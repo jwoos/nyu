@@ -1,7 +1,8 @@
-from enum import Enum
+import enum
 
 
-class OperationType(Enum):
+@enum.unique
+class OperationType(enum.Enum):
     UNARY = 1
     BINARY = 2
     OTHER = 3
