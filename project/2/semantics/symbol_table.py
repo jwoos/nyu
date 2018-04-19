@@ -33,7 +33,18 @@ class Symbol:
 
         self.attrs = attrs
         if not attrs:
-            self.attrs = {}
+            self.attrs = {
+                'init': False,
+                'type': None,
+                'arg': None,
+                'arg_type': None,
+                'name': None,
+                'line': None,
+                'value': None,
+                'inferred_type': None,
+                'inferred_arg_type': None,
+                'placeholder': False
+            }
 
     def __str__(self):
         return f'<Symbol {self.scope} {self.kind} {json.dumps(self.attrs, cls=CustomEncoder)}>'

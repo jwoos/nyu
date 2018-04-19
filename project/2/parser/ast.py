@@ -22,6 +22,7 @@ class Node:
             'type': None,
             'line': None,
             'terminal': False,
+            'inferred_type': None,
         }
         if attrs is not None:
             self.attrs.update(attrs)

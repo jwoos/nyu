@@ -11,7 +11,7 @@ class Signal(Enum):
     NULL = 3
 
 
-def handle_function_def(node_stack, table_stack, table_cache, node):
+def handle_function_def(node_stack, table_stack, node):
     msg = table_stack[0].set(node.args[0].symbol, Symbol(
         table_stack[0].scope,
         SymbolType.FUNCTION,
@@ -49,11 +49,10 @@ def handle_function_def(node_stack, table_stack, table_cache, node):
     ))
     node_stack.append(node.args[2])
 
-def handle_function_def_end(node_stack, table_stack, table_cache, node):
+def handle_function_def_end(node_stack, table_stack, node):
     function_table = table_stack.pop()
-    table_cache[node.args[0].symbol] = function_table
 
-def handle_function_decl(node_stack, table_stack, table_cache, node):
+def handle_function_decl(node_stack, table_stack, node):
     msg = table_stack[0].set(node.args[0].symbol, Symbol(
         SymbolScope.GLOBAL,
         SymbolType.FUNCTION,
@@ -70,7 +69,7 @@ def handle_function_decl(node_stack, table_stack, table_cache, node):
     if msg:
         logger.error(msg)
 
-def handle_decl(node_stack, table_stack, table_cache, node):
+def handle_decl(node_stack, table_stack, node):
     for var in node.args:
         msg = table_stack[-1].set(var.symbol, Symbol(
             table_stack[-1].scope,

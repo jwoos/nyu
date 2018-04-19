@@ -5,8 +5,11 @@ from parser.ast import Node
 from parser.parser import parser
 from scanner.scanner import lexer
 from semantics.symbol_table import SymbolTable, SymbolScope, SymbolType, Symbol, info
-from semantics import handler, type_check
+from semantics import handler, checker
 from log import logger
+
+
+PROPAGATING_SYMBOLS = {'+', '-', '<=', '>=', '==', '<', '>', '*', '/', 'function_call', '='}
 
 
 def main():
@@ -23,7 +26,6 @@ def main():
         return
 
     node_stack = [result]
-    table_cache = {}
     table_stack = [SymbolTable(SymbolScope.GLOBAL)]
 
     while node_stack:
@@ -31,21 +33,20 @@ def main():
         logger.debug(node)
 
         if node.symbol == 'function_def':
-            signal = handler.handle_function_def(node_stack, table_stack, table_cache, node)
+            signal = handler.handle_function_def(node_stack, table_stack, node)
             if signal == handler.Signal.CONTINUE:
                 continue
 
         elif node.symbol == 'function_def_end':
-            handler.handle_function_def_end(node_stack, table_stack, table_cache, node)
+            handler.handle_function_def_end(node_stack, table_stack, node)
 
         elif node.symbol == 'function_decl':
-            handler.handle_function_decl(node_stack, table_stack, table_cache, node)
+            handler.handle_function_decl(node_stack, table_stack, node)
 
         elif node.symbol == 'decl':
-            handler.handle_decl(node_stack, table_stack, table_cache, node)
+            handler.handle_decl(node_stack, table_stack, node)
 
         else:
-            # if node.attrs.symbol in ('=', 'function_call', '+', '-', '/', '*'):
             if node.attrs.get('name') == 'identifier':
                 if table_stack[-1].get(node.symbol) is None:
                     if table_stack[-1].scope == SymbolScope.LOCAL and table_stack[0].get(node.symbol) is None:
@@ -60,9 +61,10 @@ def main():
                 func = table_stack[0].get(node.args[0].symbol)
                 if func:
                     func.attrs['call'] = True
+                    checker.check_function_call(node_stack, table_stack, node)
 
             elif node.symbol == '=':
-                type_check.check_assignment(node_stack, table_stack, table_cache, node)
+                checker.check_assignment(node_stack, table_stack, node)
 
             for child in reversed(node.args):
                 if child:
