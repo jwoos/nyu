@@ -46,6 +46,12 @@ def p_decl(p):
         }
     )
 
+def p_decl_error(p):
+    '''
+    decl : kind error SEMI
+    '''
+    logger.error(f'decl error on line {p.lineno(2)}')
+
 def p_kind(p):
     '''
     kind : int_kw
@@ -155,6 +161,12 @@ def p_function_def(p):
         }
     )
 
+def p_function_def_error(p):
+    '''
+    function_def : kind identifier LPAR kind identifier RPAR error
+    '''
+    logger.error('function_def error')
+
 def p_body(p):
     '''
     body : LBRACE body_prime RBRACE
@@ -212,6 +224,12 @@ def p_stmt(p):
 
         else:
             p[0] = p[1]
+
+def p_stmt_error(p):
+    '''
+    stmt : error
+    '''
+    logger.error(f'stmt error on line {p.lineno(1)}')
 
 def p_stmt_prime(p):
     '''
@@ -452,6 +470,12 @@ def p_expr(p):
     else:
         p[0] = p[1]
 
+def p_expr_error(p):
+    '''
+    expr : identifier ASSIGN error
+    '''
+    logger.error('expr error')
+
 def p_empty(p):
     '''
     empty :
@@ -459,15 +483,21 @@ def p_empty(p):
     p[0] = None
 
 def p_error(p):
-    if p:
-        logger.error(f'Syntax error on line {p.lineno} column {p.lexpos}: {p.type} {p.value}')
-        logger.error('Attempting to recover and continue')
-        while True:
-            token = parser.token()
-            logger.error(f'Discarding token {token.type}')
-            if not token or token.type in ('SEMI', 'RBRACE', 'RPAR'):
-                logger.error(f'Synchronized on {token}')
-                break
+    pass
+    if not p:
+        logger.info('End of file')
+        return
+
+    logger.error(f'Syntax error on line {p.lineno} position {p.lexpos}: {p.type} {p.value}')
+    logger.error('Attempting to recover and continue')
+    # while True:
+        # token = parser.token()
+        # if not token or token.type in ('SEMI', 'RBRACE', 'RPAR'):
+            # logger.error(f'Synchronized on {token}')
+            # break
+        # logger.error(f'Discarding {token}')
+    # parser.restart()
+    # return token
 
 
 parser = yacc.yacc()
