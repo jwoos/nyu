@@ -56,10 +56,13 @@ def main():
                     info(table_stack[-1].get(node.symbol), usage=node.attrs.get('line', True))
                 continue
 
-            if node.symbol == 'function_call':
+            elif node.symbol == 'function_call':
                 func = table_stack[0].get(node.args[0].symbol)
                 if func:
                     func.attrs['call'] = True
+
+            elif node.symbol == '=':
+                type_check.check_assignment(node_stack, table_stack, table_cache, node)
 
             for child in reversed(node.args):
                 if child:

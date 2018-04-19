@@ -48,10 +48,8 @@ bool_expr : expr boolop expr
 
 function_call : identifier LPAR expr RPAR
 
-term : term_prime uminus
-
-term_prime : term mulop
-           | empty
+term : uminus
+	 | term mulop uminus
 
 uminus : MINUS factor
        | factor
@@ -59,10 +57,8 @@ uminus : MINUS factor
 mulop : MULTIPLY
       | DIVIDE
 
-expr1 : expr1_prime term
-
-expr1_prime : expr1 addop
-            | empty
+expr1 : term
+	  | expr1 addop term
 
 addop : PLUS
       | MINUS
