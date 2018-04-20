@@ -182,7 +182,10 @@ def p_body(p):
     '''
     body : LBRACE body_prime RBRACE
     '''
-    p[0] = p[2]
+    if p[2] is None:
+        p[0] = Node('body', args=[])
+    else:
+        p[0] = p[2]
 
 def p_body_prime(p):
     '''
@@ -223,6 +226,7 @@ def p_stmt(p):
                 p[1],
                 args=[p[2]],
                 attrs={
+                    'name': 'else_kw',
                     'terminal': True,
                     'line': p.lineno(1)
                 }
@@ -233,6 +237,7 @@ def p_stmt(p):
                 p[1],
                 args=[p[3], p[5]],
                 attrs={
+                    'name': 'while_kw',
                     'terminal': True,
                     'line': p.lineno(1),
                     'operator': OperatorType.BINARY
@@ -244,6 +249,7 @@ def p_stmt(p):
                 p[1],
                 args=[p[2]],
                 attrs={
+                    'name': 'read_kw',
                     'terminal': True,
                     'line': p.lineno(1),
                     'operator': OperatorType.N_ARY
@@ -255,6 +261,7 @@ def p_stmt(p):
                 p[1],
                 args=[p[2]],
                 attrs={
+                    'name': 'write_kw',
                     'terminal': True,
                     'line': p.lineno(1),
                     'operator': OperatorType.N_ARY
@@ -262,15 +269,19 @@ def p_stmt(p):
             )
 
         elif p[1] == 'return':
-            p[1] = Node(
+            p[0] = Node(
                 p[1],
                 args=[p[2]],
                 attrs={
+                    'name': 'return_kw',
                     'terminal': True,
                     'line': p.lineno(1),
                     'operator': OperatorType.UNARY
                 }
             )
+
+        elif p[1] == '{':
+            p[0] = p[2]
 
         else:
             p[0] = p[1]
