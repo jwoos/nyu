@@ -32,6 +32,7 @@ class Node:
 
     def __str__(self):
         if not self.args:
+            # return f'{self.symbol} {{{self.attrs.get("type")}}}'
             return f'{self.symbol}'
         else:
             return f'{self.symbol} : ({self.args})'

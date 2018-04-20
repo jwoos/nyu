@@ -35,6 +35,9 @@ def p_decl(p):
     '''
     decl : kind var_list SEMI
     '''
+    for var in p[2].args:
+        var.attrs['type'] = p[1].symbol
+
     p[0] = Node(
         'decl',
         args=[*p[2].args],

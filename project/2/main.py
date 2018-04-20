@@ -64,11 +64,24 @@ def main():
                     checker.check_function_call(node_stack, table_stack, node)
 
             elif node.symbol in ('=', '*', '/', '+', '-', '<=', '>=', '==', '<', '>'):
-                checker.check_binary(node_stack, table_stack, node)
+                if len(node.args) == 1:
+                    checker.check_unary(node_stack, table_stack, node)
+                else:
+                    checker.check_binary(node_stack, table_stack, node)
 
             for child in reversed(node.args):
                 if child:
                     node_stack.append(child)
+
+    # node_stack = [result]
+    # while node_stack:
+        # node = node_stack.pop()
+        # if node is None:
+            # continue
+        # print(node)
+        # for child in reversed(node.args):
+            # if child:
+                # node_stack.append(child)
 
     # check if a declared function was called, it was later defined
     for v in table_stack[0].table.values():
