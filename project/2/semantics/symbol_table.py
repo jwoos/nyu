@@ -3,6 +3,7 @@ import inspect
 import json
 
 from parser.ast import Node
+from log import logger
 
 
 class CustomEncoder(json.JSONEncoder):
@@ -108,4 +109,4 @@ def info(symbol, usage=0):
     if usage:
         msg += f' used on line {usage}'
 
-    print(msg)
+    logger.info(msg)

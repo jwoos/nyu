@@ -9,9 +9,6 @@ from semantics import handler, checker
 from log import logger
 
 
-PROPAGATING_SYMBOLS = {'+', '-', '<=', '>=', '==', '<', '>', '*', '/', 'function_call', '='}
-
-
 def main():
     s = None
     if len(sys.argv) > 1:
@@ -63,7 +60,10 @@ def main():
                     func.attrs['call'] = True
                     checker.propagate_types(node_stack, table_stack, node)
 
-            elif node.symbol in checker.OPERATION_SET:
+            elif node.symbol in checker.PROPAGATING_UNARY_SYMBOLS:
+                checker.check_unary(node_stack, table_stack, node)
+
+            elif node.symbol in checker.PROPAGATING_BINARY_SYMBOLS:
                 if len(node.args) != 1:
                     checker.check_binary(node_stack, table_stack, node)
 

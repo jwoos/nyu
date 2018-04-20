@@ -11,7 +11,9 @@ class InferredType(enum.Enum):
 
 
 INFERRED_TYPE_SET = set(InferredType)
-OPERATION_SET = {'=', '*', '/', '+', '-', '<=', '>=', '==', '<', '>'}
+PROPAGATING_BINARY_SYMBOLS = {'=', '*', '/', '+', '-', '<=', '>=', '==', '<', '>'}
+PROPAGATING_UNARY_SYMBOLS = {'return'}
+TERMINALS = {'float_literal', 'integer_literal', 'identifier'}
 NAME_MAP = {
     '=': 'assigning',
     '*': 'multiplying',
@@ -31,7 +33,7 @@ def propagate_types(node_stack, table_stack, node):
         logger.warning('encountered empty node during type propagation')
         return None
 
-    elif node.attrs.get('name') in ('float_literal', 'integer_literal', 'identifier'):
+    elif node.attrs.get('name') in TERMINALS or node.attrs['type']:
         # check if the node has a type
         t = node.attrs.get('type')
         if not t:
@@ -77,6 +79,13 @@ def propagate_types(node_stack, table_stack, node):
         node.attrs['type'] = types[0]
 
     return node.attrs['type']
+
+def check_unary(node_stack, table_stack, node):
+    single = node.args[0]
+
+    inferred_type = propagate_types(node_stack, table_stack, single)
+
+    node.attrs['type'] = inferred_type
 
 # this deals with mulop, addop, assignment, boolop
 def check_binary(node_stack, table_stack, node):

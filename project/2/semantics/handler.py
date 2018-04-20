@@ -2,6 +2,7 @@ import enum
 
 from parser.ast import Node
 from semantics.symbol_table import SymbolTable, SymbolScope, SymbolType, Symbol, info
+from semantics import checker
 from log import logger
 
 
@@ -49,17 +50,19 @@ def handle_function_def(node_stack, table_stack, node):
         attrs={}
     ))
 
-    if node.args[0].symbol != 'main':
-        if node.args[2]:
-            return_found = False
-            for stmt in node.args[2].args:
-                if stmt.symbol == 'return':
-                    return_found = True
+    return_node = None
 
-            if not return_found:
-                logger.error(f'Expected return statment but not found for function {node.args[0].symbol}')
-        else:
+    # make sure there is a return besides in main
+    if node.args[2]:
+        for stmt in node.args[2].args:
+            if stmt.symbol == 'return':
+                return_node = stmt
+                break
+
+        if node.args[0].symbol != 'main' and not return_node:
             logger.error(f'Expected return statment but not found for function {node.args[0].symbol}')
+    else:
+        logger.error(f'Expected return statment but not found for function {node.args[0].symbol}')
 
     node_stack.append(node.args[2])
 

@@ -1,4 +1,7 @@
-import ply.lex as lex
+from ply import lex
+
+from log import logger
+
 
 #list all the reserved words here, otherwise they will be identified as identifiers (normal words) and not keywords
 reserved = {
@@ -138,9 +141,9 @@ t_ignore  = ' \t'
 
 # Error handling rule
 def t_error(t):
-    with open ('TEST_EXHAUSTIVE_OUTPUT','a') as f:
-        f.write("Illegal character " + '"'+ str(t.value[0]) + '"' + "\n")
-    print("Illegal character '%s'" % t.value[0])
+    # with open ('TEST_EXHAUSTIVE_OUTPUT','a') as f:
+        # f.write("Illegal character " + '"'+ str(t.value[0]) + '"' + "\n")
+    logger.error("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
 
 # Build the lexer

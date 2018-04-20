@@ -1,9 +1,5 @@
 float test(int a) {
-	return a;
-}
-
-float test2(int a) {
-
+	return b;
 }
 
 int main(int x) {
