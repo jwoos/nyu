@@ -114,5 +114,24 @@ def check_binary(node_stack, table_stack, node):
 
 def check_function_call(node_stack, table_stack, node):
     identifier = node.args[0]
+    identifier_symbol = table_stack[0].get(identifier.symbol) or Symbol(None, None, attrs={'line': None})
+    identifier_type = identifier_symbol.attrs['arg_type']
 
     body = node.args[1]
+    body_symbol = table_stack[-1].get(body.symbol) or table_stack[0].get(body.symbol) or Symbol(None, None, attrs={'line': None})
+    body_type = propagate_types(node_stack, table_stack, body)
+
+    if identifier_type != body_type:
+        if identifier_type not in INFERRED_TYPE_SET and body_type not in INFERRED_TYPE_SET:
+            logger.error(
+                f'Type error calling function {identifier.symbol} '
+                f'(declared on line {identifier_symbol.attrs.get("line")}) '
+                f'with {body_type} but expected type {identifier_type}'
+            )
+            node.attrs['type'] = InferredType.CONFLICT
+        else:
+            node.attrs['type'] = InferredType.ANY
+    else:
+        node.attrs['type'] = identifier_type
+
+    return node.attrs['type']

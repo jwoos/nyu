@@ -58,7 +58,7 @@ def main():
                 func = table_stack[0].get(node.args[0].symbol)
                 if func:
                     func.attrs['call'] = True
-                    checker.propagate_types(node_stack, table_stack, node)
+                    checker.check_function_call(node_stack, table_stack, node)
 
             elif node.symbol in checker.PROPAGATING_UNARY_SYMBOLS:
                 checker.check_unary(node_stack, table_stack, node)
