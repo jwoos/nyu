@@ -50,8 +50,10 @@ def main():
                         logger.error(f'{node.symbol} referenced before declaration')
                     else:
                         info(table_stack[0].get(node.symbol), usage=node.attrs.get('line', True))
+
                 else:
                     info(table_stack[-1].get(node.symbol), usage=node.attrs.get('line', True))
+
                 continue
 
             elif node.symbol == 'function_call':
@@ -61,11 +63,11 @@ def main():
                     checker.check_function_call(node_stack, table_stack, node)
 
             elif node.symbol in checker.PROPAGATING_UNARY_SYMBOLS:
-                checker.check_unary(node_stack, table_stack, node)
+                if len(node.args) == 1:
+                    checker.check_unary(node_stack, table_stack, node)
 
             elif node.symbol in checker.PROPAGATING_BINARY_SYMBOLS:
-                if len(node.args) != 1:
-                    checker.check_binary(node_stack, table_stack, node)
+                checker.check_binary(node_stack, table_stack, node)
 
             for child in reversed(node.args):
                 if child:

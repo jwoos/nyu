@@ -12,7 +12,7 @@ class InferredType(enum.Enum):
 
 INFERRED_TYPE_SET = set(InferredType)
 PROPAGATING_BINARY_SYMBOLS = {'=', '*', '/', '+', '-', '<=', '>=', '==', '<', '>'}
-PROPAGATING_UNARY_SYMBOLS = {'return'}
+PROPAGATING_UNARY_SYMBOLS = {'return', '-'}
 TERMINALS = {'float_literal', 'integer_literal', 'identifier'}
 NAME_MAP = {
     '=': 'assigning',
