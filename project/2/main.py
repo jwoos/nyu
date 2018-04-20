@@ -61,12 +61,10 @@ def main():
                 func = table_stack[0].get(node.args[0].symbol)
                 if func:
                     func.attrs['call'] = True
-                    checker.check_function_call(node_stack, table_stack, node)
+                    checker.propagate_types(node_stack, table_stack, node)
 
-            elif node.symbol in ('=', '*', '/', '+', '-', '<=', '>=', '==', '<', '>'):
-                if len(node.args) == 1:
-                    checker.check_unary(node_stack, table_stack, node)
-                else:
+            elif node.symbol in checker.OPERATION_SET:
+                if len(node.args) != 1:
                     checker.check_binary(node_stack, table_stack, node)
 
             for child in reversed(node.args):

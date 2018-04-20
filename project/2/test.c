@@ -1,6 +1,6 @@
 int main(int x) {
-	int z;
-	float y;
+	int y;
+	float z;
 
-	x = y;
+	x = y + (z - 10);
 }
