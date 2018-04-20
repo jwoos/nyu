@@ -63,8 +63,8 @@ def main():
                     func.attrs['call'] = True
                     checker.check_function_call(node_stack, table_stack, node)
 
-            elif node.symbol == '=':
-                checker.check_assignment(node_stack, table_stack, node)
+            elif node.symbol in ('=', '*', '/', '+', '-', '<=', '>=', '==', '<', '>'):
+                checker.check_binary(node_stack, table_stack, node)
 
             for child in reversed(node.args):
                 if child:
