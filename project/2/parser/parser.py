@@ -215,7 +215,7 @@ def p_stmt(p):
     '''
     stmt : expr SEMI
          | if_kw LPAR bool_expr RPAR stmt
-         | else_kw stmt
+         | if_kw LPAR bool_expr RPAR stmt else_kw stmt
          | while_kw LPAR bool_expr RPAR stmt
          | read_kw var_list SEMI
          | write_kw write_expr_list SEMI
@@ -227,10 +227,10 @@ def p_stmt(p):
         p[0] = p[1]
     else:
         if p[1] == 'if':
-            p[0] = Node(p[1], args=[p[3], p[5]])
-            # else_stmt
-            if p[6] is not None:
-                p[0].args.extend(p[6].args)
+            if len(p) == 6:
+                p[0] = Node(p[1], args=[p[3], p[5]])
+            else:
+                p[0] = Node(p[1], args=[p[3], p[5], p[7]])
 
         elif p[1] == 'else':
             p[0] = Node(
@@ -327,6 +327,15 @@ def p_write_expr_list(p):
     if isinstance(p[1], Node):
         node = p[1]
     else:
+        p[1] = Node(
+            p[1],
+            args=[],
+            attrs={
+                'name': 'string',
+                'terminal': True,
+                'line': p.lineno(1)
+            }
+        )
         node = Node('write_expr_list', args=[p[1]])
 
     if p[2] is None:
