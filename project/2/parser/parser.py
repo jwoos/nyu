@@ -5,6 +5,10 @@ from parser.ast import Node, OperatorType
 from log import logger
 
 
+class ErrorProduction:
+    pass
+
+
 tokens = scanner.tokens
 
 precedence = (
@@ -141,6 +145,12 @@ def p_function_decl(p):
         }
     )
 
+def p_function_decl_error(p):
+    '''
+    function_decl : kind identifier LPAR error RPAR SEMI
+    '''
+    logger.error('function_decl error')
+
 def p_function_def(p):
     '''
     function_def : kind identifier LPAR kind identifier RPAR body
@@ -175,6 +185,7 @@ def p_function_def(p):
 def p_function_def_error(p):
     '''
     function_def : kind identifier LPAR kind identifier RPAR error
+                 | kind identifier LPAR error RPAR body
     '''
     logger.error('function_def error')
 
@@ -289,6 +300,7 @@ def p_stmt(p):
 def p_stmt_error(p):
     '''
     stmt : error
+         | error SEMI
     '''
     logger.error(f'stmt error on line {p.lineno(1)}')
 
@@ -471,6 +483,12 @@ def p_expr1(p):
     else:
         p[0] = p[2]
         p[0].args = [p[1], p[3]]
+
+def p_expr1_error(p):
+    '''
+    expr1 : expr1 addop error
+    '''
+    logger.error('expr1 error')
 
 def p_addop(p):
     '''
