@@ -310,6 +310,12 @@ def p_else_stmt(p):
             }
         )
 
+def p_else_stmt_error(p):
+    '''
+    else_stmt : error
+    '''
+    logger.error('else_stmt error')
+
 def p_stmt_prime(p):
     '''
     stmt_prime : stmt stmt_prime

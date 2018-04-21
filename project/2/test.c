@@ -13,4 +13,10 @@ int main(int x) {
 	while (y < z) {
 		a = b + c;
 	}
+
+	if (x == z) {
+		a = b + c;
+	} else {
+		b = a + c;
+	}
 }
