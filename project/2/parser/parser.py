@@ -214,8 +214,7 @@ def p_body_prime(p):
 def p_stmt(p):
     '''
     stmt : expr SEMI
-         | if_kw LPAR bool_expr RPAR stmt
-         | if_kw LPAR bool_expr RPAR stmt else_kw stmt
+         | if_kw LPAR bool_expr RPAR stmt else_stmt
          | while_kw LPAR bool_expr RPAR stmt
          | read_kw var_list SEMI
          | write_kw write_expr_list SEMI
@@ -227,21 +226,10 @@ def p_stmt(p):
         p[0] = p[1]
     else:
         if p[1] == 'if':
-            if len(p) == 6:
+            if p[6] is None:
                 p[0] = Node(p[1], args=[p[3], p[5]])
             else:
-                p[0] = Node(p[1], args=[p[3], p[5], p[7]])
-
-        elif p[1] == 'else':
-            p[0] = Node(
-                p[1],
-                args=[p[2]],
-                attrs={
-                    'name': 'else_kw',
-                    'terminal': True,
-                    'line': p.lineno(1)
-                }
-            )
+                p[0] = Node(p[1], args=[p[3], p[5], p[6]])
 
         elif p[1] == 'while':
             p[0] = Node(
@@ -303,6 +291,24 @@ def p_stmt_error(p):
          | error SEMI
     '''
     logger.error(f'stmt error on line {p.lineno(1)}')
+
+def p_else_stmt(p):
+    '''
+    else_stmt : else_kw stmt
+              | empty
+    '''
+    if len(p) == 2:
+        p[0] = None
+    else:
+        p[0] = Node(
+            p[1],
+            args=[p[2]],
+            attrs={
+                'name': 'else_kw',
+                'terminal': True,
+                'line': p.lineno(1)
+            }
+        )
 
 def p_stmt_prime(p):
     '''
