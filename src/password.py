@@ -13,5 +13,5 @@ def generate(password):
 def check(password, hashed):
     return bcrypt.checkpw(
         base64.b64encode(hashlib.sha256(password.encode()).digest()),
-        hashed
+        hashed.encode()
     )

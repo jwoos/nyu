@@ -2,3 +2,4 @@ Flask
 uwsgi
 PyMySQL
 bcrypt
+pyjwt

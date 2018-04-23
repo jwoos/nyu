@@ -22,5 +22,5 @@ COPY . /opt
 
 WORKDIR /opt
 
-ENTRYPOINT []
-CMD /opt/scripts/wait-for-it.sh db:3306 -- uwsgi uwsgi.ini
+# ENTRYPOINT []
+CMD /opt/scripts/wait-for-it.sh db:3306 -- /opt/scripts/run-api.sh

@@ -1,9 +1,18 @@
+import logging
+
 from flask import Flask
 from flask.json import jsonify
 from werkzeug.exceptions import HTTPException, default_exceptions
 
-from src.views import default, evaluation, login, register, student, professor, enrollment
+from src.views import default, evaluation, account, student, professor, enrollment
 from src.db import connection
+
+
+logging.basicConfig(
+    format='[%(levelname)s <> name] %(message)s',
+    level=logging.DEBUG
+)
+logger = logging.getLogger(__name__)
 
 
 app = Flask(__name__)
@@ -36,11 +45,11 @@ for code, error in default_exceptions.items():
 default_view = default.DefaultView.as_view('default')
 app.add_url_rule('/', view_func=default_view, methods=['GET'])
 
-login_view = login.LoginView.as_view('login')
-app.add_url_rule('/login', view_func=login_view, methods=['POST'])
+account_view = account.AccountView.as_view('account')
+app.add_url_rule('/accounts', view_func=account_view, methods=['POST'])
 
-register_view = register.RegisterView.as_view('register')
-app.add_url_rule('/register', view_func=register_view, methods=['POST'])
+account_authentication_view = account.AccountAuthenticationView.as_view('account_authentication')
+app.add_url_rule('/accounts/authentications', view_func=account_authentication_view, methods=['GET', 'POST'])
 
 evaluation_view = evaluation.EvaluationView.as_view('evaluation')
 app.add_url_rule('/evaluations', view_func=evaluation_view, methods=['POST'])
