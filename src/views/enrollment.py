@@ -18,11 +18,11 @@ class EnrollmentView(MethodView):
             if enrollment_id is None:
                 # all
                 cursor.execute('SELECT * FROM enrollments')
-                return jsonify(cursor.fetchall()), 200
+                return jsonify({'data': cursor.fetchall()}), 200
             else:
                 # singular
                 cursor.execute('SELECT * FROM enrollments WHERE id=%(id)s', {'id': enrollment_id})
-                return jsonify(cursor.fetchone()), 200
+                return jsonify({'data': cursor.fetchone()}), 200
 
     def post(self):
         body = request.get_json()
@@ -39,7 +39,7 @@ class EnrollmentView(MethodView):
                 cursor.execute('INSERT INTO enrollments (student_id,course_id,year,semester,section) VALUES (%(student_id)s, %(course_id)s, %(year)s, %(semester)s, %(section)s)', body)
 
             connection.commit()
-            return None, 201
+            return jsonify(None), 201
 
         except pymysql.err.IntegrityError as e:
             logger.error(e)

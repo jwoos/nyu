@@ -16,11 +16,11 @@ class CourseView(MethodView):
             if course_id is None:
                 # all
                 cursor.execute('SELECT * FROM courses')
-                return jsonify(cursor.fetchall()), 200
+                return jsonify({'data': cursor.fetchall()}), 200
             else:
                 # singular
                 cursor.execute('SELECT * FROM courses WHERE id=%(id)s', {'id': course_id})
-                return jsonify(cursor.fetchone()), 200
+                return jsonify({'data': cursor.fetchone()}), 200
 
     def post(self):
         body = request.get_json()
@@ -37,9 +37,9 @@ class CourseView(MethodView):
             with connection.cursor() as cursor:
                 cursor.execute('INSERT INTO courses (professor_id, name, description) VALUES (%(professor_id)s, %(name)s, %(description)s)', body)
 
-        connection.commit()
+            connection.commit()
 
-            return None, 201
+            return jsonify(None), 201
         except pymysql.err.IntegrityError:
             logger.error(e)
             return jsonify({'error': DATA_SAVE}), 500
@@ -57,4 +57,4 @@ class CourseEvaluationView(MethodView):
                 {'course_id': course_id}
             )
 
-            return jsonify(cursor.fetchall()), 200
+            return jsonify({'data': cursor.fetchall()}), 200

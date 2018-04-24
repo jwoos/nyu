@@ -59,12 +59,13 @@ class AccountView(MethodView):
 
 class AccountAuthenticationView(MethodView):
     def get(self):
+        token = request.headers.get('Authorization')
         try:
-            check(request.headers.get('Authorization'))
+            account = check(token)
         except errors.AuthenticationError():
             return jsonify({'error': errors.AUTHENTICATION_INVALID}), 401
 
-        return jsonify({'data': 'okay'}), 200
+        return jsonify({'data': {'token': token, 'account': account}}), 200
 
     def post(self):
         body = request.get_json()

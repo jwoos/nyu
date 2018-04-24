@@ -11,11 +11,11 @@ class StudentView(MethodView):
             if student_id is None:
                 # all
                 cursor.execute('SELECT * FROM students')
-                return jsonify(cursor.fetchall()), 200
+                return jsonify({'data': cursor.fetchall()}), 200
             else:
                 # singular
                 cursor.execute('SELECT * FROM students WHERE id=%(id)s', {'id': student_id})
-                return jsonify(cursor.fetchone()), 200
+                return jsonify({'data': cursor.fetchone()}), 200
 
 
 class StudentEnrollmentView(MethodView):
@@ -43,13 +43,19 @@ class StudentEnrollmentView(MethodView):
                     {'student_id': student_id}
                 )
 
-            return jsonify(cursor.fetchall()), 200
+            return jsonify({'data': cursor.fetchall()}), 200
 
 
 class StudentEvaluationEview(MethodView):
     def get(self, student_id, evaluation_id=None):
         year = request.args.get('year')
         semester = request.args.get('semester')
+
+        args = {
+            'student_id': student_id,
+            'year': year,
+            'semester': semester
+        }
 
         with connection.cursor() as cursor:
             if year and semester:
@@ -60,7 +66,7 @@ class StudentEvaluationEview(MethodView):
                         SELECT * FROM enrollments WHERE student_id=%(student_id)s AND year=%(year)s AND semester=%(semester)s
                     )
                     ''',
-                    {'student_id': student_id, 'year': year, 'semester': semester}
+                    args
                 )
             elif year:
                 # by year
@@ -70,7 +76,7 @@ class StudentEvaluationEview(MethodView):
                         SELECT * FROM enrollments WHERE student_id=%(student_id)s AND year=%(year)s
                     )
                     ''',
-                    {'student_id': student_id, 'year': year}
+                    args
                 )
             else:
                 # all
@@ -80,7 +86,7 @@ class StudentEvaluationEview(MethodView):
                         SELECT id FROM enrollment WHERE student_id=%(student_id)s
                     )
                     ''',
-                    {'student_id': student_id}
+                    args
                 )
 
-            return jsonify(cursor.fetchall()), 200
+            return jsonify({'data': cursor.fetchall()}), 200
