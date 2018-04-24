@@ -99,12 +99,14 @@ window.student = {
 };
 
 window.addEventListener('load', async () => {
-	const account = window.common.getAccount();
+	switch (window.location.pathname) {
+		case '/student/evaluation.html':
+			document.querySelector('#submit').addEventListener('click', window.student.submit);
+			await window.student.populateEnrollments();
+			break;
 
-	if (window.location.pathname === '/student/evaluation.html') {
-		document.querySelector('#submit').addEventListener('click', window.student.submit);
-		await window.student.populateEnrollments();
-	} else {
-		await window.student.populateEvaluations();
+		case '/student/history.html':
+			await window.student.populateEvaluations();
+			break;
 	}
 });
