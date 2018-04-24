@@ -29,6 +29,45 @@ window.student = {
 		}
 	},
 
+	populateEvaluations: async () => {
+		const response = await fetch(`${BASE}/students/${window.student.account.id}/evaluations`, {
+			method: 'GET',
+			headers: {'Authorization': window.student.token}
+		});
+
+		if (response.status === 401) {
+			window.common.notAuthenticated();
+			return;
+		}
+
+		const data = await response.json();
+
+		const evalTag = document.querySelector('#evaluations');
+
+		for (const val of data.data) {
+			const card = document.createElement('div');
+			card.className = 'card';
+
+			const header = document.createElement('div');
+			header.className = 'card-header';
+			header.innerText = `${val.name} (${val.semester}-${val.year})`;
+
+			const body = document.createElement('div');
+			body.className = 'card-body';
+
+			const text = document.createElement('div');
+			text.className = 'card-text';
+
+			text.innerText = `Rating: ${val.rating}\nComments: ${val.comments}`;
+
+			body.appendChild(text);
+			card.appendChild(header);
+			card.appendChild(body);
+
+			evalTag.appendChild(card);
+		}
+	},
+
 	submit: async () => {
 		const options = document.querySelector('#courses').options;
 		const value = JSON.parse(options[options.selectedIndex].getAttribute('data-value'));
@@ -61,9 +100,11 @@ window.student = {
 
 window.addEventListener('load', async () => {
 	const account = window.common.getAccount();
-	document.querySelector('#unumber').innerText = account.university_number;
 
-	document.querySelector('#submit').addEventListener('click', window.student.submit);
-
-	await window.student.populateEnrollments();
+	if (window.location.pathname === '/student/evaluation.html') {
+		document.querySelector('#submit').addEventListener('click', window.student.submit);
+		await window.student.populateEnrollments();
+	} else {
+		await window.student.populateEvaluations();
+	}
 });

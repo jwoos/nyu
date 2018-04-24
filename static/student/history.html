@@ -6,8 +6,8 @@
 
 		<title>Course Evaluations</title>
 
-		<link href="styles/vendor/bootstrap.min.css" rel="stylesheet">
-		<link href="styles/main.css" rel="stylesheet">
+		<link href="/styles/vendor/bootstrap.min.css" rel="stylesheet">
+		<link href="/styles/main.css" rel="stylesheet">
 	</head>
 
 	<body>
@@ -18,48 +18,22 @@
 				<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
 					<span class="navbar-toggler-icon"></span>
 				</button>
+				<div class="collapse navbar-collapse" id="navbarCollapse">
+					<ul class="navbar-nav mr-auto">
+						<li class="nav-item">
+							<a class="nav-link" href="/student/evaluation.html">Evaluation</a>
+						</li>
+						<li class="nav-item active">
+							<a class="nav-link" href="/student/history.html">History</a>
+						</li>
+					</ul>
+				</div>
 			</nav>
 		</header>
 
 		<!-- Begin page content -->
-		<main role="main" class="container">
-			<h1 id="unumber" class="mt-5"></h1>
-			<form>
-				<div class="form-row">
-					<div class="col-md-3"></div>
-					<div class="form-group col-md-6">
-						<label for="courses">Courses</label>
-						<select id="courses" class="form-control">
-							<option></option>
-						</select>
-					</div>
-					<div class="col-md-3"></div>
-				</div>
-
-				<div class="form-row">
-					<div class="col-md-3"></div>
-					<div class="form-group col-md-6">
-						<label for="rating">Rating</label>
-						<input type="range" class="custom-range form-control-range" id="rating" min="1" max="5">
-					</div>
-					<div class="col-md-3"></div>
-				</div>
-
-				<div class="form-row">
-					<div class="col-md-3"></div>
-					<div class="form-group col-md-6">
-						<label for="comments">Comment</label>
-						<textarea class="form-control" id="comments" rows="3"></textarea>
-					</div>
-					<div class="col-md-3"></div>
-				</div>
-
-				<div class="form-row justify-content-center">
-					<div class="col-auto">
-						<a id="submit" class="btn btn-primary" href="#" role="button">Submit</a>
-					</div>
-				</div>
-			</form>
+		<main role="main" class="container mt-5">
+			<div id="evaluations"></div>
 		</main>
 
 		<footer class="footer">
@@ -73,6 +47,6 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 
-	<script src="scripts/common.js"></script>
-	<script src="scripts/student.js"></script>
+	<script src="/scripts/common.js"></script>
+	<script src="/scripts/student.js"></script>
 </html>

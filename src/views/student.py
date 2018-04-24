@@ -41,38 +41,84 @@ class StudentEnrollmentView(MethodView):
 
         year = request.args.get('year')
         semester = request.args.get('semester')
+        evaluated = request.args.get('evaluated')
 
         with connection.cursor() as cursor:
-            if year and semester:
-                # by year and semester
-                cursor.execute(
-                    '''
-                    SELECT * FROM enrollments
-                        JOIN courses ON courses.id = enrollments.course_id
-                        WHERE enrollments.student_id=%(student_id)s AND enrollments.year=%(year)s AND enrollments.semester=%(semester)s
-                    ''',
-                    {'student_id': student_id, 'year': year, 'semester': semester}
-                )
-            elif year:
-                # by year
-                cursor.execute(
-                    '''
-                    SELECT * FROM enrollments
-                        JOIN courses ON courses.id = enrollments.course_id
-                        WHERE enrollments.student_id=%(student_id)s AND enrollments.year=%(year)s
-                    ''',
-                    {'student_id': student_id, 'year': year}
-                )
+            if evaluated:
+                if year and semester:
+                    # by year and semester
+                    cursor.execute(
+                        '''
+                        SELECT * FROM enrollments
+                            JOIN courses ON courses.id = enrollments.course_id
+                            WHERE enrollments.student_id=%(student_id)s AND enrollments.year=%(year)s AND enrollments.semester=%(semester)s
+                        ''',
+                        {'student_id': student_id, 'year': year, 'semester': semester}
+                    )
+                elif year:
+                    # by year
+                    cursor.execute(
+                        '''
+                        SELECT * FROM enrollments
+                            JOIN courses ON courses.id = enrollments.course_id
+                            WHERE enrollments.student_id=%(student_id)s AND enrollments.year=%(year)s
+                        ''',
+                        {'student_id': student_id, 'year': year}
+                    )
+                else:
+                    # all
+                    cursor.execute(
+                        '''
+                        SELECT * FROM enrollments
+                            JOIN courses ON courses.id = enrollments.course_id
+                            WHERE enrollments.student_id=%(student_id)s
+                        ''',
+                        {'student_id': student_id}
+                    )
+
             else:
-                # all
-                cursor.execute(
-                    '''
-                    SELECT * FROM enrollments
-                        JOIN courses ON courses.id = enrollments.course_id
-                        WHERE enrollments.student_id=%(student_id)s
-                    ''',
-                    {'student_id': student_id}
-                )
+                if year and semester:
+                    # by year and semester
+                    cursor.execute(
+                        '''
+                        SELECT * FROM enrollments
+                            JOIN courses ON courses.id = enrollments.course_id
+                            WHERE enrollments.student_id=%(student_id)s AND enrollments.year=%(year)s AND enrollments.semester=%(semester)s AND enrollments.id NOT IN (
+                                SELECT enrollments.id FROM evaluations
+                                    JOIN enrollments ON evaluations.enrollment_id = enrollments.id
+                                    WHERE student_id=%(student_id)s
+                            )
+                        ''',
+                        {'student_id': student_id, 'year': year, 'semester': semester}
+                    )
+                elif year:
+                    # by year
+                    cursor.execute(
+                        '''
+                        SELECT * FROM enrollments
+                            JOIN courses ON courses.id = enrollments.course_id
+                            WHERE enrollments.student_id=%(student_id)s AND enrollments.year=%(year)s AND enrollments.id NOT IN (
+                                SELECT enrollments.id FROM evaluations
+                                    JOIN enrollments ON evaluations.enrollment_id = enrollments.id
+                                    WHERE student_id=%(student_id)s
+                            )
+                        ''',
+                        {'student_id': student_id, 'year': year}
+                    )
+                else:
+                    # all
+                    cursor.execute(
+                        '''
+                        SELECT * FROM enrollments
+                            JOIN courses ON courses.id = enrollments.course_id
+                            WHERE enrollments.student_id=%(student_id)s AND enrollments.id NOT IN (
+                                SELECT enrollments.id FROM evaluations
+                                    JOIN enrollments ON evaluations.enrollment_id = enrollments.id
+                                    WHERE student_id=%(student_id)s
+                            )
+                        ''',
+                        {'student_id': student_id}
+                    )
 
             return jsonify({'data': cursor.fetchall()}), 200
 
@@ -102,9 +148,12 @@ class StudentEvaluationEview(MethodView):
                 # by year and semester
                 cursor.execute(
                     '''
-                    SELECT * FROM evaluations WHERE enrollment_id IN (
-                        SELECT * FROM enrollments WHERE student_id=%(student_id)s AND year=%(year)s AND semester=%(semester)s
-                    )
+                    SELECT * FROM evaluations
+                        JOIN enrollments ON evaluations.enrollment_id = enrollments.id
+                        JOIN courses ON enrollments.course_id = courses.id
+                        WHERE enrollment_id IN (
+                            SELECT * FROM enrollments WHERE student_id=%(student_id)s AND year=%(year)s AND semester=%(semester)s
+                        )
                     ''',
                     args
                 )
@@ -112,9 +161,12 @@ class StudentEvaluationEview(MethodView):
                 # by year
                 cursor.execute(
                     '''
-                    SELECT * FROM evaluations WHERE enrollment_id IN (
-                        SELECT * FROM enrollments WHERE student_id=%(student_id)s AND year=%(year)s
-                    )
+                    SELECT * FROM evaluations
+                        JOIN enrollments ON evaluations.enrollment_id = enrollments.id
+                        JOIN courses ON enrollments.course_id = courses.id
+                        WHERE enrollment_id IN (
+                            SELECT * FROM enrollments WHERE student_id=%(student_id)s AND year=%(year)s
+                        )
                     ''',
                     args
                 )
@@ -122,9 +174,12 @@ class StudentEvaluationEview(MethodView):
                 # all
                 cursor.execute(
                     '''
-                    SELECT * FROM evaluations WHERE enrollment_id IN (
-                        SELECT id FROM enrollments WHERE student_id=%(student_id)s
-                    )
+                    SELECT * FROM evaluations
+                        JOIN enrollments ON evaluations.enrollment_id = enrollments.id
+                        JOIN courses ON enrollments.course_id = courses.id
+                        WHERE enrollment_id IN (
+                            SELECT id FROM enrollments WHERE student_id=%(student_id)s
+                        )
                     ''',
                     args
                 )
