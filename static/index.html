@@ -1,68 +1,160 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 	<head>
-		<script src="scripts/main.js" async></script>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-		<link rel="stylesheet" href="styles/main.css">
-		<link href="https://fonts.googleapis.com/css?family=PT+Sans" rel="stylesheet">
+		<title>Course Evaluations</title>
 
-		<title>Database Project</title>
-		<meta charset="UTF-8">
-		<meta name="author" content="Team Database">
-		<meta name="description" content="Database Project">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link href="styles/vendor/bootstrap.min.css" rel="stylesheet">
+		<link href="styles/main.css" rel="stylesheet">
+		<link href="styles/index.css" rel="stylesheet">
 	</head>
 
-	<body>
-		<header> Database Project - Student Survey </header>
+	<body class="d-flex align-items-center justify-content-center">
+		<header>
+			<nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+				<a class="navbar-brand" href="#">Course Evaluations</a>
+				<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="navbarCollapse">
+					<ul class="navbar-nav mr-auto">
+						<li class="nav-item active">
+							<a class="nav-link" href="/">Home</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="/about.html">About</a>
+						</li>
+					</ul>
+				</div>
+			</nav>
+		</header>
 
-		<div class="intro">
-			I would like to...
-			<button id="logbut">Log In</button>
-			<button id="regbut">Register</button>
-		</div>
+		<main role="main" class="container">
+			<div class="d-block">
+				<div class="collapse show multi-collapse">
+					<form>
+						<div class="form-row">
+							<div class="col-md-3"></div>
+							<div class="form-group col-md-6">
+								<label for="login-email">Email address</label>
+								<input type="email" class="form-control" id="login-email" placeholder="example@example.site">
+							</div>
+							<div class="col-md-3"></div>
+						</div>
 
+						<div class="form-row">
+							<div class="col-md-3"></div>
+							<div class="form-group col-md-6">
+								<label for="login-password">Password</label>
+								<input type="password" class="form-control" id="login-password" placeholder="password">
+							</div>
+							<div class="col-md-3"></div>
+						</div>
 
-		<div class="register form">
-			<p>Register</p>
-			<form>
-				<label for="fname">First Name</label>
-				<input type="text" id="fname" name="firstname" required placeholder="First name...">
+						<div class="form-row justify-content-center">
+							<div class="col-auto">
+								<a id="login-submit" class="btn btn-primary" href="#" role="button">Log in</a>
+							</div>
+						</div>
+					</form>
 
-				<label for="lname">Last Name</label>
-				<input type="text" id="lname" name="lastname" required placeholder="Last name...">
+					<div class="row justify-content-center">
+						<small>Don't have an account? <a data-toggle="collapse" href=".multi-collapse" role="button">Sign up</a></small>
+					</div>
+				</div>
 
-				<label for="email">Email</label>
-				<input type="email" id="email" name="email" required placeholder="abc@nyu.edu...">
+				<div class="collapse multi-collapse">
+					<form class="mt-5">
+						<div class="form-row">
+							<div class="col-md-3"></div>
+							<div class="form-group col-md-6">
+								<label for="register-email">Email address</label>
+								<input type="email" class="form-control" id="register-email" placeholder="example@example.site">
+							</div>
+							<div class="col-md-3"></div>
+						</div>
 
-				<label for="pw">Password</label>
-				<input type="password" id="pw" name="pw" required placeholder="Password...">
+						<div class="form-row">
+							<div class="col-md-3"></div>
+							<div class="form-group col-md-6">
+								<label for="register-password">Password</label>
+								<input type="password" class="form-control" id="register-password" placeholder="password">
+							</div>
+							<div class="col-md-3"></div>
+						</div>
 
-				<label for="role">Your Role</label>
-				<select id="role" name="role">
-					<option value="student">Student</option>
-					<option value="Professor">Professor</option>
-				</select>
+						<div class="form-row">
+							<div class="col-md-3"></div>
+							<div class="form-group col-md-6">
+								<div class="form-group">
+									<label for="register-class">Example select</label>
+									<select class="form-control" id="register-class">
+										<option>student</option>
+										<option>professor</option>
+									</select>
+								</div>
+							</div>
+							<div class="col-md-3"></div>
+						</div>
 
-				<input id="regSub" type="submit" value="Register">
-			</form>
-		</div>
+						<div id="register-student-section">
+							<div class="form-row">
+								<div class="col-md-3"></div>
+								<div class="form-group col-md-6">
+									<label for="register-student-unumber">University Number</label>
+									<input type="text" class="form-control" id="register-student-unumber" placeholder="N00000000">
+								</div>
+								<div class="col-md-3"></div>
+							</div>
+						</div>
 
-		<div class="login form">
-			<p>Log In</p>
-			<form>
-				<label for="email">Email</label>
-				<input type="email" id="email" name="email" required placeholder="abc@nyu.edu...">
+						<div class="d-none" id="register-professor-section">
+							<div class="form-row">
+								<div class="col-md-3"></div>
+								<div class="form-group col-md-6">
+									<label for="register-professor-fname">First Name</label>
+									<input type="text" class="form-control" id="register-professor-fname" placeholder="John">
+								</div>
+								<div class="col-md-3"></div>
+							</div>
 
-				<label for="pw">Password</label>
-				<input type="password" id="pw" name="pw" required placeholder="Password...">
+							<div class="form-row">
+								<div class="col-md-3"></div>
+								<div class="form-group col-md-6">
+									<label for="register-professor-lname">Last Name</label>
+									<input type="text" class="form-control" id="register-professor-lname" placeholder="Doe">
+								</div>
+								<div class="col-md-3"></div>
+							</div>
+						</div>
 
-				<input id="loginSub" type="submit" value="Log In">
-			</form>
-		</div>
+						<div class="form-row justify-content-center">
+							<div class="col-auto">
+								<a id="register-submit" class="btn btn-primary" href="#" role="button">Register</a>
+							</div>
+						</div>
+					</form>
 
-		<footer>
-			Yining Wang, Mohammad Rafi, Lyu Longtao, Johnson Mei, Jun Woo Shin
+					<div class="row justify-content-center">
+						<small>Already have an account? <a data-toggle="collapse" href=".multi-collapse" role="button">Log in</a></small>
+					</div>
+				</div>
+			</div>
+		</main>
+
+		<footer class="footer">
+			<div class="container">
+				<span class="text-muted">Yining Wang, Mohammad Rafi, Lyu Longtao, Johnson Mei, Jun Woo Shin</span>
+			</div>
 		</footer>
 	</body>
+
+	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+	<script src="scripts/common.js"></script>
+	<script src="scripts/index.js"></script>
 </html>
