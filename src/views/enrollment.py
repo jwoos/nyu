@@ -27,7 +27,7 @@ class EnrollmentView(MethodView):
 
         for k in ('student_id', 'course_id', 'year', 'semester', 'section'):
             if not body.get(k):
-                return jsonify({'error': FIELD_EMPTY.format(k)})
+                return jsonify({'error': FIELD_EMPTY.format(k)}), 422
 
         try:
             with connection.cursor() as cursor:
