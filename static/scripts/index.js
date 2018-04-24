@@ -1,25 +1,40 @@
+const BASE = '/api'
+
 window.addEventListener('load', () => {
-	document.querySelector('#logbut').addEventListener('click', () => {
-		document.querySelector('.login').style.display = 'block';
-		document.querySelector('.register').style.display = 'none';
+	document.querySelector('#login-submit').addEventListener('click', async () => {
+		let body = {
+			email: document.querySelector('#login-email').value,
+			password: document.querySelector('#login-password').value
+		};
+
+		try {
+			let response = await fetch(`${BASE}/accounts/authentications`, {
+				method: 'POST',
+				headers: {'Content-Type': 'application/json'},
+				body: JSON.stringify(body)
+			});
+
+			let data = await response.json();
+			console.log(data);
+		} catch (e) {
+			console.error(e);
+		}
 	});
 
-	document.querySelector('#regbut').addEventListener('click', () => {
-		document.querySelector('.login').style.display = 'none';
-		document.querySelector('.register').style.display = 'block';
-	});
-	document.querySelector('#loginSub').addEventListener('click',()=>{
-		let body = {};
-		body['email'] = document.getElementById('#email').value();
-		body['pw'] = document.getElementById('#pw').value();
-		fetch(`/api/login`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify(body);
-		}).then((d)=>{
-			console.log("Logged in!!");
-		});
+	document.querySelector('#register-submit').addEventListener('click', async () => {
+		let body = {
+			email: document.querySelector('#register-email').value(),
+			password: document.querySelector('#register-password').value()
+		};
+
+		try {
+			let response = await fetch(`${BASE}/accounts`, {
+				method: 'POST',
+				headers: {'Content-Type': 'application/json'},
+				body: JSON.stringify(body)
+			});
+		} catch (e) {
+			console.error(e);
+		}
 	});
 });

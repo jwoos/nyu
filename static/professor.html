@@ -1,53 +1,49 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 	<head>
-		<script src="scripts/common.js"></script>
-		<script src="scripts/student.js" async></script>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-		<link rel="stylesheet" href="styles/main.css">
-		<link href="https://fonts.googleapis.com/css?family=PT+Sans" rel="stylesheet">
+		<title>Course Evaluations</title>
 
-		<title>Course evaluation</title>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link href="styles/vendor/bootstrap.min.css" rel="stylesheet">
+		<link href="styles/main.css" rel="stylesheet">
 	</head>
 
 	<body>
 
 		<header>
-			Welcome,<span id="sname"> _InsertName_.</span>
+			<nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+				<a class="navbar-brand" href="#">Course Evaluations</a>
+				<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="navbarCollapse">
+					<ul class="navbar-nav mr-auto">
+						<li class="nav-item active">
+							<a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="#">Link</a>
+						</li>
+					</ul>
+				</div>
+			</nav>
 		</header>
 
-		<div class="form">
-			<form id="userform">
-				<label for="course">Select your course</label>
-				<select id="course" name="course">
-					<option value="course1">course1</option>
-					<option value="course2">course2</option>
-				</select>
+		<main role="main" class="container">
+			<h1 class="mt-5">Sticky footer with fixed navbar</h1>
+			<p class="lead">Pin a fixed-height footer to the bottom of the viewport in desktop browsers with this custom HTML and CSS. A fixed navbar has been added with <code>padding-top: 60px;</code> on the <code>body &gt; .container</code>.</p>
+		</main>
 
-				<label for="rating">Please rate the class from 1-5</label>
-				<input type="number" id="rating" min="0" max="5" name="rating" required placeholder="0 For disagree, 5 for agree">
-
-				<label for="lrating">I learned from this class</label>
-				<input type="number" id="lrating" min="0" max="5" name="lrating" required placeholder="0 For disagree, 5 for agree">
-
-				<label for="prating">Professor's mastery in teaching</label>
-				<input type="number" id="prating" min="0" max="5" name="prating" required placeholder="0 For disagree, 5 for agree">
-
-				<label for="trating">TA's helpfulness</label>
-				<input type="number" id="trating" min="0" max="5" name="trating" required placeholder="0 For disagree, 5 for agree">
-
-				<label for"feedbacks">Addtional feedbacks...</label>
-				<textarea id="feedbacks" name="feedbacks" form="userform">Some additional feedback are </textarea>
-
-				<input type="submit" value="Submit Form">
-			</form>
-		</div>
-
-		<footer>
-			Yining Wang, Mohammad Rafi, Lyu Longtao, Johnson Mei, Jun Woo Shin
+		<footer class="footer">
+			<div class="container">
+				<span class="text-muted">Place sticky footer content here.</span>
+			</div>
 		</footer>
-
 	</body>
+
+	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 </html>
