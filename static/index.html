@@ -8,10 +8,10 @@
 
 		<link href="styles/vendor/bootstrap.min.css" rel="stylesheet">
 		<link href="styles/main.css" rel="stylesheet">
+		<link href="styles/index.css" rel="stylesheet">
 	</head>
 
-	<body>
-
+	<body class="d-flex align-items-center justify-content-center">
 		<header>
 			<nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
 				<a class="navbar-brand" href="#">Course Evaluations</a>
@@ -32,89 +32,46 @@
 		</header>
 
 		<main role="main" class="container">
-			<div class="collpase show multi-collapse">
-				<form class="mt-5">
-					<div class="form-row">
-						<div class="col-md-3"></div>
-						<div class="form-group col-md-6">
-							<label for="login-email">Email address</label>
-							<input type="email" class="form-control" id="login-email" placeholder="example@example.site">
+			<div class="d-block">
+				<div class="collapse show multi-collapse">
+					<form>
+						<div class="form-row">
+							<div class="col-md-3"></div>
+							<div class="form-group col-md-6">
+								<label for="login-email">Email address</label>
+								<input type="email" class="form-control" id="login-email" placeholder="example@example.site">
+							</div>
+							<div class="col-md-3"></div>
 						</div>
-						<div class="col-md-3"></div>
-					</div>
 
-					<div class="form-row">
-						<div class="col-md-3"></div>
-						<div class="form-group col-md-6">
-							<label for="login-password">Password</label>
-							<input type="password" class="form-control" id="login-password" placeholder="password">
+						<div class="form-row">
+							<div class="col-md-3"></div>
+							<div class="form-group col-md-6">
+								<label for="login-password">Password</label>
+								<input type="password" class="form-control" id="login-password" placeholder="password">
+							</div>
+							<div class="col-md-3"></div>
 						</div>
-						<div class="col-md-3"></div>
-					</div>
 
-					<div class="form-row justify-content-center">
-						<div class="col-auto">
-							<a id="login-submit" class="btn btn-primary" href="#" role="button">Log in</a>
+						<div class="form-row justify-content-center">
+							<div class="col-auto">
+								<a id="login-submit" class="btn btn-primary" href="#" role="button">Log in</a>
+							</div>
 						</div>
-					</div>
-				</form>
+					</form>
 
-				<div class="row justify-content-center">
-					<small>Don't have an account? <a data-toggle="collapse" href=".multi-collapse" role="button">Sign up</a></small>
+					<div class="row justify-content-center">
+						<small>Don't have an account? <a data-toggle="collapse" href=".multi-collapse" role="button">Sign up</a></small>
+					</div>
 				</div>
-			</div>
 
-			<div class="collapse multi-collapse">
-				<form class="mt-5">
-					<div class="form-row">
-						<div class="col-md-3"></div>
-						<div class="form-group col-md-6">
-							<label for="register-email">Email address</label>
-							<input type="email" class="form-control" id="register-email" placeholder="example@example.site">
-						</div>
-						<div class="col-md-3"></div>
-					</div>
-
-					<div class="form-row">
-						<div class="col-md-3"></div>
-						<div class="form-group col-md-6">
-							<label for="register-password">Password</label>
-							<input type="password" class="form-control" id="register-password" placeholder="password">
-						</div>
-						<div class="col-md-3"></div>
-					</div>
-
-					<div class="form-row">
-						<div class="col-md-3"></div>
-						<div class="form-group col-md-6">
-							<div class="form-group">
-								<label for="register-class">Example select</label>
-								<select class="form-control" id="register-class">
-									<option>student</option>
-									<option>professor</option>
-								</select>
-							</div>
-						</div>
-						<div class="col-md-3"></div>
-					</div>
-
-					<div id="register-student-section">
+				<div class="collapse multi-collapse">
+					<form class="mt-5">
 						<div class="form-row">
 							<div class="col-md-3"></div>
 							<div class="form-group col-md-6">
-								<label for="register-student-unumber">University Number</label>
-								<input type="text" class="form-control" id="register-student-unumber" placeholder="N00000000">
-							</div>
-							<div class="col-md-3"></div>
-						</div>
-					</div>
-
-					<div class="d-none" id="register-professor-section">
-						<div class="form-row">
-							<div class="col-md-3"></div>
-							<div class="form-group col-md-6">
-								<label for="register-professor-fname">First Name</label>
-								<input type="text" class="form-control" id="register-professor-fname" placeholder="John">
+								<label for="register-email">Email address</label>
+								<input type="email" class="form-control" id="register-email" placeholder="example@example.site">
 							</div>
 							<div class="col-md-3"></div>
 						</div>
@@ -122,22 +79,67 @@
 						<div class="form-row">
 							<div class="col-md-3"></div>
 							<div class="form-group col-md-6">
-								<label for="register-professor-lname">Last Name</label>
-								<input type="text" class="form-control" id="register-professor-lname" placeholder="Doe">
+								<label for="register-password">Password</label>
+								<input type="password" class="form-control" id="register-password" placeholder="password">
 							</div>
 							<div class="col-md-3"></div>
 						</div>
-					</div>
 
-					<div class="form-row justify-content-center">
-						<div class="col-auto">
-							<a id="register-submit" class="btn btn-primary" href="#" role="button">Register</a>
+						<div class="form-row">
+							<div class="col-md-3"></div>
+							<div class="form-group col-md-6">
+								<div class="form-group">
+									<label for="register-class">Example select</label>
+									<select class="form-control" id="register-class">
+										<option>student</option>
+										<option>professor</option>
+									</select>
+								</div>
+							</div>
+							<div class="col-md-3"></div>
 						</div>
-					</div>
-				</form>
 
-				<div class="row justify-content-center">
-					<small>Already have an account? <a data-toggle="collapse" href=".multi-collapse" role="button">Log in</a></small>
+						<div id="register-student-section">
+							<div class="form-row">
+								<div class="col-md-3"></div>
+								<div class="form-group col-md-6">
+									<label for="register-student-unumber">University Number</label>
+									<input type="text" class="form-control" id="register-student-unumber" placeholder="N00000000">
+								</div>
+								<div class="col-md-3"></div>
+							</div>
+						</div>
+
+						<div class="d-none" id="register-professor-section">
+							<div class="form-row">
+								<div class="col-md-3"></div>
+								<div class="form-group col-md-6">
+									<label for="register-professor-fname">First Name</label>
+									<input type="text" class="form-control" id="register-professor-fname" placeholder="John">
+								</div>
+								<div class="col-md-3"></div>
+							</div>
+
+							<div class="form-row">
+								<div class="col-md-3"></div>
+								<div class="form-group col-md-6">
+									<label for="register-professor-lname">Last Name</label>
+									<input type="text" class="form-control" id="register-professor-lname" placeholder="Doe">
+								</div>
+								<div class="col-md-3"></div>
+							</div>
+						</div>
+
+						<div class="form-row justify-content-center">
+							<div class="col-auto">
+								<a id="register-submit" class="btn btn-primary" href="#" role="button">Register</a>
+							</div>
+						</div>
+					</form>
+
+					<div class="row justify-content-center">
+						<small>Already have an account? <a data-toggle="collapse" href=".multi-collapse" role="button">Log in</a></small>
+					</div>
 				</div>
 			</div>
 		</main>
