@@ -64,4 +64,4 @@ app.add_url_rule('/professors/<int:professor_id>', view_func=professor_view, met
 
 enrollment_view = enrollment.EnrollmentView.as_view('enrollment')
 app.add_url_rule('/enrollments', view_func=enrollment_view, methods=['GET', 'POST'])
-app.add_url_rule('/enrollments', view_func=enrollment_view, methods=['GET', 'PATCH', 'DELETE'])
+app.add_url_rule('/enrollments/<int:enrollment_id>', view_func=enrollment_view, methods=['GET'])
