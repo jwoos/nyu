@@ -4,19 +4,19 @@ window.common.checkAuthentication(true);
 
 window.addEventListener('load', () => {
 	document.querySelector('#login-submit').addEventListener('click', async () => {
-		let body = {
+		const body = {
 			email: document.querySelector('#login-email').value,
 			password: document.querySelector('#login-password').value
 		};
 
 		try {
-			let response = await fetch(`${BASE}/accounts/authentications`, {
+			const response = await fetch(`${BASE}/accounts/authentications`, {
 				method: 'POST',
 				headers: {'Content-Type': 'application/json'},
 				body: JSON.stringify(body)
 			});
 
-			let data = await response.json();
+			const data = await response.json();
 
 			window.common.setAccount(data.data.account);
 			window.common.setToken(data.data.token);
@@ -39,7 +39,7 @@ window.addEventListener('load', () => {
 	});
 
 	document.querySelector('#register-submit').addEventListener('click', async () => {
-		let body = {
+		const body = {
 			email: document.querySelector('#register-email').value,
 			password: document.querySelector('#register-password').value,
 			class: document.querySelector('#register-class').value
@@ -53,7 +53,7 @@ window.addEventListener('load', () => {
 		}
 
 		try {
-			let response = await fetch(`${BASE}/accounts`, {
+			const response = await fetch(`${BASE}/accounts`, {
 				method: 'POST',
 				headers: {'Content-Type': 'application/json'},
 				body: JSON.stringify(body)

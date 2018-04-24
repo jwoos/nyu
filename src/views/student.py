@@ -12,7 +12,7 @@ class StudentView(MethodView):
         token = request.headers.get('Authorization')
         try:
             account = auth.check(token)
-            if account['class'] != 'administrator':
+            if account['class'] not in {'student', 'administrator'}:
                 return jsonify({'error': errors.AUTHENTICATION_FORBIDDEN}), 403
         except errors.AuthenticationError:
             return jsonify({'error': errors.AUTHENTICATION_INVALID}), 401
@@ -34,7 +34,7 @@ class StudentEnrollmentView(MethodView):
         token = request.headers.get('Authorization')
         try:
             account = auth.check(token)
-            if account['class'] != 'student':
+            if account['class'] not in {'student', 'administrator'}:
                 return jsonify({'error': errors.AUTHENTICATION_FORBIDDEN}), 403
         except errors.AuthenticationError:
             return jsonify({'error': errors.AUTHENTICATION_INVALID}), 401

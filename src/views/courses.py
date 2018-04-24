@@ -36,7 +36,7 @@ class CourseView(MethodView):
         token = request.headers.get('Authorization')
         try:
             account = auth.check(token)
-            if account['class'] != 'administrator':
+            if account['class'] not in {'professor', 'administrator'}:
                 return jsonify({'error': errors.AUTHENTICATION_FORBIDDEN}), 403
         except errors.AuthenticationError:
             return jsonify({'error': errors.AUTHENTICATION_INVALID}), 401

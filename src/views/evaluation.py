@@ -6,7 +6,7 @@ from flask.json import jsonify
 from flask.views import MethodView
 
 from src.db import connection
-from src.errors import DATA_EMPTY, FIELD_EMPTY, DATA_SAVE
+from src import errors, auth
 
 
 logger = logging.getLogger(__name__)
@@ -32,6 +32,15 @@ class EvaluationView(MethodView):
                 return jsonify({'data': cursor.fetchone()}), 200
 
     def post(self):
+        # authentication
+        token = request.headers.get('Authorization')
+        try:
+            account = auth.check(token)
+            if account['class'] != 'student':
+                return jsonify({'error': errors.AUTHENTICATION_FORBIDDEN}), 403
+        except errors.AuthenticationError:
+            return jsonify({'error': errors.AUTHENTICATION_INVALID}), 401
+
         body = request.get_json()
 
         if not body:
@@ -43,7 +52,7 @@ class EvaluationView(MethodView):
 
         try:
             with connection.cursor() as cursor:
-                cursor.execute('INSERT INTO enrollments (student_id,course_id,year,semester,section) VALUES (%(student_id)s, %(course_id)s, %(year)s, %(semester)s, %(section)s)', body)
+                cursor.execute('INSERT INTO evaluations (enrollment_id, rating, comments) VALUES (%(enrollment_id)s, %(rating)s, %(comments)s)', body)
 
             connection.commit()
             return jsonify(None), 201
