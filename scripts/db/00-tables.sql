@@ -67,9 +67,7 @@ CREATE TABLE enrollments (
 CREATE TABLE evaluations (
 	id INT AUTO_INCREMENT,
 	enrollment_id INT,
-	name TEXT,
 	comments TEXT,
-	percentage INT,
 	rating INT,
 
 	created DATETIME DEFAULT CURRENT_TIMESTAMP,

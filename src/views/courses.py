@@ -1,8 +1,13 @@
+import logging
+
 from flask import request
 from flask.json import jsonify
 from flask.views import MethodView
 
 from src.db import connection
+
+
+logger = logging.getLogger(__name__)
 
 
 class CourseView(MethodView):
@@ -21,22 +26,24 @@ class CourseView(MethodView):
         body = request.get_json()
 
         if not body:
-            return jsonify({'error': DATA_EMPTY}), 403
+            return jsonify({'error': DATA_EMPTY}), 422
 
         for k in ('name','description','professor_id'):
             if not body.get(k):
                 return jsonify({'error': FIELD_EMPTY.format(k)})
-        
+
 
         try:
             with connection.cursor() as cursor:
                 cursor.execute('INSERT INTO courses (professor_id, name, description) VALUES (%(professor_id)s, %(name)s, %(description)s)', body)
-            
+
         connection.commit()
 
             return None, 201
         except pymysql.err.IntegrityError:
-            return jsonify({'error': DATA_SAVE}), 403
+            logger.error(e)
+            return jsonify({'error': DATA_SAVE}), 500
+
 
 class CourseEvaluationView(MethodView):
     def get(self, course_id):

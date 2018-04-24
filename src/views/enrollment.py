@@ -1,3 +1,5 @@
+import logging
+
 import pymysql
 from flask import request
 from flask.json import jsonify
@@ -5,6 +7,9 @@ from flask.views import MethodView
 
 from src.db import connection
 from src.errors import DATA_EMPTY, FIELD_EMPTY, DATA_SAVE
+
+
+logger = logging.getLogger(__name__)
 
 
 class EnrollmentView(MethodView):
@@ -37,5 +42,5 @@ class EnrollmentView(MethodView):
             return None, 201
 
         except pymysql.err.IntegrityError as e:
-            print(e)
+            logger.error(e)
             return jsonify({'error': DATA_SAVE}), 500

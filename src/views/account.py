@@ -1,6 +1,5 @@
 import logging
 
-
 from flask.json import jsonify
 from flask.views import MethodView
 from flask import request
@@ -78,7 +77,6 @@ class AccountAuthenticationView(MethodView):
                 cursor.execute('SELECT * FROM accounts WHERE email=%(email)s', body)
 
                 account = cursor.fetchone()
-                logger.debug(account)
 
                 if account is None or not password.check(body['password'], account['password']):
                     return jsonify({'error': errors.AUTHENTICATION_WRONG}), 422
