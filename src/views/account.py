@@ -61,7 +61,7 @@ class AccountAuthenticationView(MethodView):
     def get(self):
         token = request.headers.get('Authorization')
         try:
-            account = check(token)
+            account = auth.check(token)
         except errors.AuthenticationError():
             return jsonify({'error': errors.AUTHENTICATION_INVALID}), 401
 

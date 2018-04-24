@@ -18,7 +18,8 @@ def check(token):
         raise errors.AuthenticationError()
 
     try:
-        payload =  jwt.decode(token, SECRET, algorithm='HS256')
+        payload =  jwt.decode(token.encode(), SECRET, algorithm='HS256')
+        return payload
     except (jwt.exceptions.InvalidTokenError, jwt.exceptions.DecodeError, jwt.exceptions.ExpiredSignatureError) as e:
         logger.error(e)
         raise errors.AuthenticationError()

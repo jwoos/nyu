@@ -7,6 +7,15 @@ from src.db import connection
 
 class ProfessorView(MethodView):
     def get(self, professor_id=None):
+        # authentication
+        token = request.headers.get('Authorization')
+        try:
+            account = auth.check(token)
+            if account['class'] != 'administrator':
+                return jsonify({'error': errors.AUTHENTICATION_FORBIDDEN}), 403
+        except errors.AuthenticationError:
+            return jsonify({'error': errors.AUTHENTICATION_INVALID}), 401
+
         with connection.cursor() as cursor:
             if professor_id is None:
                 # all
@@ -20,6 +29,15 @@ class ProfessorView(MethodView):
 
 class ProfessorCourseView(MethodView):
     def get(self, professor_id):
+        # authentication
+        token = request.headers.get('Authorization')
+        try:
+            account = auth.check(token)
+            if account['class'] != 'professor':
+                return jsonify({'error': errors.AUTHENTICATION_FORBIDDEN}), 403
+        except errors.AuthenticationError:
+            return jsonify({'error': errors.AUTHENTICATION_INVALID}), 401
+
         with connection.cursor() as cursor:
             # all
             cursor.execute(
@@ -32,6 +50,15 @@ class ProfessorCourseView(MethodView):
 
 class ProfessorEvaluationView(MethodView):
     def get(self, professor_id):
+        # authentication
+        token = request.headers.get('Authorization')
+        try:
+            account = auth.check(token)
+            if account['class'] != 'professor':
+                return jsonify({'error': errors.AUTHENTICATION_FORBIDDEN}), 403
+        except errors.AuthenticationError:
+            return jsonify({'error': errors.AUTHENTICATION_INVALID}), 401
+
         year = request.args.get('year')
         semester = request.args.get('semester')
         course_id = request.args.get('course_id')

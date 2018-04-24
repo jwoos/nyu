@@ -9,7 +9,7 @@ from src.db import connection
 
 
 logging.basicConfig(
-    format='[%(levelname)s <> name] %(message)s',
+    format='[%(levelname)s <> %(name)s] %(message)s',
     level=logging.DEBUG
 )
 logger = logging.getLogger(__name__)

@@ -14,6 +14,15 @@ logger = logging.getLogger(__name__)
 
 class EvaluationView(MethodView):
     def get(self, evaluation_id=None):
+        # authentication
+        token = request.headers.get('Authorization')
+        try:
+            account = auth.check(token)
+            if account['class'] != 'administrator':
+                return jsonify({'error': errors.AUTHENTICATION_FORBIDDEN}), 403
+        except errors.AuthenticationError:
+            return jsonify({'error': errors.AUTHENTICATION_INVALID}), 401
+
         with connection.cursor() as cursor:
             if evaluation_id is None:
                 cursor.execute('SELECT * FROM evaluations')

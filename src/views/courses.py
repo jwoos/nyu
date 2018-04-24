@@ -12,6 +12,15 @@ logger = logging.getLogger(__name__)
 
 class CourseView(MethodView):
     def get(self, course_id=None):
+        # authentication
+        token = request.headers.get('Authorization')
+        try:
+            account = auth.check(token)
+            if account['class'] != 'administrator':
+                return jsonify({'error': errors.AUTHENTICATION_FORBIDDEN}), 403
+        except errors.AuthenticationError:
+            return jsonify({'error': errors.AUTHENTICATION_INVALID}), 401
+
         with connection.cursor() as cursor:
             if course_id is None:
                 # all
@@ -23,6 +32,15 @@ class CourseView(MethodView):
                 return jsonify({'data': cursor.fetchone()}), 200
 
     def post(self):
+        # authentication
+        token = request.headers.get('Authorization')
+        try:
+            account = auth.check(token)
+            if account['class'] != 'administrator':
+                return jsonify({'error': errors.AUTHENTICATION_FORBIDDEN}), 403
+        except errors.AuthenticationError:
+            return jsonify({'error': errors.AUTHENTICATION_INVALID}), 401
+
         body = request.get_json()
 
         if not body:
@@ -47,6 +65,15 @@ class CourseView(MethodView):
 
 class CourseEvaluationView(MethodView):
     def get(self, course_id):
+        # authentication
+        token = request.headers.get('Authorization')
+        try:
+            account = auth.check(token)
+            if account['class'] != 'administrator':
+                return jsonify({'error': errors.AUTHENTICATION_FORBIDDEN}), 403
+        except errors.AuthenticationError:
+            return jsonify({'error': errors.AUTHENTICATION_INVALID}), 401
+
         with connection.cursor() as cursor:
             cursor.execute(
                 '''
