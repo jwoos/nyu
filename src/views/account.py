@@ -93,10 +93,11 @@ class AccountAuthenticationView(MethodView):
 
                 account.update(user)
 
-                for k in ('password', 'created', 'updated'):
-                    del account[k]
+                for k in ('password', 'created', 'updated', 'exp'):
+                    if k in account:
+                        del account[k]
 
-                return jsonify({'data': auth.generate(account)}), 200
+                return jsonify({'data': {'token': auth.generate(account), 'account': account}}), 200
         except pymysql.err.IntegrityError as e:
             logger.error(e)
             return jsonify({'error': errors.DATA_SAVE}), 500
