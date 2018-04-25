@@ -3,6 +3,7 @@ from flask.json import jsonify
 from flask.views import MethodView
 
 from src.db import connection
+from src import auth, errors
 
 
 class ProfessorView(MethodView):
@@ -75,20 +76,26 @@ class ProfessorEvaluationView(MethodView):
                 if year and semester:
                     cursor.execute(
                         '''
-                        SELECT * FROM evaluations WHERE enrollment_id IN (
-                            SELECT enrollments.id FROM courses INNER JOIN enrollments ON courses.id = enrollments.course_id
-                            WHERE courses.professor_id=%(professor_id)s AND enrollments.year=%(year)s AND enrollments.semester=%(semester)s AND courses.id=%(course_id)s
-                        )
+                        SELECT * FROM evaluations
+                            JOIN enrollments ON evaluations.enrollment_id = enrollments.id
+                            JOIN courses ON enrollments.course_id = courses.id
+                            WHERE enrollment_id IN (
+                                SELECT enrollments.id FROM courses INNER JOIN enrollments ON courses.id = enrollments.course_id
+                                    WHERE courses.professor_id=%(professor_id)s AND enrollments.year=%(year)s AND enrollments.semester=%(semester)s AND courses.id=%(course_id)s
+                            )
                         ''',
                         args
                     )
                 elif year:
                     cursor.execute(
                         '''
-                        SELECT * FROM evaluations WHERE enrollment_id IN (
-                            SELECT enrollments.id FROM courses INNER JOIN enrollments ON courses.id = enrollments.course_id
-                            WHERE courses.professor_id=%(professor_id)s AND enrollments.year=%(year)s AND courses.id=%(course_id)s
-                        )
+                        SELECT * FROM evaluations
+                            JOIN enrollments ON evaluations.enrollment_id = enrollments.id
+                            JOIN courses ON enrollments.course_id = courses.id
+                            WHERE enrollment_id IN (
+                                SELECT enrollments.id FROM courses INNER JOIN enrollments ON courses.id = enrollments.course_id
+                                    WHERE courses.professor_id=%(professor_id)s AND enrollments.year=%(year)s AND courses.id=%(course_id)s
+                            )
                         ''',
                         args
                     )
@@ -96,10 +103,13 @@ class ProfessorEvaluationView(MethodView):
                     # all
                     cursor.execute(
                         '''
-                        SELECT * FROM evaluations WHERE enrollment_id IN (
-                            SELECT enrollments.id FROM courses INNER JOIN enrollments ON courses.id = enrollments.course_id
-                            WHERE courses.professor_id=%(professor_id)s AND courses.id=%(course_id)s
-                        )
+                        SELECT * FROM evaluations
+                            JOIN enrollments ON evaluations.enrollment_id = enrollments.id
+                            JOIN courses ON enrollments.course_id = courses.id
+                            WHERE enrollment_id IN (
+                                SELECT enrollments.id FROM courses INNER JOIN enrollments ON courses.id = enrollments.course_id
+                                WHERE courses.professor_id=%(professor_id)s AND courses.id=%(course_id)s
+                            )
                         ''',
                         args
                     )
@@ -107,20 +117,26 @@ class ProfessorEvaluationView(MethodView):
                 if year and semester:
                     cursor.execute(
                         '''
-                        SELECT * FROM evaluations WHERE enrollment_id IN (
-                            SELECT enrollments.id FROM courses INNER JOIN enrollments ON courses.id = enrollments.course_id
-                            WHERE courses.professor_id=%(professor_id)s AND enrollments.year=%(year)s AND enrollments.semester=%(semester)s
-                        )
+                        SELECT * FROM evaluations
+                            JOIN enrollments ON evaluations.enrollment_id = enrollments.id
+                            JOIN courses ON enrollments.course_id = courses.id
+                            WHERE enrollment_id IN (
+                                SELECT enrollments.id FROM courses INNER JOIN enrollments ON courses.id = enrollments.course_id
+                                    WHERE courses.professor_id=%(professor_id)s AND enrollments.year=%(year)s AND enrollments.semester=%(semester)s
+                            )
                         ''',
                         args
                     )
                 elif year:
                     cursor.execute(
                         '''
-                        SELECT * FROM evaluations WHERE enrollment_id IN (
-                            SELECT enrollments.id FROM courses INNER JOIN enrollments ON courses.id = enrollments.course_id
-                            WHERE courses.professor_id=%(professor_id)s AND enrollments.year=%(year)s
-                        )
+                        SELECT * FROM evaluations
+                            JOIN enrollments ON evaluations.enrollment_id = enrollments.id
+                            JOIN courses ON enrollments.course_id = courses.id
+                            WHERE enrollment_id IN (
+                                SELECT enrollments.id FROM courses INNER JOIN enrollments ON courses.id = enrollments.course_id
+                                    WHERE courses.professor_id=%(professor_id)s AND enrollments.year=%(year)s
+                            )
                         ''',
                         args
                     )
@@ -128,10 +144,13 @@ class ProfessorEvaluationView(MethodView):
                     # all
                     cursor.execute(
                         '''
-                        SELECT * FROM evaluations WHERE enrollment_id IN (
-                            SELECT enrollments.id FROM courses INNER JOIN enrollments ON courses.id = enrollments.course_id
-                            WHERE courses.professor_id=%(professor_id)s
-                        )
+                        SELECT * FROM evaluations
+                            JOIN enrollments ON evaluations.enrollment_id = enrollments.id
+                            JOIN courses ON enrollments.course_id = courses.id
+                            WHERE enrollment_id IN (
+                                SELECT enrollments.id FROM courses INNER JOIN enrollments ON courses.id = enrollments.course_id
+                                    WHERE courses.professor_id=%(professor_id)s
+                            )
                         ''',
                         args
                     )

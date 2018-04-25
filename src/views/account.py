@@ -85,7 +85,7 @@ class AccountAuthenticationView(MethodView):
                 if account['class'] == 'student':
                     cursor.execute('SELECT * FROM students WHERE account_id=%(id)s', account)
                 else:
-                    cursor.execute('SELECT * FROM professor WHERE account_id=%(id)s', account)
+                    cursor.execute('SELECT * FROM professors WHERE account_id=%(id)s', account)
 
                 user = cursor.fetchone()
                 logging.debug(user)

@@ -72,7 +72,7 @@ professor_course_view = professor.ProfessorCourseView.as_view('professor_course'
 app.add_url_rule('/professors/<int:professor_id>/courses', view_func=professor_course_view, methods=['GET'])
 
 professor_evaluation_view = professor.ProfessorEvaluationView.as_view('professor_evaluation')
-app.add_url_rule('/professors/<int:professor_id>/evaluations', view_func=professor_course_view, methods=['GET'])
+app.add_url_rule('/professors/<int:professor_id>/evaluations', view_func=professor_evaluation_view, methods=['GET'])
 
 enrollment_view = enrollment.EnrollmentView.as_view('enrollment')
 app.add_url_rule('/enrollments', view_func=enrollment_view, methods=['GET', 'POST'])

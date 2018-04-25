@@ -46,7 +46,7 @@ window.common = {
 						break;
 
 					case 'professor':
-						window.location.replace(`/${account.class}/courses.html`);
+						window.location.replace(`/${account.class}/history.html`);
 						break;
 				}
 			}
