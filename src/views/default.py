@@ -4,4 +4,4 @@ from flask.views import MethodView
 
 class DefaultView(MethodView):
     def get(self):
-        return jsonify({'status': 'okay'}), 200
+        return jsonify({'data': {'status': 'okay'}}), 200

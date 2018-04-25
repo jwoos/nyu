@@ -40,7 +40,15 @@ window.common = {
 
 		if (home) {
 			if (token && account) {
-				window.location.replace(`/${account.class}.html`);
+				switch (account.class) {
+					case 'student':
+						window.location.replace(`/${account.class}/evaluation.html`);
+						break;
+
+					case 'professor':
+						window.location.replace(`/${account.class}/history.html`);
+						break;
+				}
 			}
 		} else {
 			if (token && account) {

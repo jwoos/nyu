@@ -1,3 +1,5 @@
+import logging
+
 import pymysql
 from flask import request
 from flask.json import jsonify
@@ -7,17 +9,29 @@ from src.db import connection
 from src.errors import DATA_EMPTY, FIELD_EMPTY, DATA_SAVE
 
 
+logger = logging.getLogger(__name__)
+
+
 class EnrollmentView(MethodView):
     def get(self, enrollment_id=None):
+        # authentication
+        token = request.headers.get('Authorization')
+        try:
+            account = auth.check(token)
+            if account['class'] != 'administrator':
+                return jsonify({'error': errors.AUTHENTICATION_FORBIDDEN}), 403
+        except errors.AuthenticationError:
+            return jsonify({'error': errors.AUTHENTICATION_INVALID}), 401
+
         with connection.cursor() as cursor:
             if enrollment_id is None:
                 # all
                 cursor.execute('SELECT * FROM enrollments')
-                return jsonify(cursor.fetchall()), 200
+                return jsonify({'data': cursor.fetchall()}), 200
             else:
                 # singular
                 cursor.execute('SELECT * FROM enrollments WHERE id=%(id)s', {'id': enrollment_id})
-                return jsonify(cursor.fetchone()), 200
+                return jsonify({'data': cursor.fetchone()}), 200
 
     def post(self):
         body = request.get_json()
@@ -34,8 +48,8 @@ class EnrollmentView(MethodView):
                 cursor.execute('INSERT INTO enrollments (student_id,course_id,year,semester,section) VALUES (%(student_id)s, %(course_id)s, %(year)s, %(semester)s, %(section)s)', body)
 
             connection.commit()
-            return None, 201
+            return jsonify(None), 201
 
         except pymysql.err.IntegrityError as e:
-            print(e)
+            logger.error(e)
             return jsonify({'error': DATA_SAVE}), 500

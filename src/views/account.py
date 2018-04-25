@@ -1,6 +1,5 @@
 import logging
 
-
 from flask.json import jsonify
 from flask.views import MethodView
 from flask import request
@@ -60,12 +59,13 @@ class AccountView(MethodView):
 
 class AccountAuthenticationView(MethodView):
     def get(self):
+        token = request.headers.get('Authorization')
         try:
-            check(request.headers.get('Authorization'))
+            account = auth.check(token)
         except errors.AuthenticationError():
             return jsonify({'error': errors.AUTHENTICATION_INVALID}), 401
 
-        return jsonify({'data': 'okay'}), 200
+        return jsonify({'data': {'token': token, 'account': account}}), 200
 
     def post(self):
         body = request.get_json()
@@ -78,7 +78,6 @@ class AccountAuthenticationView(MethodView):
                 cursor.execute('SELECT * FROM accounts WHERE email=%(email)s', body)
 
                 account = cursor.fetchone()
-                logger.debug(account)
 
                 if account is None or not password.check(body['password'], account['password']):
                     return jsonify({'error': errors.AUTHENTICATION_WRONG}), 422
@@ -86,7 +85,7 @@ class AccountAuthenticationView(MethodView):
                 if account['class'] == 'student':
                     cursor.execute('SELECT * FROM students WHERE account_id=%(id)s', account)
                 else:
-                    cursor.execute('SELECT * FROM professor WHERE account_id=%(id)s', account)
+                    cursor.execute('SELECT * FROM professors WHERE account_id=%(id)s', account)
 
                 user = cursor.fetchone()
                 logging.debug(user)
