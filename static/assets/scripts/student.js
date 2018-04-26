@@ -109,4 +109,10 @@ window.addEventListener('load', async () => {
 			await window.student.populateEvaluations();
 			break;
 	}
+	
+	document.querySelector("#logOut").addEventListener('click',function(){
+		window.common.clearToken();
+		window.common.clearAccount();
+		window.location.replace('/');
+	});
 });

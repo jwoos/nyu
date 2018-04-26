@@ -158,4 +158,9 @@ window.addEventListener('load', async () => {
 			await window.professor.populateCourses();
 			break;
 	}
+	document.querySelector("#logOut").addEventListener('click',function(){
+		window.common.clearToken();
+		window.common.clearAccount();
+		window.location.replace('/');
+	});
 });
