@@ -1,10 +1,11 @@
 #include "server.h"
 
 
+static pthread_mutex_t threadCreateMutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t threadCreateCond = PTHREAD_COND_INITIALIZER;
+bool threadCreate = false;
+
 static int fd;
-static int clientDescriptor;
-static struct sockaddr_in clientAddr;
-static fd_set descriptors;
 
 static void cleanup(void) {
 	if (fd > 0) {
@@ -17,15 +18,17 @@ static void cleanup(void) {
 		}
 	}
 
-	if (clientDescriptor > 0) {
-		if (shutdown(clientDescriptor, SHUT_RDWR) < 0) {
-			perror("shutdown");
-		}
-
-		if (close(clientDescriptor) < 0) {
-			perror("close");
-		}
-	}
+/*
+ *    if (clientDescriptor > 0) {
+ *        if (shutdown(clientDescriptor, SHUT_RDWR) < 0) {
+ *            perror("shutdown");
+ *        }
+ *
+ *        if (close(clientDescriptor) < 0) {
+ *            perror("close");
+ *        }
+ *    }
+ */
 }
 
 // create a TCP socket using IPv4
@@ -54,45 +57,15 @@ static void initBind(int port) {
 	}
 }
 
-// listen with no backlog
+// listen with some backlog
 static void initListen(void) {
-	if (listen(fd, 1) < 0) {
+	if (listen(fd, 5) < 0) {
 		perror("listen");
 		exit(EXIT_FAILURE);
 	}
 }
 
-static void initAccept(void) {
-	// connect to a client
-	unsigned int clientAddrSize;
-	clientDescriptor = accept(fd, (struct sockaddr*)&clientAddr, &clientAddrSize);
-	if (clientDescriptor < 0) {
-		perror("accept");
-		exit(EXIT_FAILURE);
-	}
-
-	println("Connected to client: %s:%d", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port));
-	println("");
-}
-
-static int initSelect(void) {
-	// set up fd_set
-	FD_ZERO(&descriptors);
-
-	FD_SET(STDIN_FILENO, &descriptors);
-	FD_SET(clientDescriptor, &descriptors);
-
-	// the fd of the socket will always be greater than stdin
-	int selectStatus = select(FD_SETSIZE, &descriptors, NULL, NULL, NULL);
-	if (selectStatus < 0) {
-		perror("select");
-		exit(EXIT_FAILURE);
-	}
-
-	return selectStatus;
-}
-
-static int command(char* input) {
+bool command(char* input) {
 	if (strncmp(input, "/quit", 5) == 0) {
 		println("Connection close");
 		println("");
@@ -100,6 +73,120 @@ static int command(char* input) {
 	}
 
 	return false;
+}
+
+void lockThreadCreate(void) {
+	int s = pthread_mutex_lock(&threadCreateMutex);
+	if (s != 0) {
+		errno = s;
+		perror("pthread_mutex_lock");
+		exit(1);
+	}
+}
+
+void unlockThreadCreate(void) {
+	int s = pthread_mutex_unlock(&threadCreateMutex);
+	if (s != 0) {
+		errno = s;
+		perror("pthread_mutex_unlock");
+		exit(1);
+	}
+}
+
+void waitThreadCreate(void) {
+	do {
+		int s = pthread_cond_wait(&threadCreateCond, &threadCreateMutex);
+		if (s != 0) {
+			errno = s;
+			perror("pthread_cond_wait");
+			exit(1);
+		}
+	} while (threadCreate != true);
+}
+
+void broadcastThreadCreate(void) {
+	int s = pthread_cond_broadcast(&threadCreateCond);
+	if (s != 0) {
+		errno = s;
+		perror("pthread_cond_broadcast");
+		exit(1);
+	}
+}
+
+// take incoming messages and fan it out
+static void* consumer(void* data) {
+	println("consumer thread");
+	return NULL;
+}
+
+static void* producer(void* data) {
+	// wait for main thread to release lock
+	lockThreadCreate();
+	threadCreate = false;
+
+	int index = *(int*)data;
+	println("producer thread: %d", index);
+
+	// connect to a new client
+	unsigned int clientAddrSize;
+	struct sockaddr_in clientAddr;
+	fd_set descriptors;
+	int clientDescriptor = accept(fd, (struct sockaddr*)&clientAddr, &clientAddrSize);
+	if (clientDescriptor < 0) {
+		perror("accept");
+		exit(EXIT_FAILURE);
+	}
+
+	println("Connected to client: %s:%d", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port));
+
+	threadCreate = true;
+	unlockThreadCreate();
+	broadcastThreadCreate();
+
+	char buffer[BUFFER_SIZE];
+
+	// set up fd_set each time
+	while (true) {
+		memset(&buffer, 0, sizeof(char) * BUFFER_SIZE);
+
+		// set up fd_set
+		FD_ZERO(&descriptors);
+
+		FD_SET(clientDescriptor, &descriptors);
+
+		// the fd of the socket will always be greater than stdin
+		int selectStatus = select(FD_SETSIZE, &descriptors, NULL, NULL, NULL);
+		if (selectStatus < 0) {
+			perror("select");
+			exit(EXIT_FAILURE);
+		}
+
+		if (selectStatus) {
+			int n;
+
+			if (FD_ISSET(clientDescriptor, &descriptors)) {
+				n = read(clientDescriptor, buffer, READ_SIZE);
+
+				if (command(buffer)) {
+					break;
+				}
+
+				if (n < 0) {
+					perror("read");
+					continue;
+				} else if (n == 0) {
+					println("Connection closed");
+					println("");
+					break;
+				}
+				buffer[n] = '\0';
+
+				printf("[%s:%d] %s", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port), buffer);
+			}
+		}
+	}
+
+	return NULL;
 }
 
 void server(int port) {
@@ -114,58 +201,28 @@ void server(int port) {
 
 	initListen();
 
+	pthread_t consumerID;
+	pthread_t producerID;
+
+	int consumerCreate = pthread_create(&consumerID, NULL, consumer, NULL);
+	if (consumerCreate != 0) {
+		errno = consumerCreate;
+		perror("pthread_create");
+		exit(1);
+	}
 
 	// don't die while waiting for a new connection
+	int index = 0;
+	lockThreadCreate();
 	while (true) {
-		println("Waiting to connect to client");
-		initAccept();
-
-		char buffer[BUFFER_SIZE];
-
-		// set up fd_set each time
-		while (true) {
-			fflush(stdin);
-			memset(&buffer, 0, sizeof(char) * BUFFER_SIZE);
-
-			int selectStatus = initSelect();
-			if (selectStatus) {
-				int n;
-
-				if (FD_ISSET(STDIN_FILENO, &descriptors)) {
-					if (fgets(buffer, READ_SIZE, stdin) == NULL) {
-						perror("getline");
-						continue;
-					}
-
-					printf("[you] %s", buffer);
-
-					n = write(clientDescriptor, buffer, strlen(buffer));
-					if (n < 0) {
-						perror("write");
-						continue;
-					}
-				}
-
-				if (FD_ISSET(clientDescriptor, &descriptors)) {
-					n = read(clientDescriptor, buffer, READ_SIZE);
-
-					if (command(buffer)) {
-						break;
-					}
-
-					if (n < 0) {
-						perror("read");
-						continue;
-					} else if (n == 0) {
-						println("Connection closed");
-						println("");
-						break;
-					}
-					buffer[n] = '\0';
-
-					printf("[%s:%d] %s", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port), buffer);
-				}
-			}
+		int producerCreate = pthread_create(&producerID, NULL, producer, &index);
+		if (producerCreate != 0) {
+			errno = producerCreate;
+			perror("pthread_create");
+			exit(1);
 		}
+
+		waitThreadCreate();
+		index++;
 	}
 }

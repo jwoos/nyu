@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -std=gnu11 -ggdb -O0 -Wno-sign-compare
+CFLAGS = -Wall -Wextra -std=gnu11 -ggdb -O0 -Wno-sign-compare -pthread
 
 EXECUTABLES = chat
 OBJECTS = utils.o client.o server.o
