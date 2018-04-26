@@ -64,8 +64,6 @@ static void initListen(void) {
 
 static void initAccept(void) {
 	// connect to a client
-	println("Waiting to connect to client");
-
 	unsigned int clientAddrSize;
 	clientDescriptor = accept(fd, (struct sockaddr*)&clientAddr, &clientAddrSize);
 	if (clientDescriptor < 0) {
@@ -94,6 +92,16 @@ static int initSelect(void) {
 	return selectStatus;
 }
 
+static int command(char* input) {
+	if (strncmp(input, "/quit", 5) == 0) {
+		println("Connection close");
+		println("");
+		return true;
+	}
+
+	return false;
+}
+
 void server(int port) {
 	// register cleanup
 	atexit(cleanup);
@@ -109,6 +117,7 @@ void server(int port) {
 
 	// don't die while waiting for a new connection
 	while (true) {
+		println("Waiting to connect to client");
 		initAccept();
 
 		char buffer[BUFFER_SIZE];
@@ -139,6 +148,11 @@ void server(int port) {
 
 				if (FD_ISSET(clientDescriptor, &descriptors)) {
 					n = read(clientDescriptor, buffer, READ_SIZE);
+
+					if (command(buffer)) {
+						break;
+					}
+
 					if (n < 0) {
 						perror("read");
 						continue;

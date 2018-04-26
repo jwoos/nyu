@@ -91,6 +91,11 @@ void client(char* ip, int port) {
 					continue;
 				}
 
+				if (strncmp(buffer, "/quit", 5) == 0) {
+					println("Exiting");
+					break;
+				}
+
 				printf("[you] %s", buffer);
 
 				n = write(fd, buffer, strlen(buffer));
