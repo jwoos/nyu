@@ -115,17 +115,18 @@ void broadcastThreadCreate(void) {
 
 // take incoming messages and fan it out
 static void* consumer(void* data) {
-	println("consumer thread");
+	int index = *(int*)data;
+	println("consumer thread: %d", index);
 	return NULL;
 }
 
 static void* producer(void* data) {
+	int index = *(int*)data;
+	println("producer thread: %d", index);
+
 	// wait for main thread to release lock
 	lockThreadCreate();
 	threadCreate = false;
-
-	int index = *(int*)data;
-	println("producer thread: %d", index);
 
 	// connect to a new client
 	unsigned int clientAddrSize;
@@ -204,7 +205,9 @@ void server(int port) {
 	pthread_t consumerID;
 	pthread_t producerID;
 
-	int consumerCreate = pthread_create(&consumerID, NULL, consumer, NULL);
+	// create consumer thread
+	int consumerIndex = 0;
+	int consumerCreate = pthread_create(&consumerID, NULL, consumer, &consumerIndex);
 	if (consumerCreate != 0) {
 		errno = consumerCreate;
 		perror("pthread_create");
@@ -212,10 +215,10 @@ void server(int port) {
 	}
 
 	// don't die while waiting for a new connection
-	int index = 0;
+	int producerIndex = 0;
 	lockThreadCreate();
 	while (true) {
-		int producerCreate = pthread_create(&producerID, NULL, producer, &index);
+		int producerCreate = pthread_create(&producerID, NULL, producer, &producerIndex);
 		if (producerCreate != 0) {
 			errno = producerCreate;
 			perror("pthread_create");
@@ -223,6 +226,6 @@ void server(int port) {
 		}
 
 		waitThreadCreate();
-		index++;
+		producerIndex++;
 	}
 }
