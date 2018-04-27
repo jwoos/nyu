@@ -3,9 +3,27 @@
 
 Message* messageConstruct(char* msg, char* host, int port) {
 	Message* m = malloc(sizeof(*m));
+	if (m == NULL) {
+		perror("malloc");
+		exit(EXIT_FAILURE);
+	}
 
-	m -> message = malloc(sizeof(char) * strlen(msg));
+	int msgLength = strlen(msg) + 1;
+	m -> message = malloc(sizeof(char) * msgLength);
+	if (m -> message == NULL) {
+		perror("malloc");
+		exit(EXIT_FAILURE);
+	}
+	strncpy(m -> message, msg, msgLength);
+
+	int hostLength = strlen(host) + 1;
 	m -> host = malloc(sizeof(char) * strlen(host));
+	if (m -> host == NULL) {
+		perror("malloc");
+		exit(EXIT_FAILURE);
+	}
+	strncpy(m -> host, host, hostLength);
+
 	m -> port = port;
 	m -> next = NULL;
 	m -> previous = NULL;
@@ -21,23 +39,33 @@ void messageDeconstruct(Message* message) {
 
 MessageQueue* mqConstruct(void) {
 	MessageQueue* mq = malloc(sizeof(*mq));
-	int s;
+	if (mq == NULL) {
+		perror("malloc");
+		exit(EXIT_FAILURE);
+	}
 
 	mq -> head = NULL;
-	s = pthread_rwlock_init(mq -> headLock, NULL);
-	if (s != 0) {
-		errno = s;
-		perror("pthread_rwlock_init");
-		exit(1);
+	mq -> headLock = malloc(sizeof(*(mq -> headLock)));
+	if (mq -> headLock == NULL) {
+		perror("malloc");
+		exit(EXIT_FAILURE);
 	}
+	handleError(pthread_mutex_init(mq -> headLock, NULL), "pthread_mutex_init", true);
+
+	mq -> cond = malloc(sizeof(*(mq -> cond)));
+	if (mq -> cond == NULL) {
+		perror("malloc");
+		exit(EXIT_FAILURE);
+	}
+	handleError(pthread_cond_init(mq -> cond, NULL), "pthread_cond_init", true);
 
 	mq -> tail = NULL;
-	s = pthread_rwlock_init(mq -> tailLock, NULL);
-	if (s != 0) {
-		errno = s;
-		perror("pthread_rwlock_init");
-		exit(1);
+	mq -> tailLock = malloc(sizeof(*(mq -> tailLock)));
+	if (mq -> tailLock == NULL) {
+		perror("malloc");
+		exit(EXIT_FAILURE);
 	}
+	handleError(pthread_mutex_init(mq -> tailLock, NULL), "pthread_mutex_init", true);
 
 	mq -> size = 0;
 
@@ -46,86 +74,20 @@ MessageQueue* mqConstruct(void) {
 
 void mqDeconstruct(MessageQueue* mq) {
 	mq -> head = NULL;
-	int s;
 
-	s = pthread_rwlock_destroy(mq -> headLock);
-	if (s != 0) {
-		errno = s;
-		perror("pthread_rwlock_destroy");
-		exit(1);
-	}
+	handleError(pthread_mutex_destroy(mq -> headLock), "pthread_mutex_destroy", true);
+	free(mq -> headLock);
 
-	mq -> tail = NULL;
-	s = pthread_rwlock_destroy(mq -> tailLock);
-	if (s != 0) {
-		errno = s;
-		perror("pthread_rwlock_destroy");
-		exit(1);
-	}
-}
+	handleError(pthread_cond_destroy(mq -> cond), "pthread_mutex_destroy", true);
 
-void lockHead(MessageQueue* mq, int type) {
-	int s;
-
-	if (type == WRITE_CODE) {
-		s = pthread_rwlock_wrlock(mq -> headLock);
-		if (s != 0) {
-			errno = s;
-			perror("pthread_rw_wrlock");
-			exit(1);
-		}
-	} else {
-		s = pthread_rwlock_rdlock(mq -> headLock);
-		if (s != 0) {
-			errno = s;
-			perror("pthread_rw_rdlock");
-			exit(1);
-		}
-	}
-}
-
-void unlockHead(MessageQueue* mq) {
-	int s = pthread_rwlock_unlock(mq -> headLock);
-	if (s != 0) {
-		errno = s;
-		perror("pthread_rwlock_unlock");
-		exit(1);
-	}
-}
-
-void lockTail(MessageQueue* mq, int type) {
-	int s;
-
-	if (type == WRITE_CODE) {
-		s = pthread_rwlock_wrlock(mq -> tailLock);
-		if (s != 0) {
-			errno = s;
-			perror("pthread_rw_wrlock");
-			exit(1);
-		}
-	} else {
-		s = pthread_rwlock_rdlock(mq -> tailLock);
-		if (s != 0) {
-			errno = s;
-			perror("pthread_rw_rdlock");
-			exit(1);
-		}
-	}
-}
-
-void unlockTail(MessageQueue* mq) {
-	int s = pthread_rwlock_unlock(mq -> tailLock);
-	if (s != 0) {
-		errno = s;
-		perror("pthread_rwlock_unlock");
-		exit(1);
-	}
+	handleError(pthread_mutex_destroy(mq -> tailLock), "pthread_mutex_destroy", true);
+	free(mq -> tailLock);
 }
 
 void pushMessage(MessageQueue* mq, Message* m) {
 	if (mq -> size < 2) {
-		lockHead(mq, WRITE_CODE);
-		lockTail(mq, WRITE_CODE);
+		handleError(pthread_mutex_lock(mq -> headLock), "pthread_mutex_lock", true);
+		handleError(pthread_mutex_lock(mq -> tailLock), "pthread_mutex_lock", true);
 
 		if (mq -> size == 0) {
 			mq -> head = m;
@@ -136,20 +98,33 @@ void pushMessage(MessageQueue* mq, Message* m) {
 			mq -> tail = m;
 		}
 
-		unlockHead(mq);
-		unlockTail(mq);
+		mq -> size++;
+
+		handleError(pthread_mutex_unlock(mq -> headLock), "pthread_mutex_unlock", true);
+		handleError(pthread_mutex_unlock(mq -> tailLock), "pthread_mutex_unlock", true);
 	} else {
-		lockTail(mq, WRITE_CODE);
+		handleError(pthread_mutex_lock(mq -> headLock), "pthread_mutex_lock", true);
 
 		mq -> tail -> next = m;
 		m -> previous = mq -> tail;
 		mq -> tail = m;
 
-		unlockTail(mq);
+		mq -> size++;
+		handleError(pthread_mutex_unlock(mq -> headLock), "pthread_mutex_unlock", true);
 	}
-
-	mq -> size++;
+	handleError(pthread_cond_broadcast(mq -> cond), "pthread_cond_broadcast", true);
 }
 
-Message* popMessage(void) {
+Message* popMessage(MessageQueue* mq) {
+	if (mq -> size < 2) {
+		handleError(pthread_mutex_lock(mq -> headLock), "pthread_mutex_lock", true);
+		handleError(pthread_mutex_lock(mq -> tailLock), "pthread_mutex_lock", true);
+
+		handleError(pthread_mutex_unlock(mq -> headLock), "pthread_mutex_unlock", true);
+		handleError(pthread_mutex_unlock(mq -> tailLock), "pthread_mutex_unlock", true);
+	} else {
+		handleError(pthread_mutex_lock(mq -> headLock), "pthread_mutex_lock", true);
+
+		handleError(pthread_mutex_unlock(mq -> headLock), "pthread_mutex_unlock", true);
+	}
 }

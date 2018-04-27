@@ -1,5 +1,5 @@
-#ifndef CHAT_COMMON_H
-#define CHAT_COMMON_H
+#ifndef CHAT_MESSAGE_QUEUE_H
+#define CHAT_MESSAGE_QUEUE_H
 
 
 #include <errno.h>
@@ -19,6 +19,8 @@
 
 
 typedef struct Message {
+	pthread_t sender;
+
 	char* message;
 	char* host;
 	int port;
@@ -28,12 +30,17 @@ typedef struct Message {
 } Message;
 
 
+/* push into tail
+ * pop out of head
+ */
 typedef struct MessageQueue {
 	Message* head;
-	pthread_rwlock_t* headLock;
+	pthread_mutex_t* headLock;
+
+	pthread_cond_t* cond;
 
 	Message* tail;
-	pthread_rwlock_t* tailLock;
+	pthread_mutex_t* tailLock;
 
 	int size;
 } MessageQueue;
@@ -47,17 +54,9 @@ MessageQueue* mqConstruct(void);
 
 void mqDeconstruct(MessageQueue*);
 
-void lockHead(MessageQueue*, int);
-
-void unlockHead(MessageQueue*);
-
-void lockTail(MessageQueue*, int);
-
-void unlockTail(MessageQueue*);
-
 void pushMessage(MessageQueue*, Message*);
 
-Message* popMessage(void);
+Message* popMessage(MessageQueue*);
 
 
 #endif

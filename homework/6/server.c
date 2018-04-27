@@ -5,6 +5,8 @@ static pthread_mutex_t threadCreateMutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t threadCreateCond = PTHREAD_COND_INITIALIZER;
 bool threadCreate = false;
 
+MessageQueue* mq;
+
 static int fd;
 
 static void cleanup(void) {
@@ -75,48 +77,21 @@ bool command(char* input) {
 	return false;
 }
 
-void lockThreadCreate(void) {
-	int s = pthread_mutex_lock(&threadCreateMutex);
-	if (s != 0) {
-		errno = s;
-		perror("pthread_mutex_lock");
-		exit(1);
-	}
-}
-
-void unlockThreadCreate(void) {
-	int s = pthread_mutex_unlock(&threadCreateMutex);
-	if (s != 0) {
-		errno = s;
-		perror("pthread_mutex_unlock");
-		exit(1);
-	}
-}
-
-void waitThreadCreate(void) {
-	do {
-		int s = pthread_cond_wait(&threadCreateCond, &threadCreateMutex);
-		if (s != 0) {
-			errno = s;
-			perror("pthread_cond_wait");
-			exit(1);
-		}
-	} while (threadCreate != true);
-}
-
-void broadcastThreadCreate(void) {
-	int s = pthread_cond_broadcast(&threadCreateCond);
-	if (s != 0) {
-		errno = s;
-		perror("pthread_cond_broadcast");
-		exit(1);
-	}
-}
-
 // take incoming messages and fan it out
 static void* consumer(void* data) {
 	int index = *(int*)data;
 	println("consumer thread: %d", index);
+
+	while (true) {
+		while (mq -> size > 0) {
+
+		}
+
+		while (mq -> size == 0) {
+			handleError(pthread_cond_wait(mq -> cond, mq -> headLock), "pthread_cond_wait", true);
+		}
+	}
+
 	return NULL;
 }
 
@@ -125,7 +100,7 @@ static void* producer(void* data) {
 	println("producer thread: %d", index);
 
 	// wait for main thread to release lock
-	lockThreadCreate();
+	handleError(pthread_mutex_lock(&threadCreateMutex), "pthread_mutex_lock", true);
 	threadCreate = false;
 
 	// connect to a new client
@@ -141,8 +116,8 @@ static void* producer(void* data) {
 	println("Connected to client: %s:%d", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port));
 
 	threadCreate = true;
-	unlockThreadCreate();
-	broadcastThreadCreate();
+	handleError(pthread_mutex_unlock(&threadCreateMutex), "pthread_mutex_unlock", true);
+	handleError(pthread_cond_broadcast(&threadCreateCond), "pthread_cond_broadcast", true);
 
 	char buffer[BUFFER_SIZE];
 
@@ -183,6 +158,8 @@ static void* producer(void* data) {
 				buffer[n] = '\0';
 
 				printf("[%s:%d] %s", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port), buffer);
+				/*Message* m = messageConstruct(buffer, inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port));*/
+				/*pushMessage(mq, m);*/
 			}
 		}
 	}
@@ -202,6 +179,8 @@ void server(int port) {
 
 	initListen();
 
+	mq = mqConstruct();
+
 	pthread_t consumerID;
 	pthread_t producerID;
 
@@ -211,21 +190,24 @@ void server(int port) {
 	if (consumerCreate != 0) {
 		errno = consumerCreate;
 		perror("pthread_create");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	// don't die while waiting for a new connection
 	int producerIndex = 0;
-	lockThreadCreate();
+	handleError(pthread_mutex_lock(&threadCreateMutex), "pthread_mutex_lock", true);
 	while (true) {
 		int producerCreate = pthread_create(&producerID, NULL, producer, &producerIndex);
 		if (producerCreate != 0) {
 			errno = producerCreate;
 			perror("pthread_create");
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 
-		waitThreadCreate();
+		do {
+			int s = pthread_cond_wait(&threadCreateCond, &threadCreateMutex);
+			handleError(s, "pthread_cond_wait", true);
+		} while (threadCreate != true);
 		producerIndex++;
 	}
 }

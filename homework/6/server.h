@@ -18,6 +18,7 @@
 
 #include "common.h"
 #include "utils.h"
+#include "message-queue.h"
 
 
 void server(int);
