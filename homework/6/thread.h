@@ -7,7 +7,6 @@
 
 typedef Thread {
 	pthread_t id;
-	fd_set descriptors;
 	struct sockaddr_in clientAddr;
 	int clientDescriptor;
 } Thread;

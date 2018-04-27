@@ -106,7 +106,6 @@ static void* producer(void* data) {
 	// connect to a new client
 	unsigned int clientAddrSize;
 	struct sockaddr_in clientAddr;
-	fd_set descriptors;
 	int clientDescriptor = accept(fd, (struct sockaddr*)&clientAddr, &clientAddrSize);
 	if (clientDescriptor < 0) {
 		perror("accept");
@@ -120,48 +119,34 @@ static void* producer(void* data) {
 	handleError(pthread_cond_broadcast(&threadCreateCond), "pthread_cond_broadcast", true);
 
 	char buffer[BUFFER_SIZE];
+	int n;
 
-	// set up fd_set each time
+	/* select is not needed anymore as each connection is
+	 * on its own thread so it can block as long as it wants
+	 */
 	while (true) {
 		memset(&buffer, 0, sizeof(char) * BUFFER_SIZE);
 
-		// set up fd_set
-		FD_ZERO(&descriptors);
+		n = read(clientDescriptor, buffer, READ_SIZE);
 
-		FD_SET(clientDescriptor, &descriptors);
-
-		// the fd of the socket will always be greater than stdin
-		int selectStatus = select(FD_SETSIZE, &descriptors, NULL, NULL, NULL);
-		if (selectStatus < 0) {
-			perror("select");
-			exit(EXIT_FAILURE);
+		if (command(buffer)) {
+			break;
 		}
 
-		if (selectStatus) {
-			int n;
-
-			if (FD_ISSET(clientDescriptor, &descriptors)) {
-				n = read(clientDescriptor, buffer, READ_SIZE);
-
-				if (command(buffer)) {
-					break;
-				}
-
-				if (n < 0) {
-					perror("read");
-					continue;
-				} else if (n == 0) {
-					println("Connection closed");
-					println("");
-					break;
-				}
-				buffer[n] = '\0';
-
-				printf("[%s:%d] %s", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port), buffer);
-				/*Message* m = messageConstruct(buffer, inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port));*/
-				/*pushMessage(mq, m);*/
-			}
+		if (n < 0) {
+			perror("read");
+			continue;
+		} else if (n == 0) {
+			println("Connection closed");
+			println("");
+			break;
 		}
+		buffer[n] = '\0';
+
+		printf("[%s:%d] %s", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port), buffer);
+
+		/*Message* m = messageConstruct(buffer, inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port));*/
+		/*pushMessage(mq, m);*/
 	}
 
 	return NULL;
@@ -186,27 +171,16 @@ void server(int port) {
 
 	// create consumer thread
 	int consumerIndex = 0;
-	int consumerCreate = pthread_create(&consumerID, NULL, consumer, &consumerIndex);
-	if (consumerCreate != 0) {
-		errno = consumerCreate;
-		perror("pthread_create");
-		exit(EXIT_FAILURE);
-	}
+	handleError(pthread_create(&consumerID, NULL, consumer, &consumerIndex), "pthread_create", true);
 
 	// don't die while waiting for a new connection
 	int producerIndex = 0;
 	handleError(pthread_mutex_lock(&threadCreateMutex), "pthread_mutex_lock", true);
 	while (true) {
-		int producerCreate = pthread_create(&producerID, NULL, producer, &producerIndex);
-		if (producerCreate != 0) {
-			errno = producerCreate;
-			perror("pthread_create");
-			exit(EXIT_FAILURE);
-		}
+		handleError(pthread_create(&producerID, NULL, producer, &producerIndex), "pthread_create", true);
 
 		do {
-			int s = pthread_cond_wait(&threadCreateCond, &threadCreateMutex);
-			handleError(s, "pthread_cond_wait", true);
+			handleError(pthread_cond_wait(&threadCreateCond, &threadCreateMutex), "pthread_cond_wait", true);
 		} while (threadCreate != true);
 		producerIndex++;
 	}
