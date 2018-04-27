@@ -84,12 +84,15 @@ static void* consumer(void* data) {
 
 	while (true) {
 		while (mq -> size > 0) {
-
+			Message* m = popMessage(mq);
+			println("consumer: %s", m -> message);
 		}
 
+		println("consumer pre cond_wait");
 		while (mq -> size == 0) {
-			handleError(pthread_cond_wait(mq -> cond, mq -> headLock), "pthread_cond_wait", true);
+			handleError(pthread_cond_wait(mq -> cond, mq -> mutex), "pthread_cond_wait", true);
 		}
+		println("consumer post cond_wait");
 	}
 
 	return NULL;
@@ -98,6 +101,8 @@ static void* consumer(void* data) {
 static void* producer(void* data) {
 	int index = *(int*)data;
 	println("producer thread: %d", index);
+
+	pthread_t id = pthread_self();
 
 	// wait for main thread to release lock
 	handleError(pthread_mutex_lock(&threadCreateMutex), "pthread_mutex_lock", true);
@@ -143,10 +148,13 @@ static void* producer(void* data) {
 		}
 		buffer[n] = '\0';
 
-		printf("[%s:%d] %s", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port), buffer);
+		println("[%s:%d] %s", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port), buffer);
 
-		/*Message* m = messageConstruct(buffer, inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port));*/
-		/*pushMessage(mq, m);*/
+		Message* m = messageConstruct(id, buffer, inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port));
+		println("pre - pushMessage");
+		pushMessage(mq, m);
+		println("post - pushMessage");
+		println("mq size: %d", mq -> size);
 	}
 
 	return NULL;

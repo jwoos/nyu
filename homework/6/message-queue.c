@@ -1,12 +1,14 @@
 #include "message-queue.h"
 
 
-Message* messageConstruct(char* msg, char* host, int port) {
+Message* messageConstruct(pthread_t sender, char* msg, char* host, int port) {
 	Message* m = malloc(sizeof(*m));
 	if (m == NULL) {
 		perror("malloc");
 		exit(EXIT_FAILURE);
 	}
+
+	m -> sender = sender;
 
 	int msgLength = strlen(msg) + 1;
 	m -> message = malloc(sizeof(char) * msgLength);
@@ -45,12 +47,14 @@ MessageQueue* mqConstruct(void) {
 	}
 
 	mq -> head = NULL;
-	mq -> headLock = malloc(sizeof(*(mq -> headLock)));
-	if (mq -> headLock == NULL) {
+	mq -> tail = NULL;
+
+	mq -> mutex = malloc(sizeof(*(mq -> mutex)));
+	if (mq -> mutex == NULL) {
 		perror("malloc");
 		exit(EXIT_FAILURE);
 	}
-	handleError(pthread_mutex_init(mq -> headLock, NULL), "pthread_mutex_init", true);
+	handleError(pthread_mutex_init(mq -> mutex, NULL), "pthread_mutex_init", true);
 
 	mq -> cond = malloc(sizeof(*(mq -> cond)));
 	if (mq -> cond == NULL) {
@@ -58,14 +62,6 @@ MessageQueue* mqConstruct(void) {
 		exit(EXIT_FAILURE);
 	}
 	handleError(pthread_cond_init(mq -> cond, NULL), "pthread_cond_init", true);
-
-	mq -> tail = NULL;
-	mq -> tailLock = malloc(sizeof(*(mq -> tailLock)));
-	if (mq -> tailLock == NULL) {
-		perror("malloc");
-		exit(EXIT_FAILURE);
-	}
-	handleError(pthread_mutex_init(mq -> tailLock, NULL), "pthread_mutex_init", true);
 
 	mq -> size = 0;
 
@@ -75,20 +71,17 @@ MessageQueue* mqConstruct(void) {
 void mqDeconstruct(MessageQueue* mq) {
 	mq -> head = NULL;
 
-	handleError(pthread_mutex_destroy(mq -> headLock), "pthread_mutex_destroy", true);
-	free(mq -> headLock);
+	handleError(pthread_mutex_destroy(mq -> mutex), "pthread_mutex_destroy", true);
+	free(mq -> mutex);
 
 	handleError(pthread_cond_destroy(mq -> cond), "pthread_mutex_destroy", true);
-
-	handleError(pthread_mutex_destroy(mq -> tailLock), "pthread_mutex_destroy", true);
-	free(mq -> tailLock);
+	free(mq -> cond);
 }
 
 void pushMessage(MessageQueue* mq, Message* m) {
-	if (mq -> size < 2) {
-		handleError(pthread_mutex_lock(mq -> headLock), "pthread_mutex_lock", true);
-		handleError(pthread_mutex_lock(mq -> tailLock), "pthread_mutex_lock", true);
+	handleError(pthread_mutex_lock(mq -> mutex), "pthread_mutex_lock", true);
 
+	if (mq -> size < 2) {
 		if (mq -> size == 0) {
 			mq -> head = m;
 			mq -> tail = m;
@@ -97,34 +90,43 @@ void pushMessage(MessageQueue* mq, Message* m) {
 			m -> previous = mq -> tail;
 			mq -> tail = m;
 		}
-
-		mq -> size++;
-
-		handleError(pthread_mutex_unlock(mq -> headLock), "pthread_mutex_unlock", true);
-		handleError(pthread_mutex_unlock(mq -> tailLock), "pthread_mutex_unlock", true);
 	} else {
-		handleError(pthread_mutex_lock(mq -> headLock), "pthread_mutex_lock", true);
-
 		mq -> tail -> next = m;
 		m -> previous = mq -> tail;
 		mq -> tail = m;
-
-		mq -> size++;
-		handleError(pthread_mutex_unlock(mq -> headLock), "pthread_mutex_unlock", true);
 	}
+
+	mq -> size++;
+	handleError(pthread_mutex_unlock(mq -> mutex), "pthread_mutex_unlock", true);
 	handleError(pthread_cond_broadcast(mq -> cond), "pthread_cond_broadcast", true);
 }
 
 Message* popMessage(MessageQueue* mq) {
-	if (mq -> size < 2) {
-		handleError(pthread_mutex_lock(mq -> headLock), "pthread_mutex_lock", true);
-		handleError(pthread_mutex_lock(mq -> tailLock), "pthread_mutex_lock", true);
+	Message* m = mq -> head;
+	if (mq -> size <= 2) {
+		if (mq -> size == 2) {
+			mq -> tail = m;
+			mq -> head = m;
+			mq -> head -> previous = NULL;
+			mq -> head -> next = NULL;
 
-		handleError(pthread_mutex_unlock(mq -> headLock), "pthread_mutex_unlock", true);
-		handleError(pthread_mutex_unlock(mq -> tailLock), "pthread_mutex_unlock", true);
+			m -> next = NULL;
+			m -> previous = NULL;
+		} else {
+			mq -> tail = NULL;
+			mq -> head = NULL;
+
+			m -> next = NULL;
+			m -> previous = NULL;
+		}
 	} else {
-		handleError(pthread_mutex_lock(mq -> headLock), "pthread_mutex_lock", true);
+		mq -> head = m -> next;
+		mq -> head -> previous = NULL;
 
-		handleError(pthread_mutex_unlock(mq -> headLock), "pthread_mutex_unlock", true);
+		m -> next = NULL;
+		m -> previous = NULL;
 	}
+
+	mq -> size--;
+	return m;
 }

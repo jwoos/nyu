@@ -35,18 +35,16 @@ typedef struct Message {
  */
 typedef struct MessageQueue {
 	Message* head;
-	pthread_mutex_t* headLock;
-
-	pthread_cond_t* cond;
-
 	Message* tail;
-	pthread_mutex_t* tailLock;
+
+	pthread_mutex_t* mutex;
+	pthread_cond_t* cond;
 
 	int size;
 } MessageQueue;
 
 
-Message* messageConstruct(char*, char*, int);
+Message* messageConstruct(pthread_t, char*, char*, int);
 
 void messageDeconstruct(Message*);
 
