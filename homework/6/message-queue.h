@@ -14,19 +14,28 @@
 #include "utils.h"
 
 
+#define WRITE_CODE 1
+#define READ_CODE 2
+
+
 typedef struct Message {
 	char* message;
 	char* host;
 	int port;
+
+	struct Message* previous;
+	struct Message* next;
 } Message;
 
 
 typedef struct MessageQueue {
 	Message* head;
-	pthread_mutex_t* headLock;
+	pthread_rwlock_t* headLock;
 
 	Message* tail;
-	pthread_mutex_t* tailLock;
+	pthread_rwlock_t* tailLock;
+
+	int size;
 } MessageQueue;
 
 
@@ -37,6 +46,18 @@ void messageDeconstruct(Message*);
 MessageQueue* mqConstruct(void);
 
 void mqDeconstruct(MessageQueue*);
+
+void lockHead(MessageQueue*, int);
+
+void unlockHead(MessageQueue*);
+
+void lockTail(MessageQueue*, int);
+
+void unlockTail(MessageQueue*);
+
+void pushMessage(MessageQueue*, Message*);
+
+Message* popMessage(void);
 
 
 #endif
