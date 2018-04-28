@@ -7,6 +7,10 @@ Thread* threadConstruct(pthread_t id) {
 		perror("malloc");
 		exit(EXIT_FAILURE);
 	}
+
+	thread -> id = id;
+
+	return thread;
 }
 
 void threadDeconstruct(Thread* thread) {

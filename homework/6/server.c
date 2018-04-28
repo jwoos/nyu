@@ -88,11 +88,9 @@ static void* consumer(void* data) {
 			println("consumer: %s", m -> message);
 		}
 
-		println("consumer pre cond_wait");
 		while (mq -> size == 0) {
 			handleError(pthread_cond_wait(mq -> cond, mq -> mutex), "pthread_cond_wait", true);
 		}
-		println("consumer post cond_wait");
 	}
 
 	return NULL;
@@ -102,22 +100,20 @@ static void* producer(void* data) {
 	int index = *(int*)data;
 	println("producer thread: %d", index);
 
-	pthread_t id = pthread_self();
+	Thread* thread = threadConstruct(pthread_self());
 
 	// wait for main thread to release lock
 	handleError(pthread_mutex_lock(&threadCreateMutex), "pthread_mutex_lock", true);
 	threadCreate = false;
 
 	// connect to a new client
-	unsigned int clientAddrSize;
-	struct sockaddr_in clientAddr;
-	int clientDescriptor = accept(fd, (struct sockaddr*)&clientAddr, &clientAddrSize);
-	if (clientDescriptor < 0) {
+	thread -> clientDescriptor = accept(fd, (struct sockaddr*)&(thread -> clientAddr), &(thread -> clientAddrSize));
+	if (thread -> clientDescriptor < 0) {
 		perror("accept");
 		exit(EXIT_FAILURE);
 	}
 
-	println("Connected to client: %s:%d", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port));
+	println("Connected to client: %s:%d", inet_ntoa(thread -> clientAddr.sin_addr), ntohs(thread -> clientAddr.sin_port));
 
 	threadCreate = true;
 	handleError(pthread_mutex_unlock(&threadCreateMutex), "pthread_mutex_unlock", true);
@@ -132,7 +128,7 @@ static void* producer(void* data) {
 	while (true) {
 		memset(&buffer, 0, sizeof(char) * BUFFER_SIZE);
 
-		n = read(clientDescriptor, buffer, READ_SIZE);
+		n = read(thread -> clientDescriptor, buffer, READ_SIZE);
 
 		if (command(buffer)) {
 			break;
@@ -148,13 +144,8 @@ static void* producer(void* data) {
 		}
 		buffer[n] = '\0';
 
-		println("[%s:%d] %s", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port), buffer);
-
-		Message* m = messageConstruct(id, buffer, inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port));
-		println("pre - pushMessage");
+		Message* m = messageConstruct(thread -> id, buffer, inet_ntoa(thread -> clientAddr.sin_addr), ntohs(thread -> clientAddr.sin_port));
 		pushMessage(mq, m);
-		println("post - pushMessage");
-		println("mq size: %d", mq -> size);
 	}
 
 	return NULL;
