@@ -138,6 +138,9 @@ static void* producer(void* data) {
 		if (temp != thread) {
 			sprintf(message, "SERVER: %s:%d has connected\n", inet_ntoa(thread -> clientAddr.sin_addr), ntohs(thread -> clientAddr.sin_port));
 			write(temp -> clientDescriptor, message, strlen(message));
+
+			sprintf(message, "SERVER: %s:%d is connected\n", inet_ntoa(temp -> clientAddr.sin_addr), ntohs(temp -> clientAddr.sin_port));
+			write(thread -> clientDescriptor, message, strlen(message));
 		}
 	}
 	vectorPush(threads, thread);
@@ -214,14 +217,19 @@ void server(int port) {
 	// create consumer thread
 	int consumerIndex = 0;
 	handleError(pthread_create(&consumerID, NULL, consumer, &consumerIndex), "pthread_create", true);
+	handleError(pthread_detach(consumerID), "pthread_detach", true);
 
 	// don't die while waiting for a new connection
 	int producerIndex = 0;
 	handleError(pthread_mutex_lock(&threadCreateMutex), "pthread_mutex_lock", true);
 	while (true) {
 		handleError(pthread_create(&producerID, NULL, producer, &producerIndex), "pthread_create", true);
+		handleError(pthread_detach(producerID), "pthread_detach", true);
 
 		do {
+			/* block until a producer thread has indicated
+			 * it is okay to spin up another thread
+			 */
 			handleError(pthread_cond_wait(&threadCreateCond, &threadCreateMutex), "pthread_cond_wait", true);
 		} while (threadCreate != true);
 		producerIndex++;
