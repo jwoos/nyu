@@ -12,5 +12,17 @@
 #define BUFFER_SIZE 1024
 #define READ_SIZE 512
 
+#define DATA_DEFAULT_SIZE 16
+#define DATA_INCREASE_FACTOR 2
+
+
+enum Resize {
+	ADD,
+	MULTIPLY,
+	SUBTRACT,
+	DIVIDE,
+	SET
+};
+
 
 #endif

@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -Wall -Wextra -std=gnu11 -ggdb -O0 -Wno-sign-compare -pthread
 
 EXECUTABLES = chat
-OBJECTS = utils.o client.o server.o message-queue.o thread.o
+OBJECTS = utils.o client.o server.o message-queue.o thread.o vector.o
 
 all: clean $(EXECUTABLES)
 

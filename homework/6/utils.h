@@ -15,5 +15,9 @@ void handleError(int, char*, bool);
 
 void handlePerror(int, char*, bool);
 
+int max(int, int);
+
+int min(int, int);
+
 
 #endif
