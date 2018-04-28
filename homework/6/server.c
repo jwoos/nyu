@@ -84,35 +84,34 @@ static void* consumer(void* data) {
 	int n;
 	char message[BUFFER_SIZE + 64];
 
+	handleError(pthread_mutex_lock(mq -> mutex), "pthread_mutex_lock", true);
 	while (true) {
-		while (mq -> size > 0) {
-			Message* m = popMessage(mq);
-			println("consumer: %s", m -> message);
-
-			handleError(pthread_mutex_lock(&threadsMutex), "pthread_mutex_lock", true);
-			for (int i = 0; i < threads -> size; i++) {
-				Thread* temp = (Thread*) vectorGet(threads, i);
-
-				// don't send the message back to sender
-				if (temp -> id == m -> sender) {
-					continue;
-				}
-
-				sprintf(message, "[%s:%d] %s", inet_ntoa(temp -> clientAddr.sin_addr), ntohs(temp -> clientAddr.sin_port), m -> message);
-
-				n = write(temp -> clientDescriptor, message, strlen(message));
-				if (n < 0) {
-					perror("write");
-				}
-			}
-			handleError(pthread_mutex_unlock(&threadsMutex), "pthread_mutex_unlock", true);
-
-			messageDeconstruct(m);
-		}
-
 		while (mq -> size == 0) {
 			handleError(pthread_cond_wait(mq -> cond, mq -> mutex), "pthread_cond_wait", true);
 		}
+
+		Message* m = popMessage(mq);
+		println("consumer: %s", m -> message);
+
+		handleError(pthread_mutex_lock(&threadsMutex), "pthread_mutex_lock", true);
+		for (int i = 0; i < threads -> size; i++) {
+			Thread* temp = (Thread*) vectorGet(threads, i);
+
+			// don't send the message back to sender
+			if (temp -> id == m -> sender) {
+				continue;
+			}
+
+			sprintf(message, "[%s:%d] %s", inet_ntoa(temp -> clientAddr.sin_addr), ntohs(temp -> clientAddr.sin_port), m -> message);
+
+			n = write(temp -> clientDescriptor, message, strlen(message));
+			if (n < 0) {
+				perror("write");
+			}
+		}
+		handleError(pthread_mutex_unlock(&threadsMutex), "pthread_mutex_unlock", true);
+
+		messageDeconstruct(m);
 	}
 
 	return NULL;
