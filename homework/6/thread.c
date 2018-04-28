@@ -13,6 +13,6 @@ Thread* threadConstruct(pthread_t id) {
 	return thread;
 }
 
-void threadDeconstruct(Thread* thread) {
+void threadDeconstruct(void* thread) {
 	free(thread);
 }

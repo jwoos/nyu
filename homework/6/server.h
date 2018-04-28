@@ -20,6 +20,7 @@
 #include "utils.h"
 #include "message-queue.h"
 #include "thread.h"
+#include "vector.h"
 
 
 void server(int);

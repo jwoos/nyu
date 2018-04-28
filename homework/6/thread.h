@@ -19,7 +19,7 @@ typedef struct Thread {
 
 Thread* threadConstruct(pthread_t);
 
-void threadDeconstruct(Thread*);
+void threadDeconstruct(void*);
 
 
 #endif

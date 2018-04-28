@@ -118,8 +118,7 @@ void client(char* ip, int port) {
 				}
 				buffer[n] = '\0';
 
-
-				printf("[%s:%d] %s", inet_ntoa(addr.sin_addr), ntohs(addr.sin_port), buffer);
+				printf("%s", buffer);
 			}
 		}
 	}

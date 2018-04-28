@@ -3,6 +3,10 @@
 
 Vector* vectorConstruct(uint64_t cap) {
 	Vector* vector = malloc(sizeof(Vector));
+	if (vector == NULL) {
+		perror("malloc");
+		exit(EXIT_FAILURE);
+	}
 
 	if (!cap) {
 		cap = DATA_DEFAULT_SIZE;
@@ -11,6 +15,10 @@ Vector* vectorConstruct(uint64_t cap) {
 	vector -> size = 0;
 	vector -> capacity = cap;
 	vector -> array = calloc(cap, sizeof(void*));
+	if (vector -> array == NULL) {
+		perror("malloc");
+		exit(EXIT_FAILURE);
+	}
 
 	return vector;
 }
@@ -130,4 +138,8 @@ void vectorResize(Vector* vector, enum Resize action, uint64_t amount, void (*fn
 	vector -> capacity = proposedSize;
 	vector -> size = min(vector -> capacity, vector -> size);
 	vector -> array = realloc(vector -> array, sizeof (*(vector -> array)) * (vector -> capacity));
+	if (vector -> array == NULL) {
+		perror("realloc");
+		exit(EXIT_FAILURE);
+	}
 }
