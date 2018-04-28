@@ -31,3 +31,11 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 - The client requires a port as well if the IP is specified if neither are specified it will use localhost (127.0.0.1) and port 8000
 
 ## Changes
+### Server
+- Select is not needed anymore as each connection is on its own thread
+
+### Client
+- Gave special meaning to `/quit` when sent as a message
+- Changed printing out messages
+  - Previously it took the server's IP and port and showed it as part of message
+  - Now it just shows the message as the IP and port are embedded in the message

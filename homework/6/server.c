@@ -23,17 +23,23 @@ static void cleanup(void) {
 		}
 	}
 
-/*
- *    if (clientDescriptor > 0) {
- *        if (shutdown(clientDescriptor, SHUT_RDWR) < 0) {
- *            perror("shutdown");
- *        }
- *
- *        if (close(clientDescriptor) < 0) {
- *            perror("close");
- *        }
- *    }
- */
+	if (mq == NULL) {
+		return;
+	}
+
+	for (int i = 0; i < threads -> size; i++) {
+		Thread* thread = (Thread*) vectorGet(threads, i);
+
+		if (thread -> clientDescriptor > 0) {
+			if (shutdown(thread -> clientDescriptor, SHUT_RDWR) < 0) {
+				perror("shutdown");
+			}
+
+			if (close(thread -> clientDescriptor) < 0) {
+				perror("close");
+			}
+		}
+	}
 }
 
 // create a TCP socket using IPv4
@@ -146,7 +152,7 @@ static void* producer(void* data) {
 	vectorPush(threads, thread);
 	handleError(pthread_mutex_unlock(&threadsMutex), "pthread_mutex_unlock", true);
 
-	println("Connected to client: %s:%d", inet_ntoa(thread -> clientAddr.sin_addr), ntohs(thread -> clientAddr.sin_port));
+	println("Connected to client %s:%d", inet_ntoa(thread -> clientAddr.sin_addr), ntohs(thread -> clientAddr.sin_port));
 
 	threadCreate = true;
 	handleError(pthread_mutex_unlock(&threadCreateMutex), "pthread_mutex_unlock", true);
