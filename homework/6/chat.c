@@ -1,3 +1,4 @@
+#include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,9 +25,25 @@ void usage(bool e) {
 }
 
 
+
+void signalHandler() {
+	exit(EXIT_SUCCESS);
+}
+
+
 int main(int argc, char** argv) {
 	if (argc < 2) {
 		usage(true);
+	}
+
+	struct sigaction act;
+
+	act.sa_handler = &signalHandler;
+	act.sa_flags = 0;
+
+	if (sigaction(SIGINT, &act, NULL) < 0) {
+		perror("sigaction");
+		exit(EXIT_FAILURE);
 	}
 
 	if (!strncmp(argv[1], "server", 6)) {
