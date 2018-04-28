@@ -18,6 +18,8 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 ## Notes
 - Run the application with no arguments to see the usage
 - Tested on the same machine as well as on local network with two machines
+- Run server with `./chat server`, which will listen on port 8000
+- Run client with `./chat client`, which will attempt to connect to 127.0.0.1:8000 by default
 
 ### Server
 - Exit the application with `Ctrl-C` (`SIGTERM`)
