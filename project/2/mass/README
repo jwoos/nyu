@@ -1,0 +1,21 @@
+You are reading README.
+
+These are the ancient sources for the MASS program, which is a primitive assembly language simulator for a toy machine.  They were written a looong time ago and at some point even compiled on K&R C compiler.  I tried them on a reasonably recent Mac OS C compiler (gcc and clang) and they worked!
+
+It should be enough to just unzip the file and type "make" in your favorite command window.  There are two versions of the ZIP file:
+
+-- mass-barebones.zip has only the original files; it assumes you have lex/flex [see the LEX variable] and yacc/bison [see YACC variable] installed and will invoke them to go from the scanner specification (tok.l) and parser description (syn.y) to the corresponding C files (tok.c and syn.c, respectively)
+
+-- mass.zip has all of the above and also the tok.c and syn.c already generated.
+   so there is not need to have lex/flex/yacc/bison.  a C compiler/linker should be sufficient.
+
+In detail:
+
+main.c	-- main program; reads arguments, invokes the MASS interpreter
+tok.l  	-- token specification in lex/flex format
+tok.c   -- the matching C file; output of "flex -y" run on tok.l on my laptop
+syn.y	-- syntax specification in yacc/bison format; there is really not much syntax there; much checking is done in a separate routine
+syn.c   -- the matching C file; output of bison run on syn.y on my laptop
+common.h-- some common definitions for all pieces
+format.c-- fill out the code table, do some minimal checking, initialize and run the code interpreter
+makefile-- the file for MAKE to build the project. not really needed: you can just compile all the .c files from mass-barebones.zip and link them together.
