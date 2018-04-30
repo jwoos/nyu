@@ -5,7 +5,12 @@ INSERT INTO professors (
 	last_name
 ) VALUES (
 	1,
-	2,
+	3,
 	"John",
+	"Doe"
+), (
+	2,
+	4,
+	"Jane",
 	"Doe"
 );
