@@ -96,13 +96,11 @@ window.professor = {
 				}
 			}
 
-			console.log(semesterYearData);
-
 			const canvas = document.createElement('canvas');
 			const chart = new Chart(canvas.getContext('2d'), {
 				type: 'line',
 				data: {
-					labels: Object.keys(semesterYearData),
+					labels: Object.keys(semesterYearData).sort(),
 					datasets: [
 						{
 							label: 'Average Rating',
@@ -112,7 +110,7 @@ window.professor = {
 							lineTension: 0.1
 						},
 						{
-							label: 'Total Rating',
+							label: 'Number of Ratings',
 							data: Object.values(semesterYearData).map(x => x.ratingCount),
 							fill: false,
 							borderColor: randomColor({luminosity: 'dark', hue: 'random', format: 'rgb'}),

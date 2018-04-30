@@ -1,83 +1,206 @@
+-- 2018 spring
 INSERT INTO enrollments (
 	id,
 	student_id,
 	course_id,
 	year,
-	semester,
-	section
+	semester
 ) VALUES (
 	1,
 	1,
 	1,
 	2018,
+	1
+), (
+	2,
 	1,
-	"A"
-);
-
-INSERT INTO enrollments (
-	id,
-	student_id,
-	course_id,
-	year,
-	semester,
-	section
-) VALUES (
-	2,
-	2,
 	3,
 	2018,
+	1
+), (
+	3,
 	1,
-	"A"
-);
-
-
-INSERT INTO enrollments (
-	id,
-	student_id,
-	course_id,
-	year,
-	semester,
-	section
-) VALUES (
-	3,
-	3,
-	2,
+	5,
 	2018,
-	1,
-	"A"
-);
-
-
-INSERT INTO enrollments (
-	id,
-	student_id,
-	course_id,
-	year,
-	semester,
-	section
-) VALUES (
-	4,
+	1
+), (
 	4,
 	1,
+	7,
 	2018,
+	1
+), (
+	5,
 	1,
-	"A"
+	9,
+	2018,
+	1
+), (
+	6,
+	2,
+	2,
+	2018,
+	1
+), (
+	7,
+	2,
+	4,
+	2018,
+	1
+), (
+	8,
+	2,
+	6,
+	2018,
+	1
+), (
+	9,
+	2,
+	8,
+	2018,
+	1
+), (
+	10,
+	2,
+	10,
+	2018,
+	1
 );
 
-
+-- 2017 winter
 INSERT INTO enrollments (
 	id,
 	student_id,
 	course_id,
 	year,
-	semester,
-	section
+	semester
 ) VALUES (
-	5,
-	5,
-	3,
-	2018,
+	11,
 	1,
-	"A"
+	1,
+	2017,
+	4
+), (
+	12,
+	1,
+	3,
+	2017,
+	4
+), (
+	13,
+	1,
+	5,
+	2017,
+	4
+), (
+	14,
+	1,
+	7,
+	2017,
+	4
+), (
+	15,
+	1,
+	9,
+	2017,
+	4
+), (
+	16,
+	2,
+	2,
+	2017,
+	4
+), (
+	17,
+	2,
+	4,
+	2017,
+	4
+), (
+	18,
+	2,
+	6,
+	2017,
+	4
+), (
+	19,
+	2,
+	8,
+	2017,
+	4
+), (
+	20,
+	2,
+	10,
+	2017,
+	4
 );
 
+-- 2017 fall
+INSERT INTO enrollments (
+	id,
+	student_id,
+	course_id,
+	year,
+	semester
+) VALUES (
+	21,
+	1,
+	1,
+	2017,
+	3
+), (
+	22,
+	1,
+	3,
+	2017,
+	3
+), (
+	23,
+	1,
+	5,
+	2017,
+	3
+), (
+	24,
+	1,
+	7,
+	2017,
+	3
+), (
+	25,
+	1,
+	9,
+	2017,
+	3
+), (
+	26,
+	2,
+	2,
+	2017,
+	3
+), (
+	27,
+	2,
+	4,
+	2017,
+	3
+), (
+	28,
+	2,
+	6,
+	2017,
+	3
+), (
+	29,
+	2,
+	8,
+	2017,
+	3
+), (
+	30,
+	2,
+	10,
+	2017,
+	3
+);
