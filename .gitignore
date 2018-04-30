@@ -6,6 +6,6 @@ nyu_csuy-3943-project1
 *_OUTPUT
 *.out
 parsetab.py
-mass
+massexe
 *.tab.h
 *.tab.c
