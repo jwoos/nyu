@@ -419,6 +419,12 @@ def p_bool_expr(p):
     p[0] = p[2]
     p[0].args = [p[1], p[3]]
 
+def p_bool_expr_error(p):
+    '''
+    bool_expr : error
+    '''
+    logger.error(f'bool_expr error on line {p.lineno(1)}')
+
 def p_function_call(p):
     '''
     function_call : identifier LPAR expr RPAR
