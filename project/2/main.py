@@ -6,6 +6,7 @@ from parser.parser import parser
 from scanner.scanner import lexer
 from semantics.symbol_table import SymbolTable, SymbolScope, SymbolType, Symbol, info
 from semantics import handler, checker
+from code.memory import Memory, MemoryItem
 from log import logger
 
 
