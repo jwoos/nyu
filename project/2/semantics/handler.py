@@ -55,7 +55,7 @@ def handle_function_def(node_stack, table_stack, node):
     # make sure there is a return besides in main
     if node.args[2]:
         for stmt in node.args[2].args:
-            if stmt.symbol == 'return':
+            if stmt and stmt.symbol == 'return':
                 return_node = stmt
                 break
 

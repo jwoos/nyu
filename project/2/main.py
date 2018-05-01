@@ -30,6 +30,9 @@ def main():
         node = node_stack.pop()
         logger.debug(node)
 
+        if not node:
+            continue
+
         if node.symbol == 'function_def':
             signal = handler.handle_function_def(node_stack, table_stack, node)
             if signal == handler.Signal.CONTINUE:
