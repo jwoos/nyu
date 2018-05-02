@@ -19,7 +19,7 @@
 #include "utils.h"
 
 
-void client(char*, int);
+void client(char*, char*, int);
 
 
 #endif

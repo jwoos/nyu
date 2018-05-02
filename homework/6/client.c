@@ -63,18 +63,24 @@ static int initSelect(void) {
 	return selectStatus;
 }
 
-void client(char* ip, int port) {
+void client(char* name, char* ip, int port) {
 	// register cleanup
 	atexit(cleanup);
 
-	println("client: %s:%d", ip, port);
+	println("client: %s@%s:%d", name, ip, port);
 
 	initSocket();
 
 	initConnect(ip, port);
 
-
 	char buffer[BUFFER_SIZE];
+	int n;
+
+	sprintf(buffer, "/name %s", name);
+	n = write(fd, buffer, strlen(buffer));
+	if (n < 0) {
+		perror("write");
+	}
 
 	while (true) {
 		fflush(stdin);
@@ -82,7 +88,6 @@ void client(char* ip, int port) {
 
 		int selectStatus = initSelect();
 		if (selectStatus) {
-			int n;
 
 			if (FD_ISSET(STDIN_FILENO, &descriptors)) {
 				if (fgets(buffer, READ_SIZE, stdin) == NULL) {

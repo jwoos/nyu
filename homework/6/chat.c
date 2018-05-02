@@ -10,14 +10,17 @@
 
 
 void usage(bool e) {
-	printf("Server usage:\n");
-	printf("./chat server [port]\n");
-	printf("port: the port to listen on\n\n");
+	println("Server usage:");
+	println("./chat server [port]");
+	println("port: the port to listen on");
 
-	printf("Client usage:\n");
-	printf("./chat client [ip port]\n");
-	printf("ip: the ip address to connect to\n");
-	printf("port: the port to connect to\n\n");
+	println("");
+
+	println("Client usage:");
+	println("./chat client name [ip port]");
+	println("name: name of the client");
+	println("ip: the ip address to connect to");
+	println("port: the port to connect to");
 
 	if (e) {
 		exit(EXIT_FAILURE);
@@ -60,22 +63,23 @@ int main(int argc, char** argv) {
 
 		server(port);
 	} else if (!strncmp(argv[1], "client", 5)) {
-		if (argc != 2 && argc != 4) {
+		if (argc != 3 && argc != 5) {
 			usage(true);
 		}
 
 		char* host;
 		int port;
+		char* name = argv[2];
 
-		if (argc == 2) {
+		if (argc == 3) {
 			host = DEFAULT_HOST;
 			port = DEFAULT_PORT;
 		} else {
-			host = argv[2];
-			port = strtol(argv[3], NULL, 10);
+			host = argv[3];
+			port = strtol(argv[4], NULL, 10);
 		}
 
-		client(host, port);
+		client(name, host, port);
 	} else {
 		usage(true);
 	}

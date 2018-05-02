@@ -81,8 +81,8 @@ static void* consumer(void* data) {
 	int index = *(int*)data;
 	println("consumer thread: %d", index);
 
-	int n;
 	char message[BUFFER_SIZE + 64];
+	int n;
 
 	handleError(pthread_mutex_lock(mq -> mutex), "pthread_mutex_lock", true);
 	while (true) {
@@ -91,7 +91,7 @@ static void* consumer(void* data) {
 		}
 
 		Message* m = popMessage(mq);
-		println("consumer: %s", m -> message);
+		printf("consumer: %s", m -> message);
 
 		handleError(pthread_mutex_lock(&threadsMutex), "pthread_mutex_lock", true);
 		for (int i = 0; i < threads -> size; i++) {
@@ -102,7 +102,7 @@ static void* consumer(void* data) {
 				continue;
 			}
 
-			sprintf(message, "[%s:%d] %s", inet_ntoa(temp -> clientAddr.sin_addr), ntohs(temp -> clientAddr.sin_port), m -> message);
+			sprintf(message, "[%s@%s:%d] %s", temp -> name, inet_ntoa(temp -> clientAddr.sin_addr), ntohs(temp -> clientAddr.sin_port), m -> message);
 
 			n = write(temp -> clientDescriptor, message, strlen(message));
 			if (n < 0) {
@@ -136,23 +136,6 @@ static void* producer(void* data) {
 		exit(EXIT_FAILURE);
 	}
 
-	handleError(pthread_mutex_lock(&threadsMutex), "pthread_mutex_lock", true);
-	for (int i = 0; i < threads -> size; i++) {
-		Thread* temp = (Thread*) vectorGet(threads, i);
-
-		if (temp != thread) {
-			sprintf(message, "SERVER: %s:%d has connected\n", inet_ntoa(thread -> clientAddr.sin_addr), ntohs(thread -> clientAddr.sin_port));
-			write(temp -> clientDescriptor, message, strlen(message));
-
-			sprintf(message, "SERVER: %s:%d is connected\n", inet_ntoa(temp -> clientAddr.sin_addr), ntohs(temp -> clientAddr.sin_port));
-			write(thread -> clientDescriptor, message, strlen(message));
-		}
-	}
-	vectorPush(threads, thread);
-	handleError(pthread_mutex_unlock(&threadsMutex), "pthread_mutex_unlock", true);
-
-	println("Connected to client %s:%d", inet_ntoa(thread -> clientAddr.sin_addr), ntohs(thread -> clientAddr.sin_port));
-
 	threadCreate = true;
 	handleError(pthread_mutex_unlock(&threadCreateMutex), "pthread_mutex_unlock", true);
 	handleError(pthread_cond_broadcast(&threadCreateCond), "pthread_cond_broadcast", true);
@@ -172,7 +155,7 @@ static void* producer(void* data) {
 			perror("read");
 			continue;
 		} else if ((n == 0) || (strncmp(buffer, "/quit", 5) == 0)) {
-			println("Connection to client %s:%d closed", inet_ntoa(thread -> clientAddr.sin_addr), ntohs(thread -> clientAddr.sin_port));
+			println("Connection to client %s@%s:%d closed", thread -> name, inet_ntoa(thread -> clientAddr.sin_addr), ntohs(thread -> clientAddr.sin_port));
 			println("");
 
 			// find thread and clean it up
@@ -184,13 +167,34 @@ static void* producer(void* data) {
 				if (temp == thread) {
 					toDelete = i;
 				} else {
-					sprintf(message, "SERVER: %s:%d has disconnected\n", inet_ntoa(thread -> clientAddr.sin_addr), ntohs(thread -> clientAddr.sin_port));
+					sprintf(message, "SERVER: %s@%s:%d has disconnected\n", thread -> name, inet_ntoa(thread -> clientAddr.sin_addr), ntohs(thread -> clientAddr.sin_port));
 					write(temp -> clientDescriptor, message, strlen(message));
 				}
 			}
 			vectorDelete(threads, toDelete, threadDeconstruct);
 			handleError(pthread_mutex_unlock(&threadsMutex), "pthread_mutex_unlock", true);
 			break;
+		} else if (strncmp(buffer, "/name", 5) == 0) {
+			char* tok = strtok(buffer, " ");
+			tok = strtok(NULL, " ");
+			threadSetName(thread, tok);
+			println("Connected to client %s@%s:%d", thread -> name, inet_ntoa(thread -> clientAddr.sin_addr), ntohs(thread -> clientAddr.sin_port));
+
+			handleError(pthread_mutex_lock(&threadsMutex), "pthread_mutex_lock", true);
+			for (int i = 0; i < threads -> size; i++) {
+				Thread* temp = (Thread*) vectorGet(threads, i);
+
+				if (temp != thread) {
+					sprintf(message, "SERVER: %s@%s:%d has connected\n", thread -> name, inet_ntoa(thread -> clientAddr.sin_addr), ntohs(thread -> clientAddr.sin_port));
+					write(temp -> clientDescriptor, message, strlen(message));
+					sprintf(message, "SERVER: %s@%s:%d is connected\n", temp -> name, inet_ntoa(temp -> clientAddr.sin_addr), ntohs(temp -> clientAddr.sin_port));
+					write(thread -> clientDescriptor, message, strlen(message));
+				}
+			}
+			vectorPush(threads, thread);
+			handleError(pthread_mutex_unlock(&threadsMutex), "pthread_mutex_unlock", true);
+
+			continue;
 		}
 		buffer[n] = '\0';
 
