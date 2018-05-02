@@ -39,3 +39,13 @@ int max(int a, int b) {
 int min(int a, int b) {
 	return a > b ? b : a;
 }
+
+void blockThreadSignals(void) {
+	// block all signals for this thread
+	sigset_t mask;
+	if (sigfillset(&mask)) {
+		perror("sigfillset");
+		exit(EXIT_FAILURE);
+	}
+	handleError(pthread_sigmask(SIG_BLOCK, &mask, NULL), "pthread_sigmask", true);
+}

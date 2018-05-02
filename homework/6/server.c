@@ -78,6 +78,8 @@ static void initListen(void) {
 
 // take incoming messages and fan it out
 static void* consumer(void* data) {
+	blockThreadSignals();
+
 	int index = *(int*)data;
 	println("consumer thread: %d", index);
 
@@ -118,6 +120,8 @@ static void* consumer(void* data) {
 }
 
 static void* producer(void* data) {
+	blockThreadSignals();
+
 	int index = *(int*)data;
 	println("producer thread: %d", index);
 

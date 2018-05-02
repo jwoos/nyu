@@ -3,6 +3,7 @@
 
 
 #include <errno.h>
+#include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -18,6 +19,8 @@ void handlePerror(int, char*, bool);
 int max(int, int);
 
 int min(int, int);
+
+void blockThreadSignals(void);
 
 
 #endif
