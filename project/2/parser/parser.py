@@ -246,7 +246,7 @@ def p_stmt(p):
         elif p[1] == 'read':
             p[0] = Node(
                 p[1],
-                args=[p[2]],
+                args=[*p[2].args],
                 attrs={
                     'name': 'read_kw',
                     'terminal': True,
@@ -258,7 +258,7 @@ def p_stmt(p):
         elif p[1] == 'write':
             p[0] = Node(
                 p[1],
-                args=[p[2]],
+                args=[*p[2].args],
                 attrs={
                     'name': 'write_kw',
                     'terminal': True,

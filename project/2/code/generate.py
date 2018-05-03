@@ -1,6 +1,7 @@
 from code.asm import ASM
-from code.memory import Stack, Memory, Label, Function, new_memory
-from semantics.symbol_table import SymbolType, Symbol, SymbolScope, RETURN_KEY
+from code.memory import Stack, Memory, Label, Function, new_memory, new_label
+from parser.ast import Node
+from semantics.symbol_table import SymbolType, Symbol, SymbolScope
 
 
 def generate(ast, table_cache, global_table):
@@ -14,32 +15,35 @@ def generate(ast, table_cache, global_table):
     # initialize globals
     generate_memory(table_stack[0], False)
 
-    return
-
     while node_stack:
         node = node_stack.pop()
 
         if node.symbol == 'function_def':
-            # 0 is identifier for function
-            # 1 is function argument
-            # 2 is function body
-            generate_function(stack, node_stack, table_stack, node)
+            output.append(generate_function(stack, node_stack, table_stack, table_cache, node))
+            continue
 
         for child in reversed(node.args):
             if child:
                 node_stack.append(child)
 
+    output.append(ASM('START', table_stack[0].get('main').get('label')))
+
     return output
 
 # everything can be dealt with in here since only functions
 # can have any operations or calls
-def generate_function(stack, node_stack, table_stack, function):
+def generate_function(stack, node_stack, table_stack, table_cache, function):
     function_identifier = function.args[0]
     function_argument = function.args[1]
     function_body = function.args[2]
 
     table_stack.append(table_cache[function_identifier.symbol])
 
+    node_stack.append(Node(
+        'function_def_end',
+        args=[function_identifier],
+        attrs={}
+    ))
     node_stack.append(function_body)
 
     output = []
@@ -47,28 +51,61 @@ def generate_function(stack, node_stack, table_stack, function):
     generate_memory(table_stack[-1], True)
     function_symbol = table_stack[0].get(function.args[0].symbol)
 
+    # function is not main
+    if function_identifier.symbol != 'main':
+        output.append(ASM('POP', function_argument.get('memory')))
+
     output.append(ASM('LABEL', function_symbol.attrs['label']))
-    # pop the argument into the parameter
-    output.append(ASM('POP', table_stack[-1].get(function_argument.symbol)))
 
     while node_stack:
         node = node_stack.pop()
 
-        if node.symbol == 'return':
-            output.append(ASM('PUSH', table_stack[-1].get(RETURN_KEY)))
+        if node.symbol == 'return' or node.symbol == 'function_def_end':
+            output.append(ASM('PUSH', table_stack[-1].get(Symbol.RETURN_KEY).get('memory')))
             table_stack.pop()
-            return
-        elif node.symbol == 'write':
-            pass
-        elif node.symbol == 'read':
-            pass
-        elif node.symbol == 'function_call':
-            pass
 
-        # calling main for the first time
-        if not stack.size():
-            pass
-        else:
+            if function_identifier.symbol == 'main':
+                # if main then just exit the program since we're at the end
+                output.append(ASM('STOP'))
+            else:
+                # TODO needs return values
+                # if another function then let's return
+                output.append(ASM('RETURN'))
+
+            # exit the loop - we're done working on the function
+            return output
+        elif node.symbol == 'write':
+            for arg in node.args:
+                if arg.get('name') == 'string':
+                    output.append(ASM('WRITES', ASM.string(arg.symbol)))
+                elif arg.get('name') == 'int_literal':
+                    output.append(ASM('WRITE', ASM.literal(arg.symbol)))
+                elif arg.get('name') == 'float_literal':
+                    output.append(ASM('WRITEF', ASM.literal(arg.symbol)))
+                elif arg.get('name') == 'identifier':
+                    if arg.get('type') == int:
+                        output.append(ASM('WRITE', arg.get('memory')))
+                    else:
+                        output.append(ASM('WRITEF', arg.get('memory')))
+                else:
+                    # TODO deal with expressions
+                    # this is an expression
+                    pass
+
+                # there should be a space between all the items being written
+                output.append(ASM('WRITES', ASM.string(' ')))
+
+            # newline after writing is done
+            output.append(ASM('NEWLINE'))
+
+        elif node.symbol == 'read':
+            for arg in node.args:
+                if arg.get('type') == int:
+                    output.append(ASM('READ', arg.get('memory')))
+                else:
+                    output.append(ASM('READF', arg.get('memory')))
+
+        elif node.symbol == 'function_call':
             pass
 
         for child in reversed(node.args):
@@ -88,4 +125,5 @@ def generate_memory(table, is_function):
 
     # generate a return address
     if is_function:
-        table[RETURN_KEY] = Symbol(SymbolScope.LOCAL, SymbolType.OTHER, attrs={'memory': new_memory()})
+        table.set(Symbol.RETURN_KEY, Symbol(SymbolScope.LOCAL, SymbolType.OTHER, attrs={'memory': new_memory()}))
+        table.set(Symbol.TEMP_KEY, Symbol(SymbolScope.LOCAL, SymbolType.OTHER, attrs={'memory': new_memory()}))

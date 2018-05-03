@@ -7,9 +7,6 @@ from parser.ast import Node
 import log
 
 
-RETURN_KEY = '<RETURN>'
-
-
 class CustomEncoder(json.JSONEncoder):
     def default(self, o):
         if inspect.isclass(o):
@@ -35,6 +32,9 @@ class SymbolType(enum.Enum):
 
 
 class Symbol:
+    RETURN_KEY = '<RETURN>'
+    TEMP_KEY = '<TEMP>'
+
     def __init__(self, scope, kind, attrs=None):
         self.scope = scope
         self.kind = kind

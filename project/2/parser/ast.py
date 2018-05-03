@@ -43,5 +43,5 @@ class Node:
     def get(self, key):
         return self.attrs.get(key)
 
-    def set(self, key val):
+    def set(self, key, val):
         self.attrs[key] = val

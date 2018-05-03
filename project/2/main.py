@@ -1,3 +1,4 @@
+import functools
 import sys
 import os
 
@@ -9,15 +10,20 @@ from semantics import handler, checker
 from semantics.symbol_table import SymbolTable, SymbolScope, SymbolType, Symbol, info
 import error
 import log
+import utils
 
 
 def main():
-    s = None
+    filename = None
+
     if len(sys.argv) > 1:
-        s = open(sys.argv[1]).read()
+        filename = sys.argv[1]
     else:
-        s = open('test/test.c').read()
-    result = parser.parse(s)
+        filename = 'test/test.c'
+
+    with open(filename) as r:
+        result = parser.parse(r.read())
+
     log.info(result)
 
     if result is None:
@@ -105,6 +111,16 @@ def main():
     else:
         log.info('Generating code')
         output = generate(result, table_cache, table_stack[0])
+        log.info(output)
+
+        flattened_output = utils.flatten_array(output)
+        log.info(flattened_output)
+
+        string_ouput = functools.reduce(lambda x, y: '\n'.join((str(x), str(y))), flattened_output)
+        log.info(string_ouput)
+
+        f = open(f'{filename.split(".")[0]}.mass', 'w+')
+        f.write(f'{string_ouput}\n')
 
 if __name__ == '__main__':
     main()

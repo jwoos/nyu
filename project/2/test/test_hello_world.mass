@@ -1,0 +1,7 @@
+LABEL 0
+WRITES "Hello, world"
+WRITES " "
+NEWLINE
+PUSH 1
+STOP
+START 0
