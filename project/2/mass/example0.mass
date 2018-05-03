@@ -1,0 +1,33 @@
+// A simple example of what can be done in MASS language...
+label 1
+copy #0,13
+copyf #1.0,100
+// Print the greeting
+writes "Calculating powers of a number."
+newline
+writes "Enter the base:"
+newline
+readf 101 // Base of the exponentiation
+writes "Enter the exponent (small integer):"
+newline
+read 14 // Exponent 
+jge 14,#0,333
+writes "You gave me a negative exponent.  I do not know how to handle that and give up."
+newline
+stop
+label 333
+// In a loop, print out the results of computing the expression by repeated
+// multiplication.
+writef 101
+writes " to the power "
+write 13
+writes " is "
+writef 100
+newline
+add #1,13,13
+mulf 100,101,100
+jle 13,14,333
+writes "All done." // Good-bye.
+newline
+stop
+start 1

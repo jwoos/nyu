@@ -1,0 +1,25 @@
+LABEL 17
+WRITES "Give me the exponent:"
+READ 4 // read the exponent
+WRITES "Give me the base:"
+READF 5 // read the base
+JGE 4,#0,5
+WRITES "You gave me a negative exponent.  I am upset and give up."
+NEWLINE
+STOP
+LABEL 5
+COPY #1, 6 // initialize the power
+LABEL 1
+JEQ 4,#0,2 // loop until the exponent is zero
+MULF 6,5,6
+WRITE 4 // write the exponent
+WRITEF 6 // and the power being computed
+SUB 4,#1,4
+JUMP 1 // repeat
+LABEL 2
+WRITEF 6 // write result
+NEWLINE
+WRITES "I'm finished."
+NEWLINE
+STOP
+START 17
