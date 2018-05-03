@@ -62,6 +62,12 @@ class Symbol:
     def __repr__(self):
         return self.__str__()
 
+    def get(self, key):
+        return self.attrs.get(key)
+
+    def set(self, key, value):
+        self.attrs[key] = value
+
 
 class SymbolTable:
     def __init__(self, scope):

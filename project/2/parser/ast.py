@@ -39,3 +39,9 @@ class Node:
 
     def __repr__(self):
         return self.__str__()
+
+    def get(self, key):
+        return self.attrs.get(key)
+
+    def set(self, key val):
+        self.attrs[key] = val
