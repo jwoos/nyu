@@ -1,0 +1,6 @@
+int x;
+int y;
+float z;
+
+int main(int dummy) {
+}

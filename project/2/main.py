@@ -1,8 +1,7 @@
 import sys
 import os
 
-from code import generate
-from code.memory import Memory, MemoryItem
+from code.generate import generate
 from parser.ast import Node
 from parser.parser import parser
 from scanner.scanner import lexer
@@ -103,9 +102,9 @@ def main():
     # if there was an error do not generate code
     if error.ERROR:
         log.info('Exiting without any code generation')
-        output = generate(node_stack)
     else:
         log.info('Generating code')
+        output = generate(result, table_cache, table_stack[0])
 
 if __name__ == '__main__':
     main()

@@ -2,15 +2,19 @@ import enum
 import inspect
 import json
 
+from code.memory import Label
 from parser.ast import Node
 import log
+
+
+RETURN_KEY = '<RETURN>'
 
 
 class CustomEncoder(json.JSONEncoder):
     def default(self, o):
         if inspect.isclass(o):
             return o.__name__
-        elif isinstance(o, Symbol) or isinstance(o, Node):
+        elif isinstance(o, Symbol) or isinstance(o, Node) or isinstance(o, Label):
             return o.__str__()
         else:
             return super().default(o)
@@ -27,6 +31,7 @@ class SymbolScope(enum.Enum):
 class SymbolType(enum.Enum):
     FUNCTION = 1
     VARIABLE = 2
+    OTHER = 3
 
 
 class Symbol:
@@ -46,7 +51,9 @@ class Symbol:
                 'value': None,
                 'inferred_type': None,
                 'inferred_arg_type': None,
-                'placeholder': False
+                'placeholder': False,
+                'label': None,
+                'memory': None
             }
 
     def __str__(self):
@@ -88,6 +95,15 @@ class SymbolTable:
                 return f'{key} already defined'
 
         self.table[key] = symbol
+
+    def items(self):
+        return self.table.items()
+
+    def keys(self):
+        return self.table.keys()
+
+    def values(self):
+        self.table.values()
 
     def clear(self):
         self.table = {}
