@@ -1,5 +1,7 @@
 import logging
 
+from error import set_error
+
 
 logging.basicConfig(
     format='[%(levelname)s] %(message)s',
@@ -17,4 +19,5 @@ def warning(*args, **kwargs):
     logger.warning(*args, **kwargs)
 
 def error(*args, **kwargs):
+    set_error()
     logger.error(*args, **kwargs)

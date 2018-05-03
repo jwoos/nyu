@@ -3,7 +3,7 @@ import enum
 from parser.ast import Node
 from semantics.symbol_table import SymbolTable, SymbolScope, SymbolType, Symbol, info
 from semantics import checker
-from log import logger
+import log
 
 
 @enum.unique
@@ -28,7 +28,7 @@ def handle_function_def(node_stack, table_stack, node):
     ))
     info(table_stack[0].get(node.args[0].symbol), usage=False)
     if msg:
-        logger.error(msg)
+        log.error(msg)
         return Signal.CONTINUE
 
     table_stack.append(SymbolTable(SymbolScope.LOCAL))
@@ -60,9 +60,9 @@ def handle_function_def(node_stack, table_stack, node):
                 break
 
         if node.args[0].symbol != 'main' and not return_node:
-            logger.error(f'Expected return statment but not found for function {node.args[0].symbol}')
+            log.error(f'Expected return statment but not found for function {node.args[0].symbol}')
     else:
-        logger.error(f'Expected return statment but not found for function {node.args[0].symbol}')
+        log.error(f'Expected return statment but not found for function {node.args[0].symbol}')
 
     node_stack.append(node.args[2])
 
@@ -84,7 +84,7 @@ def handle_function_decl(node_stack, table_stack, node):
     ))
     info(table_stack[0].get(node.args[0].symbol), usage=False)
     if msg:
-        logger.error(msg)
+        log.error(msg)
 
 def handle_decl(node_stack, table_stack, node):
     for var in node.args:
@@ -100,4 +100,4 @@ def handle_decl(node_stack, table_stack, node):
         ))
         info(table_stack[-1].get(var.symbol), usage=False)
         if msg:
-            logger.error(msg)
+            log.error(msg)

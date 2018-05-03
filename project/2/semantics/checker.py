@@ -1,6 +1,6 @@
 import enum
 
-from log import logger
+import log
 from semantics.symbol_table import SymbolTable, SymbolScope, SymbolType, Symbol, info
 
 
@@ -30,7 +30,7 @@ NAME_MAP = {
 
 def propagate_types(node_stack, table_stack, node):
     if not node:
-        logger.warning('encountered empty node during type propagation')
+        log.warning('encountered empty node during type propagation')
         return None
 
     elif node.attrs.get('name') in TERMINALS or node.attrs['type']:
@@ -99,7 +99,7 @@ def check_binary(node_stack, table_stack, node):
 
     if left_type != right_type:
         if left_type not in INFERRED_TYPE_SET and right_type not in INFERRED_TYPE_SET:
-            logger.error(
+            log.error(
                 f'Type error on line {node.attrs.get("line")}'
                 f': {NAME_MAP[node.symbol]} ({node.symbol}) {left_type} {left} [{left.attrs.get("name")}] (declared on line {left_symbol.attrs.get("line") or node.attrs.get("line")}) '
                 f'with {right_type} {right} [{right.attrs.get("name")}] (declared on line {right.attrs.get("line") or node.attrs.get("line")})'
@@ -123,7 +123,7 @@ def check_function_call(node_stack, table_stack, node):
 
     if identifier_type != body_type:
         if identifier_type not in INFERRED_TYPE_SET and body_type not in INFERRED_TYPE_SET:
-            logger.error(
+            log.error(
                 f'Type error calling function {identifier.symbol} '
                 f'(declared on line {identifier_symbol.attrs.get("line")}) '
                 f'with {body_type} but expected type {identifier_type}'

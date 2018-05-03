@@ -1,22 +1,10 @@
-float test(int a) {
-	return b;
+int increment(int a) {
+	return a + 1;
 }
 
 int main(int x) {
 	int y;
-	float z;
+	y = increment(1);
 
-	test(z);
-
-	x = y + (z - 10);
-
-	while (y < z) {
-		a = b + c;
-	}
-
-	if (x == z) {
-		a = b + c;
-	} else {
-		b = a + c;
-	}
+	write y;
 }

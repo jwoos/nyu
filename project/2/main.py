@@ -7,7 +7,8 @@ from scanner.scanner import lexer
 from semantics.symbol_table import SymbolTable, SymbolScope, SymbolType, Symbol, info
 from semantics import handler, checker
 from code.memory import Memory, MemoryItem
-from log import logger
+import error
+import log
 
 
 def main():
@@ -15,20 +16,21 @@ def main():
     if len(sys.argv) > 1:
         s = open(sys.argv[1]).read()
     else:
-        s = open('test.c').read()
+        s = open('test/test.c').read()
     result = parser.parse(s)
-    logger.info(result)
+    log.info(result)
 
     if result is None:
-        logger.error('AST is None - exiting')
+        log.error('AST is None - exiting')
         return
 
     node_stack = [result]
     table_stack = [SymbolTable(SymbolScope.GLOBAL)]
+    table_cache = {}
 
     while node_stack:
         node = node_stack.pop()
-        logger.debug(node)
+        log.debug(node)
 
         if not node:
             continue
@@ -39,6 +41,7 @@ def main():
                 continue
 
         elif node.symbol == 'function_def_end':
+            table_cache[node.args[0].symbol] = table_stack[-1]
             handler.handle_function_def_end(node_stack, table_stack, node)
 
         elif node.symbol == 'function_decl':
@@ -51,7 +54,7 @@ def main():
             if node.attrs.get('name') == 'identifier':
                 if table_stack[-1].get(node.symbol) is None:
                     if table_stack[-1].scope == SymbolScope.LOCAL and table_stack[0].get(node.symbol) is None:
-                        logger.error(f'{node.symbol} referenced before declaration')
+                        log.error(f'{node.symbol} referenced before declaration')
                     else:
                         info(table_stack[0].get(node.symbol), usage=node.attrs.get('line', True))
 
@@ -90,12 +93,17 @@ def main():
     # check if a declared function was called, it was later defined
     for v in table_stack[0].table.values():
         if not v.attrs.get('init') and v.attrs.get('call'):
-            logger.error(f'Function {v} declared and called but never defined')
+            log.error(f'Function {v} declared and called but never defined')
 
     # check if main was defined
     if 'main' not in table_stack[0].table:
-        logger.error('main is not defined')
+        log.error('main is not defined')
 
+    # if there was an error do not generate code
+    if error.ERROR:
+        log.info('Exiting without any code generation')
+    else:
+        log.info('Generating code')
 
 if __name__ == '__main__':
     main()

@@ -4,3 +4,11 @@ class SymbolTableError(Exception):
 
 class ParseError(Exception):
     pass
+
+
+ERROR = False
+
+
+def set_error():
+    global ERROR
+    ERROR = True

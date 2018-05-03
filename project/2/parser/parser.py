@@ -2,7 +2,7 @@ from ply import yacc
 
 from scanner import scanner
 from parser.ast import Node, OperatorType
-from log import logger
+import log
 
 
 class ErrorProduction:
@@ -57,7 +57,7 @@ def p_decl_error(p):
     '''
     decl : kind error SEMI
     '''
-    logger.error(f'decl error on line {p.lineno(2)}')
+    log.error(f'decl error on line {p.lineno(2)}')
 
 def p_kind(p):
     '''
@@ -149,7 +149,7 @@ def p_function_decl_error(p):
     '''
     function_decl : kind identifier LPAR error RPAR SEMI
     '''
-    logger.error('function_decl error')
+    log.error('function_decl error')
 
 def p_function_def(p):
     '''
@@ -187,7 +187,7 @@ def p_function_def_error(p):
     function_def : kind identifier LPAR kind identifier RPAR error
                  | kind identifier LPAR error RPAR body
     '''
-    logger.error('function_def error')
+    log.error('function_def error')
 
 def p_body(p):
     '''
@@ -290,7 +290,7 @@ def p_stmt_error(p):
     stmt : error
          | error SEMI
     '''
-    logger.error(f'stmt error on line {p.lineno(1)}')
+    log.error(f'stmt error on line {p.lineno(1)}')
 
 def p_else_stmt(p):
     '''
@@ -314,7 +314,7 @@ def p_else_stmt_error(p):
     '''
     else_stmt : error
     '''
-    logger.error('else_stmt error')
+    log.error('else_stmt error')
 
 def p_stmt_prime(p):
     '''
@@ -423,7 +423,7 @@ def p_bool_expr_error(p):
     '''
     bool_expr : error
     '''
-    logger.error(f'bool_expr error on line {p.lineno(1)}')
+    log.error(f'bool_expr error on line {p.lineno(1)}')
 
 def p_function_call(p):
     '''
@@ -515,7 +515,7 @@ def p_expr1_error(p):
     '''
     expr1 : expr1 addop error
     '''
-    logger.error('expr1 error')
+    log.error('expr1 error')
 
 def p_addop(p):
     '''
@@ -601,7 +601,7 @@ def p_expr_error(p):
     '''
     expr : identifier ASSIGN error
     '''
-    logger.error('expr error')
+    log.error('expr error')
 
 def p_empty(p):
     '''
@@ -611,17 +611,17 @@ def p_empty(p):
 
 def p_error(p):
     if not p:
-        logger.info('End of file')
+        log.info('End of file')
         return
 
-    logger.error(f'Syntax error on line {p.lineno} position {p.lexpos}: {p.type} {p.value}')
-    logger.error('Attempting to recover and continue')
+    log.error(f'Syntax error on line {p.lineno} position {p.lexpos}: {p.type} {p.value}')
+    log.error('Attempting to recover and continue')
     # while True:
         # token = parser.token()
         # if not token or token.type in ('SEMI', 'RBRACE', 'RPAR'):
-            # logger.error(f'Synchronized on {token}')
+            # log.error(f'Synchronized on {token}')
             # break
-        # logger.error(f'Discarding {token}')
+        # log.error(f'Discarding {token}')
     # parser.restart()
     # return token
 

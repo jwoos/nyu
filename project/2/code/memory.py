@@ -1,7 +1,7 @@
 class Memory:
     def __init__(self):
         self.size = 0
-        self.memory = {}
+        self.memory = []
         self.labels = {}
 
 
