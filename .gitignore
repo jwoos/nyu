@@ -9,4 +9,3 @@ parsetab.py
 massexe
 *.tab.h
 *.tab.c
-*.mass

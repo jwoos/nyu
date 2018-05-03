@@ -1,12 +1,13 @@
 import sys
 import os
 
+from code import generate
+from code.memory import Memory, MemoryItem
 from parser.ast import Node
 from parser.parser import parser
 from scanner.scanner import lexer
-from semantics.symbol_table import SymbolTable, SymbolScope, SymbolType, Symbol, info
 from semantics import handler, checker
-from code.memory import Memory, MemoryItem
+from semantics.symbol_table import SymbolTable, SymbolScope, SymbolType, Symbol, info
 import error
 import log
 
@@ -102,6 +103,7 @@ def main():
     # if there was an error do not generate code
     if error.ERROR:
         log.info('Exiting without any code generation')
+        output = generate(node_stack)
     else:
         log.info('Generating code')
 

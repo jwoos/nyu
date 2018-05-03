@@ -1,16 +1,17 @@
-class Label:
-    def __init__(self, index, items=None, attrs={}):
-        self.index = index
-        self.items = []
-        if items is not None:
-            self.items items
+from code.memory import Memory, Label
 
 
-label_index = 0
+def generate(ast, table_cache):
+    memory = Memory()
+    node_stack = [ast]
 
+    while node_stack:
+        node = node_stack.pop()
 
-def label():
-    global label_index
-    val = Label(label_index)
-    label_index += 1
-    return val
+        if node.symbol == 'function_def':
+            new_label = Label()
+            new_label.attrs
+
+        for child in reversed(node.args):
+            if child:
+                node_stack.append(child)
