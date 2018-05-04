@@ -1,8 +1,10 @@
 int main(int dummy) {
 	int a;
 	int b;
+	a = dummy = 10;
+	write a, dummy;
 	read a, b;
-	write a * 2 + 10;
+	write a * 2 + b;
 	write 10 + a * 2;
-	write (10 + 20) * 2 / 3;
+	write (a = 30) * 2 / 3;
 }

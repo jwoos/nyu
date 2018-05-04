@@ -81,6 +81,7 @@ def generate_function(stack, node_stack, table_stack, table_cache, function):
 
             # exit the loop - we're done working on the function
             return output
+
         elif node.symbol == 'write':
             for arg in node.args:
                 if arg.get('name') == 'string':
@@ -111,6 +112,8 @@ def generate_function(stack, node_stack, table_stack, table_cache, function):
             # newline after writing is done
             output.append(ASM('NEWLINE'))
 
+            continue
+
         elif node.symbol == 'read':
             for arg in node.args:
                 if arg.get('name') == 'identifier':
@@ -121,8 +124,16 @@ def generate_function(stack, node_stack, table_stack, table_cache, function):
                     else:
                         output.append(ASM('READF', identifier_symbol.get('memory')))
 
+            continue
+
         elif node.symbol == 'function_call':
             pass
+
+        elif node.symbol == '=':
+            output.append(generate_expr(table_stack, node))
+
+        else:
+            print('what is dis', node)
 
         for child in reversed(node.args):
             if child:
@@ -177,13 +188,27 @@ def generate_expr(table_stack, node):
 
         right_arg = table_stack[-1].get(Symbol.TEMP_B_KEY).get('memory')
 
-    output.append(ASM(
-        ASM.wrap_type(ASM.NUMERICAL_OPERATION_MAP[node.symbol], node.get('type')),
-        left_arg,
-        right_arg,
-        table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory')
-    ))
-    table_stack[-1].get(Symbol.TEMP_C_KEY).set('type', node.get('type'))
+    if node.symbol == '=':
+        output.append(ASM(
+            'COPY',
+            right_arg,
+            left_arg
+        ))
+
+        output.append(ASM(
+            'COPY',
+            left_arg,
+            table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory')
+        ))
+        table_stack[-1].get(Symbol.TEMP_C_KEY).set('type', node.get('type'))
+    else:
+        output.append(ASM(
+            ASM.wrap_type(ASM.NUMERICAL_OPERATION_MAP[node.symbol], node.get('type')),
+            left_arg,
+            right_arg,
+            table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory')
+        ))
+        table_stack[-1].get(Symbol.TEMP_C_KEY).set('type', node.get('type'))
 
     return output
 
