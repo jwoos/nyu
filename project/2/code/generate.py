@@ -4,6 +4,11 @@ from parser.ast import Node
 from semantics.symbol_table import SymbolType, Symbol, SymbolScope
 
 
+NUMERICAL_OPERATION = {'+', '-', '=', '*', '/'}
+BOOLEAN_OPERATION = {'<=', '>=', '==', '<', '>'}
+KNOWN = {'identifier', 'integer_literal', 'float_literal'}
+
+
 def generate(ast, table_cache, global_table):
     output = []
     stack = Stack()
@@ -78,7 +83,7 @@ def generate_function(stack, node_stack, table_stack, table_cache, function):
             for arg in node.args:
                 if arg.get('name') == 'string':
                     output.append(ASM('WRITES', ASM.string(arg.symbol)))
-                elif arg.get('name') == 'int_literal':
+                elif arg.get('name') == 'integer_literal':
                     output.append(ASM('WRITE', ASM.literal(arg.symbol)))
                 elif arg.get('name') == 'float_literal':
                     output.append(ASM('WRITEF', ASM.literal(arg.symbol)))
@@ -90,10 +95,13 @@ def generate_function(stack, node_stack, table_stack, table_cache, function):
                     else:
                         output.append(ASM('WRITEF', identifier_symbol.get('memory')))
                 else:
-                    print(arg)
                     # TODO deal with expressions
                     # this is an expression
-                    pass
+                    output.append(generate_expr(table_stack, arg))
+                    output.append(ASM(
+                        ASM.wrap_type('WRITE', arg.get('type')),
+                        table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory')
+                    ))
 
                 # there should be a space between all the items being written
                 output.append(ASM('WRITES', ASM.string(' ')))
@@ -110,11 +118,6 @@ def generate_function(stack, node_stack, table_stack, table_cache, function):
                         output.append(ASM('READ', identifier_symbol.get('memory')))
                     else:
                         output.append(ASM('READF', identifier_symbol.get('memory')))
-                else:
-                    print(arg)
-                    # TODO deal with expressions
-                    # this is an expression
-                    pass
 
         elif node.symbol == 'function_call':
             pass
@@ -125,6 +128,51 @@ def generate_function(stack, node_stack, table_stack, table_cache, function):
 
 def generate_function_call(stack, node_stack, table_stack, node):
     pass
+
+def generate_expr(table_stack, node):
+    output = []
+
+    left = node.args[0]
+    right = node.args[1]
+
+    left_type = left.get('name')
+    left_known = left_type in KNOWN
+    right_type = right.get('name')
+    right_known = right_type in KNOWN
+
+    if left_known and right_known:
+        if left_type == 'identifier':
+            left_symbol = table_stack[-1].get(left.symbol) or table_stack[0].get(left.symbol)
+            left_arg = left_symbol.get('memory')
+        else:
+            left_arg = ASM.constant(left.symbol)
+
+        if right_type == 'identifier':
+            right_symbol = table_stack[-1].get(right.symbol) or table_stack[0].get(right.symbol)
+            right_arg = right_symbol.get('memory')
+        else:
+            right_arg = ASM.constant(right.symbol)
+
+        output.append(ASM(
+            ASM.wrap_type(ASM.NUMERICAL_OPERATION_MAP[node.symbol], node.get('type')),
+            left_arg,
+            right_arg,
+            table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory')
+        ))
+
+        return output
+
+    elif right_known:
+        left_output = generate_expr(table_stack, left)
+
+    elif left_known:
+        right_output = generate_expr(table_stack, right)
+
+    else:
+        left_output = generate_expr(table_stack, left)
+        right_output = generate_expr(table_stack, right)
+
+    return output
 
 def generate_memory(table, is_function):
     # generate variables for a given table
@@ -137,4 +185,6 @@ def generate_memory(table, is_function):
     # generate a return address
     if is_function:
         table.set(Symbol.RETURN_KEY, Symbol(SymbolScope.LOCAL, SymbolType.OTHER, attrs={'memory': new_memory()}))
-        table.set(Symbol.TEMP_KEY, Symbol(SymbolScope.LOCAL, SymbolType.OTHER, attrs={'memory': new_memory()}))
+        table.set(Symbol.TEMP_A_KEY, Symbol(SymbolScope.LOCAL, SymbolType.OTHER, attrs={'memory': new_memory()}))
+        table.set(Symbol.TEMP_B_KEY, Symbol(SymbolScope.LOCAL, SymbolType.OTHER, attrs={'memory': new_memory()}))
+        table.set(Symbol.TEMP_C_KEY, Symbol(SymbolScope.LOCAL, SymbolType.OTHER, attrs={'memory': new_memory()}))

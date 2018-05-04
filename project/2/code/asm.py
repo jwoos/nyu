@@ -1,4 +1,11 @@
 class ASM:
+    NUMERICAL_OPERATION_MAP = {
+        '+': 'ADD',
+        '-': 'SUB',
+        '*': 'MUL',
+        '/': 'DIV'
+    }
+
     def __init__(self, operation, *args):
         self.operation = operation
         self.operands = args
@@ -29,3 +36,16 @@ class ASM:
     @staticmethod
     def string(val):
         return f'"{val}"'
+
+    @staticmethod
+    def constant(val):
+        return f'#{val}'
+
+    @staticmethod
+    def wrap_type(val, _type):
+        if _type == int:
+            return val
+        elif _type == float:
+            return f'{val}F'
+        else:
+            return f'{val}S'

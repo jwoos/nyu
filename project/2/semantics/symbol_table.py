@@ -33,7 +33,9 @@ class SymbolType(enum.Enum):
 
 class Symbol:
     RETURN_KEY = '<RETURN>'
-    TEMP_KEY = '<TEMP>'
+    TEMP_A_KEY = '<TEMP_A>'
+    TEMP_B_KEY = '<TEMP_B>'
+    TEMP_C_KEY = '<TEMP_C>'
 
     def __init__(self, scope, kind, attrs=None):
         self.scope = scope

@@ -1,0 +1,5 @@
+int main(int dummy) {
+	int a;
+	read a;
+	write a + 1;
+}
