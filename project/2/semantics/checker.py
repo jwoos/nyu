@@ -91,11 +91,17 @@ def check_unary(node_stack, table_stack, node):
 def check_binary(node_stack, table_stack, node):
     left = node.args[0]
     left_symbol = table_stack[-1].get(left.symbol) or table_stack[0].get(left.symbol) or Symbol(None, None, attrs={'line': None})
-    left_type = propagate_types(node_stack, table_stack, left)
+    if left.symbol in PROPAGATING_BINARY_SYMBOLS:
+        left_type = check_binary(node_stack, table_stack, left)
+    else:
+        left_type = propagate_types(node_stack, table_stack, left)
 
     right = node.args[1]
     right_symbol = table_stack[-1].get(right.symbol) or table_stack[0].get(right.symbol) or Symbol(None, None, attrs={'line': None})
-    right_type = propagate_types(node_stack, table_stack, right)
+    if right.symbol in PROPAGATING_BINARY_SYMBOLS:
+        right_type = check_binary(node_stack, table_stack, right)
+    else:
+        right_type = propagate_types(node_stack, table_stack, right)
 
     if left_type != right_type:
         if left_type not in INFERRED_TYPE_SET and right_type not in INFERRED_TYPE_SET:
