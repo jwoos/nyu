@@ -66,7 +66,9 @@ def generate_function(stack, node_stack, table_stack, table_cache, function):
         node = node_stack.pop()
 
         if node.symbol == 'return' or node.symbol == 'function_def_end':
-            output.append(ASM('PUSH', table_stack[-1].get(Symbol.RETURN_KEY).get('memory')))
+            if node.symbol == 'return':
+                output.append(ASM('PUSH', table_stack[-1].get(Symbol.RETURN_KEY).get('memory')))
+
             table_stack.pop()
 
             if function_identifier.symbol == 'main':
@@ -135,42 +137,53 @@ def generate_expr(table_stack, node):
     left = node.args[0]
     right = node.args[1]
 
-    left_type = left.get('name')
-    left_known = left_type in KNOWN
-    right_type = right.get('name')
-    right_known = right_type in KNOWN
-
-    if left_known and right_known:
-        if left_type == 'identifier':
+    # deal with left side
+    if left.get('name') in KNOWN:
+        if left.get('name') == 'identifier':
             left_symbol = table_stack[-1].get(left.symbol) or table_stack[0].get(left.symbol)
             left_arg = left_symbol.get('memory')
         else:
             left_arg = ASM.constant(left.symbol)
+    else:
+        output.append(generate_expr(table_stack, left))
 
-        if right_type == 'identifier':
+        # copy the resulting value into temp left
+        output.append(ASM(
+            'COPY',
+            table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory'),
+            table_stack[-1].get(Symbol.TEMP_A_KEY).get('memory')
+        ))
+        table_stack[-1].get(Symbol.TEMP_A_KEY).set('type', table_stack[-1].get(Symbol.TEMP_C_KEY).get('type'))
+
+        left_arg = table_stack[-1].get(Symbol.TEMP_A_KEY).get('memory')
+
+    # deal with right side
+    if right.get('name') in KNOWN:
+        if right.get('name') == 'identifier':
             right_symbol = table_stack[-1].get(right.symbol) or table_stack[0].get(right.symbol)
             right_arg = right_symbol.get('memory')
         else:
             right_arg = ASM.constant(right.symbol)
-
-        output.append(ASM(
-            ASM.wrap_type(ASM.NUMERICAL_OPERATION_MAP[node.symbol], node.get('type')),
-            left_arg,
-            right_arg,
-            table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory')
-        ))
-
-        return output
-
-    elif right_known:
-        left_output = generate_expr(table_stack, left)
-
-    elif left_known:
-        right_output = generate_expr(table_stack, right)
-
     else:
-        left_output = generate_expr(table_stack, left)
-        right_output = generate_expr(table_stack, right)
+        output.append(generate_expr(table_stack, right))
+
+        # copy the resulting value into temp right
+        output.append(ASM(
+            'COPY',
+            table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory'),
+            table_stack[-1].get(Symbol.TEMP_B_KEY).get('memory')
+        ))
+        table_stack[-1].get(Symbol.TEMP_B_KEY).set('type', table_stack[-1].get(Symbol.TEMP_C_KEY).get('type'))
+
+        right_arg = table_stack[-1].get(Symbol.TEMP_B_KEY).get('memory')
+
+    output.append(ASM(
+        ASM.wrap_type(ASM.NUMERICAL_OPERATION_MAP[node.symbol], node.get('type')),
+        left_arg,
+        right_arg,
+        table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory')
+    ))
+    table_stack[-1].get(Symbol.TEMP_C_KEY).set('type', node.get('type'))
 
     return output
 

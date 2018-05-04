@@ -1,5 +1,8 @@
 int main(int dummy) {
 	int a;
-	read a;
-	write a + 1;
+	int b;
+	read a, b;
+	write a * 2 + 10;
+	write 10 + a * 2;
+	write (10 + 20) * 2 / 3;
 }
