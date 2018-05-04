@@ -99,6 +99,7 @@ def generate_function(stack, node_stack, table_stack, table_cache, function):
             output.append(ASM('NEWLINE'))
 
         elif node.symbol == 'read':
+            # TODO add in types
             for arg in node.args:
                 if arg.get('type') == int:
                     output.append(ASM('READ', arg.get('memory')))

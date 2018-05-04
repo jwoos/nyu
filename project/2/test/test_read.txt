@@ -1,0 +1,4 @@
+int main(int dummy) {
+	read dummy;
+	write dummy;
+}
