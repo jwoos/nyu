@@ -335,10 +335,7 @@ def p_write_expr_list(p):
                     | string write_expr_list_prime
     '''
     # expr
-    node = None
-    if isinstance(p[1], Node):
-        node = p[1]
-    else:
+    if not isinstance(p[1], Node):
         p[1] = Node(
             p[1],
             args=[],
@@ -348,7 +345,8 @@ def p_write_expr_list(p):
                 'line': p.lineno(1)
             }
         )
-        node = Node('write_expr_list', args=[p[1]])
+
+    node = Node('write_expr_list', args=[p[1]])
 
     if p[2] is None:
         p[0] = node

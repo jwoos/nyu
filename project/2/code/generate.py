@@ -83,11 +83,14 @@ def generate_function(stack, node_stack, table_stack, table_cache, function):
                 elif arg.get('name') == 'float_literal':
                     output.append(ASM('WRITEF', ASM.literal(arg.symbol)))
                 elif arg.get('name') == 'identifier':
-                    if arg.get('type') == int:
-                        output.append(ASM('WRITE', arg.get('memory')))
+                    identifier_symbol = table_stack[-1].get(arg.symbol) or table_stack[0].get(arg.symbol)
+
+                    if identifier_symbol.get('type') == int:
+                        output.append(ASM('WRITE', identifier_symbol.get('memory')))
                     else:
-                        output.append(ASM('WRITEF', arg.get('memory')))
+                        output.append(ASM('WRITEF', identifier_symbol.get('memory')))
                 else:
+                    print(arg)
                     # TODO deal with expressions
                     # this is an expression
                     pass
@@ -99,12 +102,19 @@ def generate_function(stack, node_stack, table_stack, table_cache, function):
             output.append(ASM('NEWLINE'))
 
         elif node.symbol == 'read':
-            # TODO add in types
             for arg in node.args:
-                if arg.get('type') == int:
-                    output.append(ASM('READ', arg.get('memory')))
+                if arg.get('name') == 'identifier':
+                    identifier_symbol = table_stack[-1].get(arg.symbol) or table_stack[0].get(arg.symbol)
+
+                    if identifier_symbol.get('type') == int:
+                        output.append(ASM('READ', identifier_symbol.get('memory')))
+                    else:
+                        output.append(ASM('READF', identifier_symbol.get('memory')))
                 else:
-                    output.append(ASM('READF', arg.get('memory')))
+                    print(arg)
+                    # TODO deal with expressions
+                    # this is an expression
+                    pass
 
         elif node.symbol == 'function_call':
             pass
