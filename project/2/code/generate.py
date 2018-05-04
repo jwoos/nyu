@@ -145,6 +145,26 @@ def generate_function_call(stack, node_stack, table_stack, node):
 def generate_expr(table_stack, node):
     output = []
 
+    # deal with unary minus
+    if len(node.args) == 1:
+        if node.args[0].get('name') in KNOWN:
+            if node.args[0].get('name') == 'identifier':
+                symbol = table_stack[-1].get(node.args[0].symbol) or table_stack[0].get(node.args[0].symbol)
+                arg = symbol.get('memory')
+            else:
+                arg = ASM.constant(node.args[0].symbol)
+        else:
+            output.append(generate_expr(table_stack, node.args[0]))
+
+        output.append(ASM(
+            ASM.wrap_type('NEG', node.get('type')),
+            arg,
+            table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory')
+        ))
+        table_stack[-1].get(Symbol.TEMP_C_KEY).set('type', node.get('type'))
+
+        return output
+
     left = node.args[0]
     right = node.args[1]
 
