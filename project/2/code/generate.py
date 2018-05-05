@@ -63,7 +63,6 @@ def generate_function(node_stack, table_stack, table_cache, function):
 
     output.append(generate_body(table_stack, function_body))
 
-    print(table_stack[-1].name)
     if table_stack[-1].name == 'main':
         # if main then just exit the program since we're at the end
         output.append(ASM('STOP'))
@@ -84,9 +83,17 @@ def generate_body(table_stack, body):
         node = node_stack.pop()
 
         if node.symbol == 'return':
-            if node.symbol == 'return':
+            if node.args[0].get('name') in KNOWN:
+                if node.args[0].get('name') == 'identifier':
+                    symbol = table_stack[-1].get(node.args[0].symbol) or table_stack[0].get(node.args[0].symbol)
+                    arg = symbol.get('memory')
+                else:
+                    arg = ASM.constant(node.args[0].symbol)
+            else:
                 output.append(generate_expr(table_stack, node.args[0]))
-                output.append(ASM('PUSH', table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory')))
+                arg = table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory')
+
+            output.append(ASM('PUSH', arg))
 
         elif node.symbol == 'write':
             for arg in node.args:
