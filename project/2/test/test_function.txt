@@ -1,0 +1,14 @@
+int test(int x) {
+	write x;
+
+	return x + 10;
+}
+
+int main(int dummy) {
+	int x;
+	x = test(10 * 2);
+	write x;
+
+	dummy = test(x * 2);
+	write dummy;
+}

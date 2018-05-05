@@ -2,7 +2,6 @@ import enum
 import inspect
 import json
 
-from code.memory import Label
 from parser.ast import Node
 import log
 
@@ -11,7 +10,7 @@ class CustomEncoder(json.JSONEncoder):
     def default(self, o):
         if inspect.isclass(o):
             return o.__name__
-        elif isinstance(o, Symbol) or isinstance(o, Node) or isinstance(o, Label):
+        elif isinstance(o, Symbol) or isinstance(o, Node):
             return o.__str__()
         else:
             return super().default(o)

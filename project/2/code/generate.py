@@ -1,5 +1,5 @@
 from code.asm import ASM
-from code.memory import Memory, Label, Function, new_memory, new_label
+from code.memory import new_memory, new_label
 from parser.ast import Node
 from semantics.symbol_table import SymbolType, Symbol, SymbolScope
 
@@ -55,18 +55,19 @@ def generate_function(node_stack, table_stack, table_cache, function):
     generate_memory(table_stack[-1], True)
     function_symbol = table_stack[0].get(function.args[0].symbol)
 
+    output.append(ASM('LABEL', function_symbol.attrs['label']))
+
     # function is not main
     if function_identifier.symbol != 'main':
-        output.append(ASM('POP', function_argument.get('memory')))
-
-    output.append(ASM('LABEL', function_symbol.attrs['label']))
+        output.append(ASM('POP', table_stack[-1].get(function_argument.symbol).get('memory')))
 
     while node_stack:
         node = node_stack.pop()
 
         if node.symbol == 'return' or node.symbol == 'function_def_end':
             if node.symbol == 'return':
-                output.append(ASM('PUSH', table_stack[-1].get(Symbol.RETURN_KEY).get('memory')))
+                output.append(generate_expr(table_stack, node.args[0]))
+                output.append(ASM('PUSH', table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory')))
 
             table_stack.pop()
 
@@ -97,7 +98,6 @@ def generate_function(node_stack, table_stack, table_cache, function):
                     else:
                         output.append(ASM('WRITEF', identifier_symbol.get('memory')))
                 else:
-                    # TODO deal with expressions
                     # this is an expression
                     output.append(generate_expr(table_stack, arg))
                     output.append(ASM(
@@ -126,25 +126,79 @@ def generate_function(node_stack, table_stack, table_cache, function):
             continue
 
         elif node.symbol == 'function_call':
-            pass
+            output.append(generate_function_call(table_stack, node))
 
-        elif node.symbol == '=':
+            continue
+
+        elif node.symbol in NUMERICAL_OPERATION:
             output.append(generate_expr(table_stack, node))
 
+            continue
+
         else:
-            print('what is dis', node)
+            print('should not be here', node)
 
         for child in reversed(node.args):
             if child:
                 node_stack.append(child)
 
-def generate_function_call(node_stack, table_stack, node):
-    pass
+def generate_function_call(table_stack, node):
+    output = []
+    function_symbol = table_stack[0].get(node.args[0].symbol)
+
+    table_items = tuple(table_stack[-1].items())
+
+    # push all locals onto stack
+    for identifier, symbol in table_items:
+        if identifier[0] == '<':
+            continue
+
+        output.append(ASM(
+            ASM.wrap_type('PUSH', symbol.get('type')),
+            symbol.get('memory')
+        ))
+
+    # get the argument
+    if node.args[1].get('name') in KNOWN:
+        if node.args[1].get('name') == 'identifier':
+            symbol = table_stack[-1].get(node.args[1].symbol) or table_stack[0].get(node.args[1].symbol)
+            arg = symbol.get('memory')
+        else:
+            arg = ASM.constant(node.args[1].symbol)
+
+        output.append(ASM(
+            ASM.wrap_type('COPY', node.args[1].get('type') or symbol.get('type')),
+            arg,
+            table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory')
+        ))
+        table_stack[-1].get(Symbol.TEMP_C_KEY).set('type',  node.args[1].get('type') or symbol.get('type'))
+
+    else:
+        output.append(generate_expr(table_stack, node.args[1]))
+
+    output.append(ASM(
+        ASM.wrap_type('PUSH', node.args[1].get('type')),
+        table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory')
+    ))
+
+    output.append(ASM('CALL', function_symbol.get('label')))
+
+    output.append(ASM('POP', table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory')))
+
+    for _, symbol in reversed(table_items):
+        if identifier[0] == '<':
+            continue
+
+        output.append(ASM(
+            'POP',
+            symbol.get('memory')
+        ))
+
+    return output
 
 def generate_expr(table_stack, node):
     output = []
 
-    # deal with unary minus
     if len(node.args) == 1:
         if node.args[0].get('name') in KNOWN:
             if node.args[0].get('name') == 'identifier':
@@ -153,13 +207,31 @@ def generate_expr(table_stack, node):
             else:
                 arg = ASM.constant(node.args[0].symbol)
         else:
-            output.append(generate_expr(table_stack, node.args[0]))
+            # TODO figure out if this can be removed
+            pass
+            # output.append(generate_expr(table_stack, node.args[0]))
 
-        output.append(ASM(
-            ASM.wrap_type('NEG', node.get('type')),
-            arg,
-            table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory')
-        ))
+        if node.symbol == '-':
+            # deal with unary minus
+            output.append(ASM(
+                ASM.wrap_type('NEG', node.get('type')),
+                arg,
+                table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory')
+            ))
+            table_stack[-1].get(Symbol.TEMP_C_KEY).set('type', node.get('type'))
+        else:
+            output.append(ASM(
+                'COPY',
+                arg,
+                table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory')
+            ))
+            table_stack[-1].get(Symbol.TEMP_C_KEY).set('type', node.get('type'))
+
+        return output
+
+    elif node.symbol == 'function_call':
+        # deal with a function call
+        output.append(generate_function_call(table_stack, node))
         table_stack[-1].get(Symbol.TEMP_C_KEY).set('type', node.get('type'))
 
         return output
