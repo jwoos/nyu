@@ -153,6 +153,11 @@ def generate_body(table_stack, body):
 
             continue
 
+        elif node.symbol == 'while':
+            output.append(generate_while(table_stack, node))
+
+            continue
+
         else:
             log.warning('should not be here in generate_body')
 
@@ -394,6 +399,72 @@ def generate_if(table_stack, node):
         output.append(ASM('LABEL', post_label))
     else:
         output.append(ASM('LABEL', false_label))
+
+    return output
+
+def generate_while(table_stack, node):
+    output = []
+
+    condition = node.args[0]
+    body = node.args[1]
+
+    pre_label = new_label()
+    true_label = new_label()
+    false_label = new_label()
+
+    output.append(ASM('LABEL', pre_label))
+
+    condition_left = condition.args[0]
+    condition_right = condition.args[1]
+
+    if condition_left.get('name') in KNOWN:
+        if condition_left.get('name') == 'identifier':
+            condition_left_symbol = table_stack[-1].get(condition_left.symbol) or table_stack[0].get(condition_left.symbol)
+            condition_left_arg = condition_left_symbol.get('memory')
+        else:
+            condition_left_arg = ASM.constant(condition_left.symbol)
+    else:
+        output.append(generate_expr(table_stack, condition_left))
+        output.append(ASM(
+            'COPY',
+            table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory'),
+            table_stack[-1].get(Symbol.TEMP_A_KEY).get('memory')
+        ))
+        table_stack[-1].get(Symbol.TEMP_A_KEY).set('type', table_stack[-1].get(Symbol.TEMP_C_KEY).get('type'))
+        condition_left_arg = table_stack[-1].get(Symbol.TEMP_A_KEY).get('memory')
+
+    if condition_right.get('name') in KNOWN:
+        if condition_right.get('name') == 'identifier':
+            condition_right_symbol = table_stack[-1].get(condition_right.symbol) or table_stack[0].get(condition_right.symbol)
+            condition_right_arg = condition_right_symbol.get('memory')
+        else:
+            condition_right_arg = ASM.constant(condition_right.symbol)
+    else:
+        output.append(generate_expr(table_stack, condition_right))
+        output.append(ASM(
+            'COPY',
+            table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory'),
+            table_stack[-1].get(Symbol.TEMP_B_KEY).get('memory')
+        ))
+        table_stack[-1].get(Symbol.TEMP_B_KEY).set('type', table_stack[-1].get(Symbol.TEMP_C_KEY).get('type'))
+        condition_right_arg = table_stack[-1].get(Symbol.TEMP_B_KEY).get('memory')
+
+    output.append(ASM(
+        ASM.wrap_type(ASM.BOOLEAN_OPERATION_MAP[condition.symbol], condition.get('type')),
+        condition_left_arg,
+        condition_right_arg,
+        true_label
+    ))
+
+    # this is to catch if the condition is not met
+    output.append(ASM('JUMP', false_label))
+    output.append(ASM('LABEL', true_label))
+
+    output.append(generate_body(table_stack, body))
+
+    output.append(ASM('JUMP', pre_label))
+
+    output.append(ASM('LABEL', false_label))
 
     return output
 
