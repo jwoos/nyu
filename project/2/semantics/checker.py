@@ -142,7 +142,10 @@ def check_function_call(node_stack, table_stack, node):
 
     body = node.args[1]
     body_symbol = table_stack[-1].get(body.symbol) or table_stack[0].get(body.symbol) or Symbol(None, None, attrs={'line': None})
-    body_type = propagate_types(node_stack, table_stack, body)
+    if body.symbol in PROPAGATING_BINARY_SYMBOLS:
+        body_type = check_binary(node_stack, table_stack, body)
+    else:
+        body_type = propagate_types(node_stack, table_stack, body)
 
     if identifier_type != body_type:
         if identifier_type not in INFERRED_TYPE_SET and body_type not in INFERRED_TYPE_SET:
