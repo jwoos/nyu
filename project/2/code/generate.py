@@ -2,6 +2,7 @@ from code.asm import ASM
 from code.memory import new_memory, new_label
 from parser.ast import Node
 from semantics.symbol_table import SymbolType, Symbol, SymbolScope
+import log
 
 
 NUMERICAL_OPERATION = {'+', '-', '=', '*', '/'}
@@ -48,7 +49,6 @@ def generate_function(node_stack, table_stack, table_cache, function):
         args=[function_identifier],
         attrs={}
     ))
-    node_stack.append(function_body)
 
     output = []
     # generate local variables
@@ -61,26 +61,32 @@ def generate_function(node_stack, table_stack, table_cache, function):
     if function_identifier.symbol != 'main':
         output.append(ASM('POP', table_stack[-1].get(function_argument.symbol).get('memory')))
 
+    output.append(generate_body(table_stack, function_body))
+
+    print(table_stack[-1].name)
+    if table_stack[-1].name == 'main':
+        # if main then just exit the program since we're at the end
+        output.append(ASM('STOP'))
+    else:
+        # if another function then let's return
+        output.append(ASM('RETURN'))
+
+    table_stack.pop()
+
+    return output
+
+# deal with function bodies as well as bodies of conditionals
+def generate_body(table_stack, body):
+    node_stack = [body]
+    output = []
+
     while node_stack:
         node = node_stack.pop()
 
-        if node.symbol == 'return' or node.symbol == 'function_def_end':
+        if node.symbol == 'return':
             if node.symbol == 'return':
                 output.append(generate_expr(table_stack, node.args[0]))
                 output.append(ASM('PUSH', table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory')))
-
-            table_stack.pop()
-
-            if function_identifier.symbol == 'main':
-                # if main then just exit the program since we're at the end
-                output.append(ASM('STOP'))
-            else:
-                # TODO needs return values
-                # if another function then let's return
-                output.append(ASM('RETURN'))
-
-            # exit the loop - we're done working on the function
-            return output
 
         elif node.symbol == 'write':
             for arg in node.args:
@@ -135,12 +141,19 @@ def generate_function(node_stack, table_stack, table_cache, function):
 
             continue
 
+        elif node.symbol == 'if':
+            output.append(generate_if(table_stack, node))
+
+            continue
+
         else:
-            print('should not be here', node)
+            log.warning('should not be here in generate_body')
 
         for child in reversed(node.args):
             if child:
                 node_stack.append(child)
+
+    return output
 
 def generate_function_call(table_stack, node):
     output = []
@@ -300,6 +313,80 @@ def generate_expr(table_stack, node):
             table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory')
         ))
         table_stack[-1].get(Symbol.TEMP_C_KEY).set('type', node.get('type'))
+
+    return output
+
+def generate_if(table_stack, node):
+    output = []
+
+    condition = node.args[0]
+    body = node.args[1]
+
+    true_label = new_label()
+    false_label = new_label()
+
+    # deal with the jump
+    condition_left = condition.args[0]
+    condition_right = condition.args[1]
+
+    if condition_left.get('name') in KNOWN:
+        if condition_left.get('name') == 'identifier':
+            condition_left_symbol = table_stack[-1].get(condition_left.symbol) or table_stack[0].get(condition_left.symbol)
+            condition_left_arg = condition_left_symbol.get('memory')
+        else:
+            condition_left_arg = ASM.constant(condition_left.symbol)
+    else:
+        output.append(generate_expr(table_stack, condition_left))
+        output.append(ASM(
+            'COPY',
+            table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory'),
+            table_stack[-1].get(Symbol.TEMP_A_KEY).get('memory')
+        ))
+        table_stack[-1].get(Symbol.TEMP_A_KEY).set('type', table_stack[-1].get(Symbol.TEMP_C_KEY).get('type'))
+        condition_left_arg = table_stack[-1].get(Symbol.TEMP_A_KEY).get('memory')
+
+    if condition_right.get('name') in KNOWN:
+        if condition_right.get('name') == 'identifier':
+            condition_right_symbol = table_stack[-1].get(condition_right.symbol) or table_stack[0].get(condition_right.symbol)
+            condition_right_arg = condition_right_symbol.get('memory')
+        else:
+            condition_right_arg = ASM.constant(condition_right.symbol)
+    else:
+        output.append(generate_expr(table_stack, condition_right))
+        output.append(ASM(
+            'COPY',
+            table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory'),
+            table_stack[-1].get(Symbol.TEMP_B_KEY).get('memory')
+        ))
+        table_stack[-1].get(Symbol.TEMP_B_KEY).set('type', table_stack[-1].get(Symbol.TEMP_C_KEY).get('type'))
+        condition_right_arg = table_stack[-1].get(Symbol.TEMP_B_KEY).get('memory')
+
+    output.append(ASM(
+        ASM.wrap_type(ASM.BOOLEAN_OPERATION_MAP[condition.symbol], condition.get('type')),
+        condition_left_arg,
+        condition_right_arg,
+        true_label
+    ))
+
+    # this is to catch if the condition is not met
+    output.append(ASM('JUMP', false_label))
+    output.append(ASM('LABEL', true_label))
+
+    output.append(generate_body(table_stack, body))
+
+    if len(node.args) == 3:
+        post_label = new_label()
+
+        output.append(ASM('JUMP', post_label))
+
+        output.append(ASM('LABEL', false_label))
+        else_body = node.args[2]
+
+        output.append(generate_body(table_stack, else_body))
+
+        output.append(ASM('LABEL', post_label))
+    else:
+        output.append(ASM('LABEL', false_label))
 
     return output
 

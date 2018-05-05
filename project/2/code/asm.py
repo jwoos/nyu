@@ -6,6 +6,15 @@ class ASM:
         '/': 'DIV'
     }
 
+    BOOLEAN_OPERATION_MAP = {
+        '>=': 'JGE',
+        '>': 'JGT',
+        '<': 'JLT',
+        '<=': 'JLE',
+        '==': 'JEQ',
+        '!=': 'JNE'
+    }
+
     def __init__(self, operation, *args):
         self.operation = operation
         self.operands = args

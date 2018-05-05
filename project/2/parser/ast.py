@@ -11,8 +11,6 @@ class OperatorType(enum.Enum):
 
 
 class Node:
-    PSEUDO_SYMBOL = '<PSEUDO>'
-
     def __init__(self, symbol, args=None, attrs=None):
         # what is the symbol
         self.symbol = symbol

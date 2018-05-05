@@ -1,0 +1,19 @@
+int main(int dummy) {
+	int x;
+	read x;
+
+	write "pre";
+
+	if (x > 10) {
+		write "greater";
+		if (x > 11) {
+			write "greater";
+		} else {
+			write "less";
+		}
+	} else {
+		write "less";
+	}
+
+	write "post";
+}

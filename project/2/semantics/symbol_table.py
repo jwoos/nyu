@@ -71,9 +71,15 @@ class Symbol:
 
 
 class SymbolTable:
-    def __init__(self, scope):
+    def __init__(self, scope, name=None, attrs=None):
         self.scope = scope
         self.table = {}
+
+        self.name = name
+
+        self.attrs = attrs
+        if attrs is None:
+            self.attrs = {}
 
     def __str__(self):
         return json.dumps(self.table, indent=True, cls=CustomEncoder)

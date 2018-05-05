@@ -31,7 +31,7 @@ def handle_function_def(node_stack, table_stack, node):
         log.error(msg)
         return Signal.CONTINUE
 
-    table_stack.append(SymbolTable(SymbolScope.LOCAL))
+    table_stack.append(SymbolTable(SymbolScope.LOCAL, name=node.args[0].symbol))
     table_stack[-1].set(node.args[1].symbol, Symbol(
         table_stack[-1].scope,
         SymbolType.VARIABLE,

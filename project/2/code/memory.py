@@ -16,8 +16,3 @@ def new_label():
     index = label_index
     label_index += 1
     return index
-
-
-class Frame:
-    def __init__(self, items):
-        self.items = items
