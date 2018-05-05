@@ -52,35 +52,6 @@ class Label:
         return self.__str__()
 
 
-class Function:
-    def __init__(self):
-        global label_index
-        self.index = label_index
-        label_index += 1
-
-        self.items = []
-
-    def __str__(self):
-        return f'<Label: {self.index}>'
-
-    def __repr__(self):
-        return self.__str__()
-
-
-class Stack:
-    def __init__(self):
-        self.memory = []
-
-    def push(self, item):
-        self.memory.append(item)
-
-    def pop(self):
-        return self.memory.pop()
-
-    def size(self):
-        return len(self.memory)
-
-
 class Frame:
     def __init__(self, items):
         self.items = items

@@ -1,5 +1,5 @@
 from code.asm import ASM
-from code.memory import Stack, Memory, Label, Function, new_memory, new_label
+from code.memory import Memory, Label, Function, new_memory, new_label
 from parser.ast import Node
 from semantics.symbol_table import SymbolType, Symbol, SymbolScope
 
@@ -11,7 +11,6 @@ KNOWN = {'identifier', 'integer_literal', 'float_literal'}
 
 def generate(ast, table_cache, global_table):
     output = []
-    stack = Stack()
     node_stack = [ast]
     table_stack = [global_table]
 
@@ -24,7 +23,7 @@ def generate(ast, table_cache, global_table):
         node = node_stack.pop()
 
         if node.symbol == 'function_def':
-            output.append(generate_function(stack, node_stack, table_stack, table_cache, node))
+            output.append(generate_function(node_stack, table_stack, table_cache, node))
             continue
 
         for child in reversed(node.args):
@@ -37,7 +36,7 @@ def generate(ast, table_cache, global_table):
 
 # everything can be dealt with in here since only functions
 # can have any operations or calls
-def generate_function(stack, node_stack, table_stack, table_cache, function):
+def generate_function(node_stack, table_stack, table_cache, function):
     function_identifier = function.args[0]
     function_argument = function.args[1]
     function_body = function.args[2]
@@ -139,7 +138,7 @@ def generate_function(stack, node_stack, table_stack, table_cache, function):
             if child:
                 node_stack.append(child)
 
-def generate_function_call(stack, node_stack, table_stack, node):
+def generate_function_call(node_stack, table_stack, node):
     pass
 
 def generate_expr(table_stack, node):
