@@ -14,7 +14,6 @@ int testControlFlow(int a) {
 	/* a<=b from this point on */
 
 	while (b>0) {
-		write a, b, temp;
 		temp = a - b * (a/b); /* integer division; so get remainder */
 		a = b;
 		b = temp;
@@ -36,5 +35,5 @@ int testReadWrite(int y) {
 
 int main(int x) {
 	x = testReadWrite(2);
-	x = testControlFlow(0);
+	write testControlFlow(0);
 }
