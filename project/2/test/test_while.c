@@ -9,7 +9,7 @@ int main(int dummy) {
 
 	while (dummy < 10) {
 		write dummy;
-		dummy = dummy + 1;
+		dummy = foo(dummy);
 	}
 
 	write "outside of loop!";

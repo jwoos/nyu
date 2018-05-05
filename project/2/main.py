@@ -78,6 +78,8 @@ def main():
             elif node.symbol in checker.PROPAGATING_UNARY_SYMBOLS:
                 if len(node.args) == 1:
                     checker.check_unary(node_stack, table_stack, node)
+                else:
+                    checker.check_binary(node_stack, table_stack, node)
 
             elif node.symbol in checker.PROPAGATING_BINARY_SYMBOLS:
                 checker.check_binary(node_stack, table_stack, node)

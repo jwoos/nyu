@@ -1,12 +1,9 @@
-int main(int dummy) {
-	int a;
-	int b;
-	float c;
-	a = dummy = 10;
-	write a, dummy;
-	read a, b, c;
-	write -c;
-	write a * 2 + b;
-	write 10 + a * 2;
-	write (a = 30) * 2 / 3;
+int main(int x) {
+	int y;
+
+	x = 1;
+	y = 2;
+
+	/* -63 */
+	write (x+y)*(-x-10*y);
 }

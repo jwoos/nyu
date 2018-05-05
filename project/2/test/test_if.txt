@@ -23,21 +23,9 @@ int main(int dummy) {
 			write "sort of";
 		else
 			write "argh";
+
 		write "no";
 	}
-
-	if (x > 10) {
-		write "greater";
-		if (x > 11) {
-			write "greater";
-		} else {
-			write "less";
-		}
-	} else {
-		write "less";
-	}
-
-	write "post";
 
 	write foo(10);
 	write foo(11);

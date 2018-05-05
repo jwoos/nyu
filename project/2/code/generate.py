@@ -91,6 +91,7 @@ def generate_body(table_stack, body):
                     arg = ASM.constant(node.args[0].symbol)
             else:
                 output.append(generate_expr(table_stack, node.args[0]))
+                output.append(ASM('POP', table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory')))
                 arg = table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory')
 
             output.append(ASM('PUSH', arg))
@@ -113,6 +114,7 @@ def generate_body(table_stack, body):
                 else:
                     # this is an expression
                     output.append(generate_expr(table_stack, arg))
+                    output.append(ASM('POP', table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory')))
                     output.append(ASM(
                         ASM.wrap_type('WRITE', arg.get('type')),
                         table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory')
@@ -145,6 +147,7 @@ def generate_body(table_stack, body):
 
         elif node.symbol in NUMERICAL_OPERATION:
             output.append(generate_expr(table_stack, node))
+            output.append(ASM('POP', table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory')))
 
             continue
 
@@ -200,6 +203,7 @@ def generate_function_call(table_stack, node):
 
     else:
         output.append(generate_expr(table_stack, node.args[1]))
+        output.append(ASM('POP', table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory')))
 
     output.append(ASM(
         ASM.wrap_type('PUSH', node.args[1].get('type')),
@@ -224,33 +228,52 @@ def generate_function_call(table_stack, node):
 def generate_expr(table_stack, node):
     output = []
 
-    if len(node.args) == 1:
-        if node.args[0].get('name') in KNOWN:
-            if node.args[0].get('name') == 'identifier':
-                symbol = table_stack[-1].get(node.args[0].symbol) or table_stack[0].get(node.args[0].symbol)
+    if len(node.args) == 0:
+        # base case
+        if node.get('name') in KNOWN:
+            if node.get('name') == 'identifier':
+                symbol = table_stack[-1].get(node.symbol) or table_stack[0].get(node.symbol)
                 arg = symbol.get('memory')
             else:
-                arg = ASM.constant(node.args[0].symbol)
+                arg = ASM.constant(node.symbol)
+
+            output.append(ASM(
+                ASM.wrap_type('PUSH', node.get('type')),
+                arg
+            ))
+
         else:
             # TODO figure out if this can be removed
-            pass
             # output.append(generate_expr(table_stack, node.args[0]))
+            log.warning('should not be here generate_expr')
 
+        return output
+
+    elif len(node.args) == 1:
         if node.symbol == '-':
+            output.append(generate_expr(table_stack, node.args[0]))
+
+            output.append(ASM(
+                'POP',
+                table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory')
+            ))
             # deal with unary minus
             output.append(ASM(
                 ASM.wrap_type('NEG', node.get('type')),
-                arg,
+                table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory'),
                 table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory')
             ))
             table_stack[-1].get(Symbol.TEMP_C_KEY).set('type', node.get('type'))
-        else:
+
             output.append(ASM(
-                'COPY',
-                arg,
+                ASM.wrap_type('PUSH', node.get('type')),
                 table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory')
             ))
-            table_stack[-1].get(Symbol.TEMP_C_KEY).set('type', node.get('type'))
+
+        else:
+            # TODO figure out if this can be removed
+            # output.append(generate_expr(table_stack, node.args[0]))
+            log.warning('should not be here generate_expr')
 
         return output
 
@@ -258,6 +281,11 @@ def generate_expr(table_stack, node):
         # deal with a function call
         output.append(generate_function_call(table_stack, node))
         table_stack[-1].get(Symbol.TEMP_C_KEY).set('type', node.get('type'))
+
+        output.append(ASM(
+            ASM.wrap_type('PUSH', node.get('type')),
+            table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory')
+        ))
 
         return output
 
@@ -274,16 +302,6 @@ def generate_expr(table_stack, node):
     else:
         output.append(generate_expr(table_stack, left))
 
-        # copy the resulting value into temp left
-        output.append(ASM(
-            'COPY',
-            table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory'),
-            table_stack[-1].get(Symbol.TEMP_A_KEY).get('memory')
-        ))
-        table_stack[-1].get(Symbol.TEMP_A_KEY).set('type', table_stack[-1].get(Symbol.TEMP_C_KEY).get('type'))
-
-        left_arg = table_stack[-1].get(Symbol.TEMP_A_KEY).get('memory')
-
     # deal with right side
     if right.get('name') in KNOWN:
         if right.get('name') == 'identifier':
@@ -294,15 +312,26 @@ def generate_expr(table_stack, node):
     else:
         output.append(generate_expr(table_stack, right))
 
+    # popping has to be done backwards
+    if right.get('name') not in KNOWN:
         # copy the resulting value into temp right
         output.append(ASM(
-            'COPY',
-            table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory'),
+            'POP',
             table_stack[-1].get(Symbol.TEMP_B_KEY).get('memory')
         ))
         table_stack[-1].get(Symbol.TEMP_B_KEY).set('type', table_stack[-1].get(Symbol.TEMP_C_KEY).get('type'))
 
         right_arg = table_stack[-1].get(Symbol.TEMP_B_KEY).get('memory')
+
+    if left.get('name') not in KNOWN:
+        # copy the resulting value into temp left
+        output.append(ASM(
+            'POP',
+            table_stack[-1].get(Symbol.TEMP_A_KEY).get('memory')
+        ))
+        table_stack[-1].get(Symbol.TEMP_A_KEY).set('type', table_stack[-1].get(Symbol.TEMP_C_KEY).get('type'))
+
+        left_arg = table_stack[-1].get(Symbol.TEMP_A_KEY).get('memory')
 
     if node.symbol == '=':
         output.append(ASM(
@@ -317,6 +346,7 @@ def generate_expr(table_stack, node):
             table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory')
         ))
         table_stack[-1].get(Symbol.TEMP_C_KEY).set('type', node.get('type'))
+
     else:
         output.append(ASM(
             ASM.wrap_type(ASM.NUMERICAL_OPERATION_MAP[node.symbol], node.get('type')),
@@ -325,6 +355,11 @@ def generate_expr(table_stack, node):
             table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory')
         ))
         table_stack[-1].get(Symbol.TEMP_C_KEY).set('type', node.get('type'))
+
+    output.append(ASM(
+        ASM.wrap_type('PUSH', node.get('type')),
+        table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory')
+    ))
 
     return output
 
@@ -350,8 +385,7 @@ def generate_if(table_stack, node):
     else:
         output.append(generate_expr(table_stack, condition_left))
         output.append(ASM(
-            'COPY',
-            table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory'),
+            'POP',
             table_stack[-1].get(Symbol.TEMP_A_KEY).get('memory')
         ))
         table_stack[-1].get(Symbol.TEMP_A_KEY).set('type', table_stack[-1].get(Symbol.TEMP_C_KEY).get('type'))
@@ -366,8 +400,7 @@ def generate_if(table_stack, node):
     else:
         output.append(generate_expr(table_stack, condition_right))
         output.append(ASM(
-            'COPY',
-            table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory'),
+            'POP',
             table_stack[-1].get(Symbol.TEMP_B_KEY).get('memory')
         ))
         table_stack[-1].get(Symbol.TEMP_B_KEY).set('type', table_stack[-1].get(Symbol.TEMP_C_KEY).get('type'))
@@ -426,8 +459,7 @@ def generate_while(table_stack, node):
     else:
         output.append(generate_expr(table_stack, condition_left))
         output.append(ASM(
-            'COPY',
-            table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory'),
+            'POP',
             table_stack[-1].get(Symbol.TEMP_A_KEY).get('memory')
         ))
         table_stack[-1].get(Symbol.TEMP_A_KEY).set('type', table_stack[-1].get(Symbol.TEMP_C_KEY).get('type'))
@@ -442,8 +474,7 @@ def generate_while(table_stack, node):
     else:
         output.append(generate_expr(table_stack, condition_right))
         output.append(ASM(
-            'COPY',
-            table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory'),
+            'POP',
             table_stack[-1].get(Symbol.TEMP_B_KEY).get('memory')
         ))
         table_stack[-1].get(Symbol.TEMP_B_KEY).set('type', table_stack[-1].get(Symbol.TEMP_C_KEY).get('type'))
@@ -478,7 +509,6 @@ def generate_memory(table, is_function):
 
     # generate a return address
     if is_function:
-        table.set(Symbol.RETURN_KEY, Symbol(SymbolScope.LOCAL, SymbolType.OTHER, attrs={'memory': new_memory()}))
         table.set(Symbol.TEMP_A_KEY, Symbol(SymbolScope.LOCAL, SymbolType.OTHER, attrs={'memory': new_memory()}))
         table.set(Symbol.TEMP_B_KEY, Symbol(SymbolScope.LOCAL, SymbolType.OTHER, attrs={'memory': new_memory()}))
         table.set(Symbol.TEMP_C_KEY, Symbol(SymbolScope.LOCAL, SymbolType.OTHER, attrs={'memory': new_memory()}))

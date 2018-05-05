@@ -87,21 +87,38 @@ def check_unary(node_stack, table_stack, node):
 
     node.attrs['type'] = inferred_type
 
+    return node.attrs['type']
+
 # this deals with mulop, addop, assignment, boolop
 def check_binary(node_stack, table_stack, node):
+    # if len(node.args) == 1:
+        # return check_unary(node_stack, table_stack, node)
+
     left = node.args[0]
     left_symbol = table_stack[-1].get(left.symbol) or table_stack[0].get(left.symbol) or Symbol(None, None, attrs={'line': None})
     if left.symbol in PROPAGATING_BINARY_SYMBOLS:
-        left_type = check_binary(node_stack, table_stack, left)
+        if len(left.args) == 1:
+            left_type = check_unary(node_stack, table_stack, left)
+        else:
+            left_type = check_binary(node_stack, table_stack, left)
     else:
-        left_type = propagate_types(node_stack, table_stack, left)
+        if left.symbol == 'function_call':
+            left_type = check_function_call(node_stack, table_stack, left)
+        else:
+            left_type = propagate_types(node_stack, table_stack, left)
 
     right = node.args[1]
     right_symbol = table_stack[-1].get(right.symbol) or table_stack[0].get(right.symbol) or Symbol(None, None, attrs={'line': None})
     if right.symbol in PROPAGATING_BINARY_SYMBOLS:
-        right_type = check_binary(node_stack, table_stack, right)
+        if len(right.args) == 1:
+            right_type = check_unary(node_stack, table_stack, right)
+        else:
+            right_type = check_binary(node_stack, table_stack, right)
     else:
-        right_type = propagate_types(node_stack, table_stack, right)
+        if right.symbol == 'function_call':
+            right_type = check_function_call(node_stack, table_stack, right)
+        else:
+            right_type = propagate_types(node_stack, table_stack, right)
 
     if left_type != right_type:
         if left_type not in INFERRED_TYPE_SET and right_type not in INFERRED_TYPE_SET:
