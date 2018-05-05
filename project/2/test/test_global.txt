@@ -3,4 +3,6 @@ int y;
 float z;
 
 int main(int dummy) {
+	x = 10;
+	write x;
 }
