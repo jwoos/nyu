@@ -16,6 +16,16 @@ int main(int dummy) {
 
 	write "pre";
 
+	if (x > 10)
+		write "yes";
+	else {
+		if (x > 5)
+			write "sort of";
+		else
+			write "argh";
+		write "no";
+	}
+
 	if (x > 10) {
 		write "greater";
 		if (x > 11) {
