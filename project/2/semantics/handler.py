@@ -52,18 +52,6 @@ def handle_function_def(node_stack, table_stack, node):
 
     return_node = None
 
-    # make sure there is a return besides in main
-    if node.args[2]:
-        for stmt in node.args[2].args:
-            if stmt and stmt.symbol == 'return':
-                return_node = stmt
-                break
-
-        if node.args[0].symbol != 'main' and not return_node:
-            log.error(f'Expected return statment but not found for function {node.args[0].symbol}')
-    else:
-        log.error(f'Expected return statment but not found for function {node.args[0].symbol}')
-
     node_stack.append(node.args[2])
 
 def handle_function_def_end(node_stack, table_stack, node):
