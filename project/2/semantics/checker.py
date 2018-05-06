@@ -38,7 +38,7 @@ def propagate_types(node_stack, table_stack, node):
         t = node.attrs.get('type')
         if not t:
             # check the symbol table for a type
-            symbol = table_stack[-1].get(node.symbol)
+            symbol = table_stack[-1].get(node.symbol) or table_stack[0].get(node.symbol)
 
             # doesn't exist
             if not symbol:
@@ -91,9 +91,6 @@ def check_unary(node_stack, table_stack, node):
 
 # this deals with mulop, addop, assignment, boolop
 def check_binary(node_stack, table_stack, node):
-    # if len(node.args) == 1:
-        # return check_unary(node_stack, table_stack, node)
-
     left = node.args[0]
     left_symbol = table_stack[-1].get(left.symbol) or table_stack[0].get(left.symbol) or Symbol(None, None, attrs={'line': None})
     if left.symbol in PROPAGATING_BINARY_SYMBOLS:

@@ -1,9 +1,6 @@
-int testControlFlow(int a) {
-	int b;
+int b; /* parameter b is instead a global variable */
+int euclid(int a) { /* both positive, just in case */
 	int temp;
-
-	write "Give me two positive numbers";
-	read a, b;
 
 	if (b > a) {
 		temp = a;
@@ -22,18 +19,24 @@ int testControlFlow(int a) {
 	return a;
 }
 
-int testReadWrite(int y) {
-	int x;
-	write "testReadWrite";
+int main(int dummy) {
+	int i, j;
 
-	read x;
+	write "I am going to try and compute GCD using euclid's algorithm. Gimme two integers";
+	read i, j;
 
-	write x+x, x*10, (x+y)*(-x-10*y);
+	if (0>=i) {
+		write "I wanted a positive number and you gave me ", i, "!!!!";
+		return 17; /* there is no exit(...) or abort(...) */
+	}
 
-	return x;
-}
+	if (0>=j) {
+		write "I wanted a positive number and you gave me ", j, "!!!!";
+		return 17; /* there is no exit(...) or abort(...) */
+	}
 
-int main(int x) {
-	x = testReadWrite(2);
-	write testControlFlow(0);
+	write "Will attempt to compute GCD(", i, ",", j, ")";
+	b = j; /* horrible hack to pass the second parameter through a global.  does it work? */
+	write euclid(i);
+	return 0;
 }

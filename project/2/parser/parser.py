@@ -420,6 +420,7 @@ def p_bool_expr(p):
 def p_bool_expr_error(p):
     '''
     bool_expr : error
+              | expr error expr
     '''
     log.error(f'bool_expr error on line {p.lineno(1)}')
 
