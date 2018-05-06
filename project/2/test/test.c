@@ -1,6 +1,5 @@
 int b; /* parameter b is instead a global variable */
 int euclid(int);
-float euclid(int);
 
 int main(int dummy) {
 	int i, j;
