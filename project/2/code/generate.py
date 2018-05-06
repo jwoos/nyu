@@ -214,7 +214,7 @@ def generate_function_call(table_stack, node):
 
     output.append(ASM('POP', table_stack[-1].get(Symbol.TEMP_C_KEY).get('memory')))
 
-    for _, symbol in reversed(table_items):
+    for identifier, symbol in reversed(table_items):
         if identifier[0] == '<':
             continue
 
