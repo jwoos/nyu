@@ -1,23 +1,6 @@
 int b; /* parameter b is instead a global variable */
-int euclid(int a) { /* both positive, just in case */
-	int temp;
-
-	if (b > a) {
-		temp = a;
-		a = b;
-		b = temp;
-	}
-
-	/* a<=b from this point on */
-
-	while (b>0) {
-		temp = a - b * (a/b); /* integer division; so get remainder */
-		a = b;
-		b = temp;
-	}
-
-	return a;
-}
+int euclid(int);
+float euclid(int);
 
 int main(int dummy) {
 	int i, j;
@@ -39,4 +22,24 @@ int main(int dummy) {
 	b = j; /* horrible hack to pass the second parameter through a global.  does it work? */
 	write euclid(i);
 	return 0;
+}
+
+int euclid(int a) { /* both positive, just in case */
+	int temp;
+
+	if (b > a) {
+		temp = a;
+		a = b;
+		b = temp;
+	}
+
+	/* a<=b from this point on */
+
+	while (b>0) {
+		temp = a - b * (a/b); /* integer division; so get remainder */
+		a = b;
+		b = temp;
+	}
+
+	return a;
 }

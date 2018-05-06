@@ -92,14 +92,14 @@ class SymbolTable:
     def set(self, key, symbol):
         if symbol.kind == SymbolType.FUNCTION:
             table_symbol = self.table.get(key)
-            if table_symbol and table_symbol.attrs['init']:
+            if table_symbol and table_symbol.attrs['init'] and not symbol.attrs['init']:
                 return f'function {key} already defined'
 
             if table_symbol:
                 # make sure all properties are good
                 for prop in ('type', 'arg_type'):
                     if symbol.attrs[prop] != table_symbol.attrs[prop]:
-                        return f'Type error mistmatch - declared is {table_symbol.attrs[prop]} and defined is {symbol.attrs[prop]}'
+                        return f'Type error mistmatch - previous is {table_symbol.attrs[prop]} and new is {symbol.attrs[prop]}'
 
                 table_symbol.attrs = symbol.attrs
         else:
