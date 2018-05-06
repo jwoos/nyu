@@ -162,7 +162,8 @@ def generate_body(table_stack, body):
             continue
 
         else:
-            log.warning('should not be here in generate_body')
+            # all nodes here can be ignored
+            pass
 
         for child in reversed(node.args):
             if child:
