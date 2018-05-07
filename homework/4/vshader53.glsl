@@ -26,7 +26,6 @@ in vec4 vColor;
 in vec4 vNormal;
 
 out vec4 color;
-out float fogDistance;
 
 uniform mat4 modelView;
 uniform mat4 projection;
@@ -137,10 +136,6 @@ vec4 positional(void) {
 }
 
 void main(void) {
-	// pass on fogDistance to fragment shader
-	//fogDistance = distance((modelView * eye).xyz, (modelView * vPosition).xyz);
-	fogDistance = distance((modelView * vPosition).xyz, (modelView * eye).xyz);
-
 	gl_Position = projection * modelView * vPosition;
 
 	if (flagLight && !flagWire) {

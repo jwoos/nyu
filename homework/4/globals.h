@@ -13,6 +13,7 @@ bool flagWire = false;
 bool flagLight = true;
 bool flagLightType = false;
 int flagFogType = false;
+bool flagShadowBlend = false;
 
 GLuint program;
 

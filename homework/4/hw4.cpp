@@ -20,6 +20,7 @@ extern bool flagWire;
 extern bool flagLight;
 extern bool flagLightType;
 extern int flagFogType;
+extern bool flagShadowBlend;
 
 extern GLuint program;
 
@@ -383,17 +384,6 @@ void display(void) {
 	mat4 p = Perspective(fovy, aspect, zNear, zFar);
 	glUniformMatrix4fv(projection, 1, GL_TRUE, p);
 
-	// draw floor only to frame buffer
-	glDepthMask(GL_FALSE);
-	if (flagLightType) {
-		light(mv, ambientLight, directionalLight, pointLight, floorLight);
-	} else {
-		light(mv, ambientLight, directionalLight, spotLight, floorLight);
-	}
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	drawObj(_floor.buffer, _floor.size, program);
-	glDepthMask(GL_TRUE);
-
 	// draw axes lines
 	glUniform1i(glGetUniformLocation(program, "flagLight"), false);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -425,6 +415,22 @@ void display(void) {
 		drawObj(_sphere.buffer, _sphere.size, program);
 	}
 
+	mv = LookAt(eye, at, up);
+	glUniformMatrix4fv(modelView, 1, GL_TRUE, mv);
+	nm = NormalMatrix(mv, 1);
+	glUniformMatrix3fv(normalMatrix, 1, GL_TRUE, nm);
+
+	// draw floor and shadow only to frame buffer
+	glDepthMask(GL_FALSE);
+
+	if (flagLightType) {
+		light(mv, ambientLight, directionalLight, pointLight, floorLight);
+	} else {
+		light(mv, ambientLight, directionalLight, spotLight, floorLight);
+	}
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	drawObj(_floor.buffer, _floor.size, program);
+
 	// draw shadow
 	if (flagShadow) {
 		glUniform1i(glGetUniformLocation(program, "flagLight"), false);
@@ -436,16 +442,34 @@ void display(void) {
 		);
 		mv = LookAt(eye, at, up) * Translate(spotLight.position) * shadowMatrix * Translate(-spotLight.position) * Translate(sphereCenter.x, sphereCenter.y, sphereCenter.z) * sphereRotationMatrix;
 		glUniformMatrix4fv(modelView, 1, GL_TRUE, mv);
+		nm = NormalMatrix(mv, 1);
+		glUniformMatrix3fv(normalMatrix, 1, GL_TRUE, nm);
+
 		if (flagWire) {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		} else {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}
-		drawObj(_shadow.buffer, _shadow.size, program);
+
+		if (flagShadowBlend) {
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			drawObj(_shadow.buffer, _shadow.size, program);
+			glDisable(GL_BLEND);
+		} else {
+			drawObj(_shadow.buffer, _shadow.size, program);
+		}
+
 		glUniform1i(glGetUniformLocation(program, "flagLight"), flagLight);
 	}
 
+	glDepthMask(GL_TRUE);
+
 	// draw floor only to z buffer
+	mv = LookAt(eye, at, up);
+	glUniformMatrix4fv(modelView, 1, GL_TRUE, mv);
+	nm = NormalMatrix(mv, 1);
+	glUniformMatrix3fv(normalMatrix, 1, GL_TRUE, nm);
 	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 	if (flagLightType) {
 		light(mv, ambientLight, directionalLight, pointLight, floorLight);
@@ -555,16 +579,24 @@ void menu(int index) {
 			break;
 
 		case 2:
+			flagShadowBlend = false;
+			break;
+
+		case 3:
+			flagShadowBlend = true;
+			break;
+
+		case 4:
 			flagLight = false;
 			glUniform1i(glGetUniformLocation(program, "flagLight"), flagLight);
 			break;
 
-		case 3:
+		case 5:
 			flagLight = true;
 			glUniform1i(glGetUniformLocation(program, "flagLight"), flagLight);
 			break;
 
-		case 4:
+		case 6:
 			flagShading = false;
 			_sphere.normals = sphereShadeFlat;
 			glUniform1f(glGetUniformLocation(program, "flagShading"), flagShading);
@@ -572,7 +604,7 @@ void menu(int index) {
 			glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec4) * _sphere.size * 2, sizeof(vec4) * _sphere.size, _sphere.normals);
 			break;
 
-		case 5:
+		case 7:
 			flagShading = true;
 			_sphere.normals = sphereShadeSmooth;
 			glUniform1f(glGetUniformLocation(program, "flagShading"), flagShading);
@@ -580,49 +612,49 @@ void menu(int index) {
 			glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec4) * _sphere.size * 2, sizeof(vec4) * _sphere.size, _sphere.normals);
 			break;
 
-		case 6:
+		case 8:
 			flagLightType = false;
 			glUniform1f(glGetUniformLocation(program, "flagLightType"), flagLightType);
 			break;
 
-		case 7:
+		case 9:
 			flagLightType = true;
 			glUniform1f(glGetUniformLocation(program, "flagLightType"), flagLightType);
 			break;
 
-		case 8:
+		case 10:
 			// none
 			flagFogType = 0;
 			glUniform1i(glGetUniformLocation(program, "flagFogType"), flagFogType);
 			break;
 
-		case 9:
+		case 11:
 			// linear
 			flagFogType = 1;
 			glUniform1i(glGetUniformLocation(program, "flagFogType"), flagFogType);
 			break;
 
-		case 10:
+		case 12:
 			// exponential
 			flagFogType = 2;
 			glUniform1i(glGetUniformLocation(program, "flagFogType"), flagFogType);
 			break;
 
-		case 11:
+		case 13:
 			// exponential square
 			flagFogType = 3;
 			glUniform1i(glGetUniformLocation(program, "flagFogType"), flagFogType);
 			break;
 
-		case 12:
+		case 14:
 			eye = originalEye;
 			break;
 
-		case 13:
+		case 15:
 			flagWire = !flagWire;
 			break;
 
-		case 14:
+		case 16:
 			exit(EXIT_SUCCESS);
 			break;
 	}
@@ -653,33 +685,38 @@ int main(int argc, char** argv) {
 	glutAddMenuEntry("No", 0);
 	glutAddMenuEntry("Yes", 1);
 
-	GLuint lightingMenu = glutCreateMenu(menu);
+	GLuint shadowBlendingMenu = glutCreateMenu(menu);
 	glutAddMenuEntry("No", 2);
 	glutAddMenuEntry("Yes", 3);
 
+	GLuint lightingMenu = glutCreateMenu(menu);
+	glutAddMenuEntry("No", 4);
+	glutAddMenuEntry("Yes", 5);
+
 	GLuint shadingMenu = glutCreateMenu(menu);
-	glutAddMenuEntry("Flat shading", 4);
-	glutAddMenuEntry("Smooth shading", 5);
+	glutAddMenuEntry("Flat shading", 6);
+	glutAddMenuEntry("Smooth shading", 7);
 
 	GLuint lightTypeMenu = glutCreateMenu(menu);
-	glutAddMenuEntry("Spot light", 6);
-	glutAddMenuEntry("Point source", 7);
+	glutAddMenuEntry("Spot light", 8);
+	glutAddMenuEntry("Point source", 9);
 
 	GLuint fogTypeMenu = glutCreateMenu(menu);
-	glutAddMenuEntry("No fog", 8);
-	glutAddMenuEntry("Linear fog", 9);
-	glutAddMenuEntry("Exponential fog", 10);
-	glutAddMenuEntry("Exponential square fog", 11);
+	glutAddMenuEntry("No fog", 10);
+	glutAddMenuEntry("Linear fog", 11);
+	glutAddMenuEntry("Exponential fog", 12);
+	glutAddMenuEntry("Exponential square fog", 13);
 
 	glutCreateMenu(menu);
-	glutAddMenuEntry("Default View Point", 12);
-	glutAddMenuEntry("Wire Frame Sphere", 13);
+	glutAddMenuEntry("Default View Point", 14);
+	glutAddMenuEntry("Wire Frame Sphere", 15);
 	glutAddSubMenu("Shadow", shadowMenu);
+	glutAddSubMenu("Blending Shadow", shadowBlendingMenu);
 	glutAddSubMenu("Enable Lighting", lightingMenu);
 	glutAddSubMenu("Shading", shadingMenu);
 	glutAddSubMenu("Light Source", lightTypeMenu);
 	glutAddSubMenu("Fog", fogTypeMenu);
-	glutAddMenuEntry("Quit", 14);
+	glutAddMenuEntry("Quit", 16);
 	glutAttachMenu(GLUT_LEFT_BUTTON);
 
 	glutDisplayFunc(display);

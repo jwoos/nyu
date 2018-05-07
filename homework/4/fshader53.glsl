@@ -12,7 +12,6 @@ uniform float fogStart;
 uniform float fogEnd;
 uniform float fogDensity;
 
-in float fogDistance;
 in vec4 color;
 out vec4 fColor;
 
@@ -20,18 +19,14 @@ out vec4 fColor;
 void main(void) {
 	fColor = color;
 
+	float fogDistance = gl_FragCoord.z / gl_FragCoord.w;
+
 	if (flagFogType > 0) {
 		float fog;
-
-		if (fogDensity == 0) {
-			fColor = vec4(1, 0, 0, 1);
-			return;
-		}
 
 		switch (flagFogType) {
 			case 1:
 				fog = (fogEnd - fogDistance) / (fogEnd - fogStart);
-				//fog = (fogEnd - clamp(fogDistance, fogStart, fogEnd)) / (fogEnd - fogStart);
 				break;
 
 			case 2:
