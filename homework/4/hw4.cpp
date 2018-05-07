@@ -19,6 +19,7 @@ extern bool flagShading;
 extern bool flagWire;
 extern bool flagLight;
 extern bool flagLightType;
+extern int flagFogType;
 
 extern GLuint program;
 
@@ -64,6 +65,10 @@ extern Entity _shadow;
 extern vec4 shadowColor;
 extern vector<vec4> shadowVertices;
 
+extern vec4 fogColor;
+extern float fogStart;
+extern float fogEnd;
+extern float fogDensity;
 
 // set up floor
 void floor(void) {
@@ -91,10 +96,30 @@ void floor(void) {
 
 	glGenBuffers(1, &_floor.buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, _floor.buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vec4) * _floor.size * 3, NULL, GL_STATIC_DRAW);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec4) * _floor.size, _floor.vertices);
-	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec4) * _floor.size, sizeof(vec4) * _floor.size, _floor.colors);
-	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec4) * _floor.size * 2, sizeof(vec4) * _floor.size, _floor.normals);
+	glBufferData(
+		GL_ARRAY_BUFFER,
+		sizeof(vec4) * _floor.size * 3,
+		NULL,
+		GL_STATIC_DRAW
+	);
+	glBufferSubData(
+		GL_ARRAY_BUFFER,
+		0,
+		sizeof(vec4) * _floor.size,
+		_floor.vertices
+	);
+	glBufferSubData(
+		GL_ARRAY_BUFFER,
+		sizeof(vec4) * _floor.size,
+		sizeof(vec4) * _floor.size,
+		_floor.colors
+	);
+	glBufferSubData(
+		GL_ARRAY_BUFFER,
+		sizeof(vec4) * _floor.size * 2,
+		sizeof(vec4) * _floor.size,
+		_floor.normals
+	);
 }
 
 // set up lines for axes
@@ -112,10 +137,30 @@ void axes(void) {
 
 	glGenBuffers(1, &_axes.buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, _axes.buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vec4) * _axes.size * 2, NULL, GL_STATIC_DRAW);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec4) * _axes.size, _axes.vertices);
-	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec4) * _axes.size, sizeof(vec4) * _axes.size, _axes.colors);
-	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec4) * _axes.size * 2, sizeof(vec4) * _axes.size, _axes.normals);
+	glBufferData(
+		GL_ARRAY_BUFFER,
+		sizeof(vec4) * _axes.size * 3,
+		NULL,
+		GL_STATIC_DRAW
+	);
+	glBufferSubData(
+		GL_ARRAY_BUFFER,
+		0,
+		sizeof(vec4) * _axes.size,
+		_axes.vertices
+	);
+	glBufferSubData(
+		GL_ARRAY_BUFFER,
+		sizeof(vec4) * _axes.size,
+		sizeof(vec4) * _axes.size,
+		_axes.colors
+	);
+	glBufferSubData(
+		GL_ARRAY_BUFFER,
+		sizeof(vec4) * _axes.size * 2,
+		sizeof(vec4) * _axes.size,
+		_axes.normals
+	);
 }
 
 // set up sphere
@@ -161,10 +206,30 @@ void sphere(void) {
 
 	glGenBuffers(1, &_sphere.buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, _sphere.buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vec4) * _sphere.size * 3, NULL, GL_STATIC_DRAW);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec4) * _sphere.size, _sphere.vertices);
-	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec4) * _sphere.size, sizeof(vec4) * _sphere.size, _sphere.colors);
-	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec4) * _sphere.size * 2, sizeof(vec4) * _sphere.size, _sphere.normals);
+	glBufferData(
+		GL_ARRAY_BUFFER,
+		sizeof(vec4) * _sphere.size * 3,
+		NULL,
+		GL_STATIC_DRAW
+	);
+	glBufferSubData(
+		GL_ARRAY_BUFFER,
+		0,
+		sizeof(vec4) * _sphere.size,
+		_sphere.vertices
+	);
+	glBufferSubData(
+		GL_ARRAY_BUFFER,
+		sizeof(vec4) * _sphere.size,
+		sizeof(vec4) * _sphere.size,
+		_sphere.colors
+	);
+	glBufferSubData(
+		GL_ARRAY_BUFFER,
+		sizeof(vec4) * _sphere.size * 2,
+		sizeof(vec4) * _sphere.size,
+		_sphere.normals
+	);
 }
 
 // set up shadow
@@ -180,12 +245,52 @@ void shadow(void) {
 
 	glGenBuffers(1, &_shadow.buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, _shadow.buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vec4) * _shadow.size * 2, NULL, GL_STATIC_DRAW);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec4) * _shadow.size, _shadow.vertices);
-	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec4) * _shadow.size, sizeof(vec4) * _shadow.size, _shadow.colors);
+	glBufferData(
+		GL_ARRAY_BUFFER,
+		sizeof(vec4) * _shadow.size * 2,
+		NULL,
+		GL_STATIC_DRAW
+	);
+	glBufferSubData(
+		GL_ARRAY_BUFFER,
+		0,
+		sizeof(vec4) * _shadow.size,
+		_shadow.vertices
+	);
+	glBufferSubData(
+		GL_ARRAY_BUFFER,
+		sizeof(vec4) * _shadow.size,
+		sizeof(vec4) * _shadow.size,
+		_shadow.colors
+	);
+}
+
+// set up fog
+void fog(void) {
+	glUniform4fv(glGetUniformLocation(program, "fogColor"), 1, fogColor);
+	glUniform1f(glGetUniformLocation(program, "fogStart"), fogStart);
+	glUniform1f(glGetUniformLocation(program, "fogEnd"), fogEnd);
+	glUniform1f(glGetUniformLocation(program, "fogDensity"), fogDensity);
+}
+
+void message(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
+	fprintf(
+		stderr,
+		"GL CALLBACK %s \n\ttype = 0x%x \n\tseverity = 0x%x \n\tmessage = %s\n",
+		(type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
+		type,
+		severity,
+		message
+	);
 }
 
 void init(void) {
+	glEnable(GL_DEBUG_OUTPUT);
+	glDebugMessageCallback((GLDEBUGPROC)message, NULL);
+
+	// initialize the shader
+	program = InitShader("vshader53.glsl", "fshader53.glsl");
+
 	floor();
 
 	axes();
@@ -194,11 +299,11 @@ void init(void) {
 
 	shadow();
 
-	// initialize the shader
-	program = InitShader("vshader53.glsl", "fshader53.glsl");
+	fog();
 
 	glUniform1i(glGetUniformLocation(program, "flagLight"), flagLight);
 	glUniform1f(glGetUniformLocation(program, "flagShading"), flagShading);
+	glUniform1f(glGetUniformLocation(program, "flagFogType"), flagFogType);
 
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -209,7 +314,7 @@ void light(mat4 mv, const Light& global, const Light& dLight, const Light& pLigh
 	glUniform1f(glGetUniformLocation(program, "shininess"), material.shininess);
 
 	// global
-	glUniformMatrix4fv(glGetUniformLocation(program, "globalLight"), 1, GL_TRUE, global.ambient * material.ambient);
+	glUniform4fv(glGetUniformLocation(program, "globalLight"), 1, global.ambient * material.ambient);
 
 	// directional
 	glUniform4fv(glGetUniformLocation(program, "dPosition"), 1, dLight.position);
@@ -240,6 +345,9 @@ void light(mat4 mv, const Light& global, const Light& dLight, const Light& pLigh
 }
 
 void display(void) {
+	// pass on eye
+	glUniform4fv(glGetUniformLocation(program, "eye"), 1, eye);
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// background
@@ -483,14 +591,38 @@ void menu(int index) {
 			break;
 
 		case 8:
-			eye = originalEye;
+			// none
+			flagFogType = 0;
+			glUniform1i(glGetUniformLocation(program, "flagFogType"), flagFogType);
 			break;
 
 		case 9:
-			flagWire = !flagWire;
+			// linear
+			flagFogType = 1;
+			glUniform1i(glGetUniformLocation(program, "flagFogType"), flagFogType);
 			break;
 
 		case 10:
+			// exponential
+			flagFogType = 2;
+			glUniform1i(glGetUniformLocation(program, "flagFogType"), flagFogType);
+			break;
+
+		case 11:
+			// exponential square
+			flagFogType = 3;
+			glUniform1i(glGetUniformLocation(program, "flagFogType"), flagFogType);
+			break;
+
+		case 12:
+			eye = originalEye;
+			break;
+
+		case 13:
+			flagWire = !flagWire;
+			break;
+
+		case 14:
 			exit(EXIT_SUCCESS);
 			break;
 	}
@@ -533,14 +665,21 @@ int main(int argc, char** argv) {
 	glutAddMenuEntry("Spot light", 6);
 	glutAddMenuEntry("Point source", 7);
 
+	GLuint fogTypeMenu = glutCreateMenu(menu);
+	glutAddMenuEntry("No fog", 8);
+	glutAddMenuEntry("Linear fog", 9);
+	glutAddMenuEntry("Exponential fog", 10);
+	glutAddMenuEntry("Exponential square fog", 11);
+
 	glutCreateMenu(menu);
-	glutAddMenuEntry("Default View Point", 8);
-	glutAddMenuEntry("Wire Frame Sphere", 9);
+	glutAddMenuEntry("Default View Point", 12);
+	glutAddMenuEntry("Wire Frame Sphere", 13);
 	glutAddSubMenu("Shadow", shadowMenu);
 	glutAddSubMenu("Enable Lighting", lightingMenu);
 	glutAddSubMenu("Shading", shadingMenu);
 	glutAddSubMenu("Light Source", lightTypeMenu);
-	glutAddMenuEntry("Quit", 10);
+	glutAddSubMenu("Fog", fogTypeMenu);
+	glutAddMenuEntry("Quit", 14);
 	glutAttachMenu(GLUT_LEFT_BUTTON);
 
 	glutDisplayFunc(display);

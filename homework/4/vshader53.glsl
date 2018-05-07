@@ -12,11 +12,16 @@ uniform bool flagWire;
 uniform bool flagLight;
 uniform bool flagShading;
 uniform bool flagLightType;
+uniform int flagFogType;
+
+uniform vec4 eye;
 
 in vec4 vPosition;
 in vec4 vColor;
 in vec4 vNormal;
+
 out vec4 color;
+out float fogDistance;
 
 uniform mat4 modelView;
 uniform mat4 projection;
@@ -58,7 +63,6 @@ uniform float pExponent;
 vec4 directional(void) {
 	vec3 pos = (modelView * vPosition).xyz;
 
-	//vec3 L = normalize(dDirection.xyz - pos);
 	vec3 L = normalize(-dDirection.xyz);
 	vec3 E = normalize(-pos);
 	vec3 H = normalize(L + E);
@@ -128,6 +132,10 @@ vec4 positional(void) {
 }
 
 void main(void) {
+	// pass on fogDistance to fragment shader
+	//fogDistance = distance((modelView * eye).xyz, (modelView * vPosition).xyz);
+	fogDistance = distance((modelView * vPosition).xyz, (modelView * eye).xyz);
+
 	gl_Position = projection * modelView * vPosition;
 
 	if (flagLight && !flagWire) {

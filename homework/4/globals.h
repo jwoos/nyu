@@ -12,6 +12,7 @@ bool flagShading = false;
 bool flagWire = false;
 bool flagLight = true;
 bool flagLightType = false;
+int flagFogType = false;
 
 GLuint program;
 
@@ -67,6 +68,12 @@ Light spotLight = {
 	.exponent = 15,
 	.angle = 20
 };
+
+Entity _fog;
+vec4 fogColor(0.7, 0.7, 0.7, 0.5);
+float fogStart = 0;
+float fogEnd = 18;
+float fogDensity = 0.09;
 
 
 Entity _floor;
