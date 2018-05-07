@@ -16,6 +16,11 @@ uniform int flagFogType;
 
 uniform vec4 eye;
 
+uniform vec4 fogColor;
+uniform float fogStart;
+uniform float fogEnd;
+uniform float fogDensity;
+
 in vec4 vPosition;
 in vec4 vColor;
 in vec4 vNormal;

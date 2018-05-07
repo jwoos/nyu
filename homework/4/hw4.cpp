@@ -268,9 +268,9 @@ void shadow(void) {
 // set up fog
 void fog(void) {
 	glUniform4fv(glGetUniformLocation(program, "fogColor"), 1, fogColor);
-	glUniform1f(glGetUniformLocation(program, "fogStart"), fogStart);
-	glUniform1f(glGetUniformLocation(program, "fogEnd"), fogEnd);
-	glUniform1f(glGetUniformLocation(program, "fogDensity"), fogDensity);
+	glUniform1f(glGetUniformLocation(program, "fogStart"), (GLfloat)fogStart);
+	glUniform1f(glGetUniformLocation(program, "fogEnd"), (GLfloat)fogEnd);
+	glUniform1f(glGetUniformLocation(program, "fogDensity"), (GLfloat)fogDensity);
 }
 
 void message(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
@@ -285,7 +285,7 @@ void message(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei len
 }
 
 void init(void) {
-	glEnable(GL_DEBUG_OUTPUT);
+	//glEnable(GL_DEBUG_OUTPUT);
 	glDebugMessageCallback((GLDEBUGPROC)message, NULL);
 
 	// initialize the shader
@@ -298,12 +298,6 @@ void init(void) {
 	sphere();
 
 	shadow();
-
-	fog();
-
-	glUniform1i(glGetUniformLocation(program, "flagLight"), flagLight);
-	glUniform1f(glGetUniformLocation(program, "flagShading"), flagShading);
-	glUniform1f(glGetUniformLocation(program, "flagFogType"), flagFogType);
 
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -345,6 +339,12 @@ void light(mat4 mv, const Light& global, const Light& dLight, const Light& pLigh
 }
 
 void display(void) {
+	fog();
+
+	glUniform1i(glGetUniformLocation(program, "flagLight"), flagLight);
+	glUniform1f(glGetUniformLocation(program, "flagShading"), flagShading);
+	glUniform1f(glGetUniformLocation(program, "flagFogType"), flagFogType);
+
 	// pass on eye
 	glUniform4fv(glGetUniformLocation(program, "eye"), 1, eye);
 

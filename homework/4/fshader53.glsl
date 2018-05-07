@@ -23,9 +23,14 @@ void main(void) {
 	if (flagFogType > 0) {
 		float fog;
 
+		if (fogDensity == 0) {
+			fColor = vec4(1, 0, 0, 1);
+			return;
+		}
+
 		switch (flagFogType) {
 			case 1:
-				fog = clamp(fogDistance, fogStart, fogEnd) / (fogEnd - fogStart);
+				fog = (fogEnd - fogDistance) / (fogEnd - fogStart);
 				//fog = (fogEnd - clamp(fogDistance, fogStart, fogEnd)) / (fogEnd - fogStart);
 				break;
 
