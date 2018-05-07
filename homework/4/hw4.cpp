@@ -6,6 +6,7 @@
 
 #include "Angel-yjc.h"
 #include "utils.h"
+#include "texmap.h"
 #include "globals.h"
 
 
@@ -40,6 +41,7 @@ extern Light spotLight;
 extern Entity _floor;
 extern vec4 floorColor;
 extern vec4 floorVertices[4];
+extern vec2 floorTextures[4];
 extern Light floorLight;
 
 extern Entity _axes;
@@ -72,12 +74,36 @@ extern float fogStart;
 extern float fogEnd;
 extern float fogDensity;
 
+GLuint texture1d;
+GLuint texture2d;
+
+
+void texture(void) {
+	image_set_up();
+
+	// set up 2d texture
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+	glGenTextures(1, &texture2d);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture2d);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, IMAGE_WIDTH, IMAGE_WIDTH, 0, GL_RGBA, GL_UNSIGNED_BYTE, TEXTURE_IMAGE);
+}
+
 // set up floor
 void floor(void) {
 	_floor.size = 6;
 	_floor.vertices = new vec4[_floor.size];
 	_floor.colors = new vec4[_floor.size];
 	_floor.normals = new vec4[_floor.size];
+	_floor.textures = new vec2[_floor.size];
 
 	_floor.vertices[0] = floorVertices[0];
 	_floor.vertices[1] = floorVertices[1];
@@ -85,6 +111,13 @@ void floor(void) {
 	_floor.vertices[3] = floorVertices[0];
 	_floor.vertices[4] = floorVertices[2];
 	_floor.vertices[5] = floorVertices[3];
+
+	_floor.textures[0] = floorTextures[0];
+	_floor.textures[1] = floorTextures[1];
+	_floor.textures[2] = floorTextures[2];
+	_floor.textures[3] = floorTextures[0];
+	_floor.textures[4] = floorTextures[2];
+	_floor.textures[5] = floorTextures[3];
 
 	vec4 normal = normalize(cross(
 		_floor.vertices[2] - _floor.vertices[3],
@@ -100,7 +133,7 @@ void floor(void) {
 	glBindBuffer(GL_ARRAY_BUFFER, _floor.buffer);
 	glBufferData(
 		GL_ARRAY_BUFFER,
-		sizeof(vec4) * _floor.size * 3,
+		sizeof(vec4) * _floor.size * 4,
 		NULL,
 		GL_STATIC_DRAW
 	);
@@ -122,6 +155,12 @@ void floor(void) {
 		sizeof(vec4) * _floor.size,
 		_floor.normals
 	);
+	glBufferSubData(
+		GL_ARRAY_BUFFER,
+		sizeof(vec4) * _floor.size * 3,
+		sizeof(vec4) * _floor.size,
+		_floor.textures
+	);
 }
 
 // set up lines for axes
@@ -141,7 +180,7 @@ void axes(void) {
 	glBindBuffer(GL_ARRAY_BUFFER, _axes.buffer);
 	glBufferData(
 		GL_ARRAY_BUFFER,
-		sizeof(vec4) * _axes.size * 3,
+		sizeof(vec4) * _axes.size * 4,
 		NULL,
 		GL_STATIC_DRAW
 	);
@@ -163,6 +202,12 @@ void axes(void) {
 		sizeof(vec4) * _axes.size,
 		_axes.normals
 	);
+	glBufferSubData(
+		GL_ARRAY_BUFFER,
+		sizeof(vec4) * _axes.size * 3,
+		sizeof(vec4) * _axes.size,
+		_axes.textures
+	);
 }
 
 // set up sphere
@@ -176,6 +221,7 @@ void sphere(void) {
 	sphereShadeSmooth = new vec4[_sphere.size];
 
 	_sphere.normals = sphereShadeFlat;
+	_sphere.textures = new vec2[_sphere.size];
 
 	for (int i = 0; i < _sphere.size; i++) {
 		_sphere.colors[i] = sphereColor;
@@ -210,7 +256,7 @@ void sphere(void) {
 	glBindBuffer(GL_ARRAY_BUFFER, _sphere.buffer);
 	glBufferData(
 		GL_ARRAY_BUFFER,
-		sizeof(vec4) * _sphere.size * 3,
+		sizeof(vec4) * _sphere.size * 4,
 		NULL,
 		GL_STATIC_DRAW
 	);
@@ -232,6 +278,12 @@ void sphere(void) {
 		sizeof(vec4) * _sphere.size,
 		_sphere.normals
 	);
+	glBufferSubData(
+		GL_ARRAY_BUFFER,
+		sizeof(vec4) * _sphere.size * 3,
+		sizeof(vec4) * _sphere.size,
+		_sphere.textures
+	);
 }
 
 // set up shadow
@@ -249,7 +301,7 @@ void shadow(void) {
 	glBindBuffer(GL_ARRAY_BUFFER, _shadow.buffer);
 	glBufferData(
 		GL_ARRAY_BUFFER,
-		sizeof(vec4) * _shadow.size * 2,
+		sizeof(vec4) * _shadow.size * 4,
 		NULL,
 		GL_STATIC_DRAW
 	);
@@ -264,6 +316,18 @@ void shadow(void) {
 		sizeof(vec4) * _shadow.size,
 		sizeof(vec4) * _shadow.size,
 		_shadow.colors
+	);
+	glBufferSubData(
+		GL_ARRAY_BUFFER,
+		sizeof(vec4) * _shadow.size * 2,
+		sizeof(vec4) * _shadow.size,
+		_shadow.normals
+	);
+	glBufferSubData(
+		GL_ARRAY_BUFFER,
+		sizeof(vec4) * _shadow.size * 3,
+		sizeof(vec4) * _shadow.size,
+		_shadow.textures
 	);
 }
 
@@ -292,6 +356,8 @@ void init(void) {
 
 	// initialize the shader
 	program = InitShader("vshader53.glsl", "fshader53.glsl");
+
+	texture();
 
 	floor();
 
@@ -347,6 +413,10 @@ void display(void) {
 	glUniform1f(glGetUniformLocation(program, "flagShading"), flagShading);
 	glUniform1f(glGetUniformLocation(program, "flagFogType"), flagFogType);
 
+	glUniform1i(glGetUniformLocation(program, "texture2d"), GL_TEXTURE0);
+
+	glUniform1i(glGetUniformLocation(program, "flagFloorTexture"), false);
+
 	// pass on eye
 	glUniform4fv(glGetUniformLocation(program, "eye"), 1, eye);
 
@@ -388,7 +458,7 @@ void display(void) {
 	// draw axes lines
 	glUniform1i(glGetUniformLocation(program, "flagLight"), false);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	drawObj(_axes.buffer, _axes.size, program);
+	drawObject(_axes.buffer, _axes.size, program);
 	glUniform1i(glGetUniformLocation(program, "flagLight"), flagLight);
 
 	// draw sphere
@@ -409,11 +479,11 @@ void display(void) {
 	if (flagWire) {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		glUniform1i(glGetUniformLocation(program, "flagLight"), false);
-		drawObj(_sphere.buffer, _sphere.size, program);
+		drawObject(_sphere.buffer, _sphere.size, program);
 		glUniform1i(glGetUniformLocation(program, "flagLight"), flagLight);
 	} else {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		drawObj(_sphere.buffer, _sphere.size, program);
+		drawObject(_sphere.buffer, _sphere.size, program);
 	}
 
 	mv = LookAt(eye, at, up);
@@ -430,7 +500,9 @@ void display(void) {
 		light(mv, ambientLight, directionalLight, spotLight, floorLight);
 	}
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	drawObj(_floor.buffer, _floor.size, program);
+	glUniform1i(glGetUniformLocation(program, "flagFloorTexture"), flagFloorTexture);
+	drawObject(_floor.buffer, _floor.size, program);
+	glUniform1i(glGetUniformLocation(program, "flagFloorTexture"), false);
 
 	// draw shadow
 	if (flagShadow) {
@@ -455,10 +527,10 @@ void display(void) {
 		if (flagShadowBlend) {
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			drawObj(_shadow.buffer, _shadow.size, program);
+			drawObject(_shadow.buffer, _shadow.size, program);
 			glDisable(GL_BLEND);
 		} else {
-			drawObj(_shadow.buffer, _shadow.size, program);
+			drawObject(_shadow.buffer, _shadow.size, program);
 		}
 
 		glUniform1i(glGetUniformLocation(program, "flagLight"), flagLight);
@@ -478,7 +550,9 @@ void display(void) {
 		light(mv, ambientLight, directionalLight, spotLight, floorLight);
 	}
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	drawObj(_floor.buffer, _floor.size, program);
+	glUniform1i(glGetUniformLocation(program, "flagFloorTexture"), flagFloorTexture);
+	drawObject(_floor.buffer, _floor.size, program);
+	glUniform1i(glGetUniformLocation(program, "flagFloorTexture"), false);
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
 	glutSwapBuffers();

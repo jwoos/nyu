@@ -17,7 +17,7 @@
 //
 //  4. For matrix A, ust A[i][j] to get the item at i-th row and j-th column
 //     (i, j both start from 0).
-//   
+//
 //  5. mat4 can be specified as
 //     i. mat4(a, b, c, d): a becomes the first row, b the 2nd row, etc., where
 //                          a, b, c, d are each a vec4.
@@ -27,10 +27,10 @@
 //
 //  6. Function for obtaining the Normal Matrix,
 //     mat3 NormalMatrix(mv, non_uniform_scale_flag) is added, where
-//     mv is the Model-View matrix (mat4) and 
+//     mv is the Model-View matrix (mat4) and
 //     non_uniform_scale_flag == 1 if mv involves non-uniform scaling, and
 //     non_uniform_scale_flag == 0 otherwise.
-//                  
+//
 //     The following related functions are also added:
 //
 //     mat3 upperLeftMat3(m): return the upper-left 3x3 submatrix of mat4 m.
@@ -38,7 +38,7 @@
 //     mat4 mat4WithUpperLeftMat3(m): return the mat4 where the
 //          upper-left 3x3 submatrix is m, the 4th column and the 4th row are
 //          both (0, 0, 0, 1).
-//                  
+//
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef __ANGEL_MAT_H__
@@ -81,7 +81,7 @@ class mat2 {
 	if ( *this != m ) {
 	    _m[0] = m._m[0];
 	    _m[1] = m._m[1];
-	} 
+	}
     }
 
     //
@@ -101,7 +101,7 @@ class mat2 {
     mat2 operator - ( const mat2& m ) const
 	{ return mat2( _m[0]-m[0], _m[1]-m[1] ); }
 
-    mat2 operator * ( const GLfloat s ) const 
+    mat2 operator * ( const GLfloat s ) const
 	{ return mat2( s*_m[0], s*_m[1] ); }
 
     mat2 operator / ( const GLfloat s ) const {
@@ -112,14 +112,14 @@ class mat2 {
 	    return mat2();
 	}
 #endif // DEBUG
-	
+
 	GLfloat r = GLfloat(1.0) / s;
 	return *this * r;
     }
 
     friend mat2 operator * ( const GLfloat s, const mat2& m )
 	{ return m * s; }
-	
+
     mat2 operator * ( const mat2& m ) const {
 	mat2  a( 0.0 );
 
@@ -139,17 +139,17 @@ class mat2 {
     //
 
     mat2& operator += ( const mat2& m ) {
-	_m[0] += m[0];  _m[1] += m[1];  
+	_m[0] += m[0];  _m[1] += m[1];
 	return *this;
     }
 
     mat2& operator -= ( const mat2& m ) {
-	_m[0] -= m[0];  _m[1] -= m[1];  
+	_m[0] -= m[0];  _m[1] -= m[1];
 	return *this;
     }
 
     mat2& operator *= ( const GLfloat s ) {
-	_m[0] *= s;  _m[1] *= s;   
+	_m[0] *= s;  _m[1] *= s;
 	return *this;
     }
 
@@ -166,7 +166,7 @@ class mat2 {
 
 	return *this = a;
     }
-    
+
     mat2& operator /= ( const GLfloat s ) {
 #ifdef DEBUG
 	if ( std::fabs(s) < DivideByZeroTolerance ) {
@@ -188,11 +188,11 @@ class mat2 {
 	return vec2( _m[0][0]*v.x + _m[0][1]*v.y,
 		     _m[1][0]*v.x + _m[1][1]*v.y );
     }
-	
+
     //
     //  --- Insertion and Extraction Operators ---
     //
-	
+
     friend std::ostream& operator << ( std::ostream& os, const mat2& m )
 	{ return os << std::endl << m[0] << std::endl << m[1] << std::endl; }
 
@@ -240,7 +240,7 @@ mat2 transpose1( const mat2& A ) {
 
 //----------------------------------------------------------------------------
 //
-//  mat3 - 3D square matrix 
+//  mat3 - 3D square matrix
 //
 
 class mat3 {
@@ -274,7 +274,7 @@ class mat3 {
 		_m[0] = m._m[0];
 		_m[1] = m._m[1];
 		_m[2] = m._m[2];
-	    } 
+	    }
 	}
 
     //
@@ -294,7 +294,7 @@ class mat3 {
     mat3 operator - ( const mat3& m ) const
 	{ return mat3( _m[0]-m[0], _m[1]-m[1], _m[2]-m[2] ); }
 
-    mat3 operator * ( const GLfloat s ) const 
+    mat3 operator * ( const GLfloat s ) const
 	{ return mat3( s*_m[0], s*_m[1], s*_m[2] ); }
 
     mat3 operator / ( const GLfloat s ) const {
@@ -305,14 +305,14 @@ class mat3 {
 	    return mat3();
 	}
 #endif // DEBUG
-	
+
 	GLfloat r = GLfloat(1.0) / s;
 	return *this * r;
     }
 
     friend mat3 operator * ( const GLfloat s, const mat3& m )
 	{ return m * s; }
-	
+
     mat3 operator * ( const mat3& m ) const {
 	mat3  a( 0.0 );
 
@@ -332,17 +332,17 @@ class mat3 {
     //
 
     mat3& operator += ( const mat3& m ) {
-	_m[0] += m[0];  _m[1] += m[1];  _m[2] += m[2]; 
+	_m[0] += m[0];  _m[1] += m[1];  _m[2] += m[2];
 	return *this;
     }
 
     mat3& operator -= ( const mat3& m ) {
-	_m[0] -= m[0];  _m[1] -= m[1];  _m[2] -= m[2]; 
+	_m[0] -= m[0];  _m[1] -= m[1];  _m[2] -= m[2];
 	return *this;
     }
 
     mat3& operator *= ( const GLfloat s ) {
-	_m[0] *= s;  _m[1] *= s;  _m[2] *= s; 
+	_m[0] *= s;  _m[1] *= s;  _m[2] *= s;
 	return *this;
     }
 
@@ -382,13 +382,13 @@ class mat3 {
 		     _m[1][0]*v.x + _m[1][1]*v.y + _m[1][2]*v.z,
 		     _m[2][0]*v.x + _m[2][1]*v.y + _m[2][2]*v.z );
     }
-	
+
     //
     //  --- Insertion and Extraction Operators ---
     //
-	
+
     friend std::ostream& operator << ( std::ostream& os, const mat3& m ) {
-	return os << std::endl 
+	return os << std::endl
 		  << m[0] << std::endl
 		  << m[1] << std::endl
 		  << m[2] << std::endl;
@@ -454,11 +454,11 @@ mat3 inverse( const mat3& m ) {
   if (std::abs(det) < (1e-8) * (1e-8))
     { printf("Error! Matrix Determinant is too close to 0!\n");
       exit(-1);
-    }  
+    }
 
   // Using the following "assert()" command would need to include additional header:
   // #include <cassert>  // or #include <assert.h>
-  // 
+  //
   // assert(std::abs(det) > (1e-8) * (1e-8));
 
   r[0][0] =  (m[1][1] * m[2][2] - m[1][2] * m[2][1]) / det;
@@ -519,7 +519,7 @@ class mat4 {
 		_m[1] = m._m[1];
 		_m[2] = m._m[2];
 		_m[3] = m._m[3];
-	    } 
+	    }
 	}
 
     //
@@ -539,7 +539,7 @@ class mat4 {
     mat4 operator - ( const mat4& m ) const
 	{ return mat4( _m[0]-m[0], _m[1]-m[1], _m[2]-m[2], _m[3]-m[3] ); }
 
-    mat4 operator * ( const GLfloat s ) const 
+    mat4 operator * ( const GLfloat s ) const
 	{ return mat4( s*_m[0], s*_m[1], s*_m[2], s*_m[3] ); }
 
     mat4 operator / ( const GLfloat s ) const {
@@ -550,14 +550,14 @@ class mat4 {
 	    return mat4();
 	}
 #endif // DEBUG
-	
+
 	GLfloat r = GLfloat(1.0) / s;
 	return *this * r;
     }
 
     friend mat4 operator * ( const GLfloat s, const mat4& m )
 	{ return m * s; }
-	
+
     mat4 operator * ( const mat4& m ) const {
 	mat4  a( 0.0 );
 
@@ -629,13 +629,13 @@ class mat4 {
 		     _m[3][0]*v.x + _m[3][1]*v.y + _m[3][2]*v.z + _m[3][3]*v.w
 	    );
     }
-	
+
     //
     //  --- Insertion and Extraction Operators ---
     //
-	
+
     friend std::ostream& operator << ( std::ostream& os, const mat4& m ) {
-	return os << std::endl 
+	return os << std::endl
 		  << m[0] << std::endl
 		  << m[1] << std::endl
 		  << m[2] << std::endl
@@ -795,7 +795,7 @@ mat4 Rotate(const GLfloat angle, const GLfloat x, const GLfloat y, const GLfloat
          ===> Return transpose1(result) to make it *Row Order*, to be consistent with other functions here.
               (Note: we use transpose1() instead of transpose(); the latter is incorrect.)
     ***/
-    return transpose1(result); 
+    return transpose1(result);
     // return result;  /* Original */
 }
 
@@ -932,7 +932,7 @@ mat4 LookAt( const vec4& eye, const vec4& at, const vec4& up )
     //     But u, v are each a basis vector and w should be 0, as above.
     // vec4 u = normalize( cross(up,n) );
     // vec4 v = normalize( cross(n,u)  );
-    
+
     vec4 t = vec4(0.0, 0.0, 0.0, 1.0);
     mat4 c = mat4(u, v, n, t);
     return c * Translate( -eye );
@@ -944,21 +944,21 @@ mat4 LookAt( const vec4& eye, const vec4& at, const vec4& up )
 //
 inline
 mat3 upperLeftMat3( const mat4& m ) {
-  
+
   return mat3(vec3(m[0][0], m[0][1], m[0][2]),
               vec3(m[1][0], m[1][1], m[1][2]),
               vec3(m[2][0], m[2][1], m[2][2]));
-}        
+}
 
 // YJC: Added the following:
 //      NormalMatrix(mv, non_uniform_scale_flag):
 //
 //      Return the Normal Matrix (mat3) given the Model-View matrix mv (mat4).
 //      * non_uniform_scale_flag == 1 if mv involves non-uniform scaling
-//        non_uniform_scale_flag == 0 otherwise      
+//        non_uniform_scale_flag == 0 otherwise
 inline
 mat3 NormalMatrix( const mat4& mv, int non_uniform_scale_flag ) {
-  
+
   // The upper-left 3x3 submatrix of mv
   mat3 m = upperLeftMat3( mv );
 
@@ -979,7 +979,7 @@ mat3 NormalMatrix( const mat4& mv, int non_uniform_scale_flag ) {
 //       the rotation and scaling parts are specified by m.)
 inline
 mat4 mat4WithUpperLeftMat3( const mat3& m){
-     
+
   return mat4( vec4(m[0][0], m[0][1], m[0][2], 0.0),
                vec4(m[1][0], m[1][1], m[1][2], 0.0),
                vec4(m[2][0], m[2][1], m[2][2], 0.0),

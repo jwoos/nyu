@@ -1,7 +1,7 @@
 #include "utils.h"
 
 
-void drawObj(GLuint buffer, int num_vertices, GLuint program) {
+void drawObject(GLuint buffer, int num_vertices, GLuint program) {
 	//--- Activate the vertex buffer object to be drawn ---//
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
 
@@ -17,7 +17,10 @@ void drawObj(GLuint buffer, int num_vertices, GLuint program) {
 	GLuint vNormal = glGetAttribLocation(program, "vNormal");
 	glEnableVertexAttribArray(vNormal);
 	glVertexAttribPointer(vNormal, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(vec4) * num_vertices * 2));
-	// the offset is the (total) size of the previous vertex attribute array(s)
+
+	GLuint vTexture = glGetAttribLocation(program, "vTexture");
+	glEnableVertexAttribArray(vTexture);
+	glVertexAttribPointer(vTexture, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(vec4) * num_vertices * 3));
 
 	/* Draw a sequence of geometric objs (triangles) from the vertex buffer
 	   (using the attributes specified in each enabled vertex attribute array) */
@@ -27,6 +30,7 @@ void drawObj(GLuint buffer, int num_vertices, GLuint program) {
 	glDisableVertexAttribArray(vPosition);
 	glDisableVertexAttribArray(vColor);
 	glDisableVertexAttribArray(vNormal);
+	glDisableVertexAttribArray(vTexture);
 }
 
 // reads in points into spherePoints

@@ -25,8 +25,10 @@ uniform float fogDensity;
 in vec4 vPosition;
 in vec4 vColor;
 in vec4 vNormal;
+in vec2 vTexture;
 
-out vec4 color;
+out vec4 fColor;
+out vec2 fTexture;
 
 uniform mat4 modelView;
 uniform mat4 projection;
@@ -139,9 +141,11 @@ vec4 positional(void) {
 void main(void) {
 	gl_Position = projection * modelView * vPosition;
 
+	fTexture = vTexture;
+
 	if (flagLight && !flagWire) {
-		color = globalLight + directional() + positional();
+		fColor = globalLight + directional() + positional();
 	} else {
-		color = vColor;
+		fColor = vColor;
 	}
 }

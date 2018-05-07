@@ -86,6 +86,12 @@ vec4 floorVertices[4] = {
 	vec4(-5, 0, -4, 1),
 	vec4(-5, 0, 8, 1)
 };
+vec2 floorTextures[4] = {
+	vec2(6, 5),
+	vec2(0, 5),
+	vec2(0, 0),
+	vec2(6, 0)
+};
 Light floorLight = {
 	.position = vec4(0),
 	.direction = vec4(0),
