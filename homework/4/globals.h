@@ -14,6 +14,7 @@ bool flagLight = true;
 bool flagLightType = false;
 int flagFogType = false;
 bool flagShadowBlend = false;
+bool flagFloorTexture = false;
 
 GLuint program;
 

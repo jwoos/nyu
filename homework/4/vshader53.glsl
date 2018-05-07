@@ -13,6 +13,7 @@ uniform bool flagLight;
 uniform bool flagShading;
 uniform bool flagLightType;
 uniform int flagFogType;
+uniform bool flagFloorTexture;
 
 uniform vec4 eye;
 

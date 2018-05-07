@@ -6,6 +6,7 @@ File Name: "fshader53.glsl":
 #version 150
 
 uniform int flagFogType;
+uniform bool flagFloorTexture;
 
 uniform vec4 fogColor;
 uniform float fogStart;

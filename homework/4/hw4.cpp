@@ -21,6 +21,7 @@ extern bool flagLight;
 extern bool flagLightType;
 extern int flagFogType;
 extern bool flagShadowBlend;
+extern bool flagFloorTexture;
 
 extern GLuint program;
 
@@ -599,7 +600,7 @@ void menu(int index) {
 		case 6:
 			flagShading = false;
 			_sphere.normals = sphereShadeFlat;
-			glUniform1f(glGetUniformLocation(program, "flagShading"), flagShading);
+			glUniform1i(glGetUniformLocation(program, "flagShading"), flagShading);
 			glBindBuffer(GL_ARRAY_BUFFER, _sphere.buffer);
 			glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec4) * _sphere.size * 2, sizeof(vec4) * _sphere.size, _sphere.normals);
 			break;
@@ -607,19 +608,19 @@ void menu(int index) {
 		case 7:
 			flagShading = true;
 			_sphere.normals = sphereShadeSmooth;
-			glUniform1f(glGetUniformLocation(program, "flagShading"), flagShading);
+			glUniform1i(glGetUniformLocation(program, "flagShading"), flagShading);
 			glBindBuffer(GL_ARRAY_BUFFER, _sphere.buffer);
 			glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec4) * _sphere.size * 2, sizeof(vec4) * _sphere.size, _sphere.normals);
 			break;
 
 		case 8:
 			flagLightType = false;
-			glUniform1f(glGetUniformLocation(program, "flagLightType"), flagLightType);
+			glUniform1i(glGetUniformLocation(program, "flagLightType"), flagLightType);
 			break;
 
 		case 9:
 			flagLightType = true;
-			glUniform1f(glGetUniformLocation(program, "flagLightType"), flagLightType);
+			glUniform1i(glGetUniformLocation(program, "flagLightType"), flagLightType);
 			break;
 
 		case 10:
@@ -647,14 +648,24 @@ void menu(int index) {
 			break;
 
 		case 14:
-			eye = originalEye;
+			flagFloorTexture = false;
+			glUniform1i(glGetUniformLocation(program, "flagFloorTexture"), flagFloorTexture);
 			break;
 
 		case 15:
-			flagWire = !flagWire;
+			flagFloorTexture = true;
+			glUniform1i(glGetUniformLocation(program, "flagFloorTexture"), flagFloorTexture);
 			break;
 
 		case 16:
+			eye = originalEye;
+			break;
+
+		case 17:
+			flagWire = !flagWire;
+			break;
+
+		case 18:
 			exit(EXIT_SUCCESS);
 			break;
 	}
@@ -694,29 +705,34 @@ int main(int argc, char** argv) {
 	glutAddMenuEntry("Yes", 5);
 
 	GLuint shadingMenu = glutCreateMenu(menu);
-	glutAddMenuEntry("Flat shading", 6);
-	glutAddMenuEntry("Smooth shading", 7);
+	glutAddMenuEntry("Flat Shading", 6);
+	glutAddMenuEntry("Smooth Shading", 7);
 
 	GLuint lightTypeMenu = glutCreateMenu(menu);
-	glutAddMenuEntry("Spot light", 8);
-	glutAddMenuEntry("Point source", 9);
+	glutAddMenuEntry("Spot Light", 8);
+	glutAddMenuEntry("Point Source", 9);
 
 	GLuint fogTypeMenu = glutCreateMenu(menu);
-	glutAddMenuEntry("No fog", 10);
-	glutAddMenuEntry("Linear fog", 11);
-	glutAddMenuEntry("Exponential fog", 12);
-	glutAddMenuEntry("Exponential square fog", 13);
+	glutAddMenuEntry("No Fog", 10);
+	glutAddMenuEntry("Linear Fog", 11);
+	glutAddMenuEntry("Exponential Fog", 12);
+	glutAddMenuEntry("Exponential Square Fog", 13);
+
+	GLuint floorTextureMenu = glutCreateMenu(menu);
+	glutAddMenuEntry("No", 14);
+	glutAddMenuEntry("Yes", 15);
 
 	glutCreateMenu(menu);
-	glutAddMenuEntry("Default View Point", 14);
-	glutAddMenuEntry("Wire Frame Sphere", 15);
+	glutAddMenuEntry("Default View Point", 16);
+	glutAddMenuEntry("Wire Frame Sphere", 17);
 	glutAddSubMenu("Shadow", shadowMenu);
 	glutAddSubMenu("Blending Shadow", shadowBlendingMenu);
 	glutAddSubMenu("Enable Lighting", lightingMenu);
 	glutAddSubMenu("Shading", shadingMenu);
 	glutAddSubMenu("Light Source", lightTypeMenu);
 	glutAddSubMenu("Fog", fogTypeMenu);
-	glutAddMenuEntry("Quit", 16);
+	glutAddSubMenu("Texture Mapped Ground", floorTextureMenu);
+	glutAddMenuEntry("Quit", 18);
 	glutAttachMenu(GLUT_LEFT_BUTTON);
 
 	glutDisplayFunc(display);
