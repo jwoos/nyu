@@ -13,9 +13,9 @@ uniform bool flagLight;
 uniform bool flagShading;
 uniform bool flagLightType;
 uniform int flagFogType;
-uniform bool flagFloorTexture;
 uniform bool flagTextureOrientation;
 uniform bool flagFrame;
+uniform bool flagFloorTexture;
 uniform bool flagSphereTexture;
 
 uniform vec4 eye;
@@ -142,38 +142,48 @@ vec4 positional(void) {
 	}
 }
 
-void main(void) {
+void floorTexture(void) {
+	fTexture2d = vTexture;
+}
+
+void sphereTexture(void) {
 	vec3 pos = (modelView * vPosition).xyz;
+
+	if (!flagTextureOrientation) {
+		// vertical
+		if (flagFrame) {
+			// object frame
+			fTexture1d = vPosition.x * 2.5;
+		} else {
+			// eye frame
+			fTexture1d = pos.x * 2.5;
+		}
+	} else {
+		// slanted
+		if (flagFrame) {
+			// object frame
+			fTexture1d = 1.5 * (vPosition.x + vPosition.y + vPosition.z);
+		} else {
+			// eye frame
+			fTexture1d = 1.5 * (pos.x + pos.y + pos.z);
+		}
+	}
+}
+
+void main(void) {
+	fColor = vColor;
 
 	gl_Position = projection * modelView * vPosition;
 
-	fTexture2d = vTexture;
+	if (flagFloorTexture) {
+		floorTexture();
+	}
 
 	if (flagSphereTexture) {
-		if (!flagTextureOrientation) {
-			// vertical
-			if (flagFrame) {
-				// object frame
-				fTexture1d = vPosition.x * 2.5;
-			} else {
-				// eye frame
-				fTexture1d = pos.x * 2.5;
-			}
-		} else {
-			// slanted
-			if (flagFrame) {
-				// object frame
-				fTexture1d = 1.5 * (vPosition.x + vPosition.y + vPosition.z);
-			} else {
-				// eye frame
-				fTexture1d = 1.5 * (pos.x + pos.y + pos.z);
-			}
-		}
+		sphereTexture();
 	}
 
 	if (flagLight && !flagWire) {
 		fColor = globalLight + directional() + positional();
-	} else {
-		fColor = vColor;
 	}
 }

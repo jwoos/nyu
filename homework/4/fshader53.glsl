@@ -27,8 +27,6 @@ out vec4 outColor;
 void main(void) {
 	outColor = fColor;
 
-	float fogDistance = gl_FragCoord.z / gl_FragCoord.w;
-
 	if (flagFloorTexture) {
 		outColor = texture(texture2d, fTexture2d) * outColor;
 	}
@@ -38,6 +36,8 @@ void main(void) {
 	}
 
 	if (flagFogType > 0) {
+		float fogDistance = gl_FragCoord.z / gl_FragCoord.w;
+
 		float fog;
 
 		switch (flagFogType) {

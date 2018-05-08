@@ -85,23 +85,19 @@ void texture(void) {
 	GLuint texture2d;
 
 	// set up 1d texture
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
 	glGenTextures(1, &texture1d);
 
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_1D, texture1d);
 
 	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
 	glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA, STRIPE_IMAGE_WIDTH, 0, GL_RGBA, GL_UNSIGNED_BYTE, TEXTURE_STRIPE_IMAGE);
 
 	// set up 2d texture
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
 	glGenTextures(1, &texture2d);
 
 	glActiveTexture(GL_TEXTURE0);
@@ -151,7 +147,7 @@ void floor(void) {
 	glBindBuffer(GL_ARRAY_BUFFER, _floor.buffer);
 	glBufferData(
 		GL_ARRAY_BUFFER,
-		sizeof(vec4) * _floor.size * 4,
+		(sizeof(vec4) * _floor.size) * 3 + (sizeof(vec2) * _floor.size),
 		NULL,
 		GL_STATIC_DRAW
 	);
@@ -176,7 +172,7 @@ void floor(void) {
 	glBufferSubData(
 		GL_ARRAY_BUFFER,
 		sizeof(vec4) * _floor.size * 3,
-		sizeof(vec4) * _floor.size,
+		sizeof(vec2) * _floor.size,
 		_floor.textures
 	);
 }
@@ -198,7 +194,7 @@ void axes(void) {
 	glBindBuffer(GL_ARRAY_BUFFER, _axes.buffer);
 	glBufferData(
 		GL_ARRAY_BUFFER,
-		sizeof(vec4) * _axes.size * 4,
+		(sizeof(vec4) * _axes.size * 3) + (sizeof(vec2) * _axes.size),
 		NULL,
 		GL_STATIC_DRAW
 	);
@@ -223,7 +219,7 @@ void axes(void) {
 	glBufferSubData(
 		GL_ARRAY_BUFFER,
 		sizeof(vec4) * _axes.size * 3,
-		sizeof(vec4) * _axes.size,
+		sizeof(vec2) * _axes.size,
 		_axes.textures
 	);
 }
@@ -238,8 +234,7 @@ void sphere(void) {
 	sphereShadeFlat = new vec4[_sphere.size];
 	sphereShadeSmooth = new vec4[_sphere.size];
 
-	_sphere.normals = sphereShadeFlat;
-	_sphere.textures = new vec2[_sphere.size];
+	_sphere.normals = sphereShadeSmooth;
 
 	for (int i = 0; i < _sphere.size; i++) {
 		_sphere.colors[i] = sphereColor;
@@ -274,7 +269,7 @@ void sphere(void) {
 	glBindBuffer(GL_ARRAY_BUFFER, _sphere.buffer);
 	glBufferData(
 		GL_ARRAY_BUFFER,
-		sizeof(vec4) * _sphere.size * 4,
+		(sizeof(vec4) * _sphere.size * 3) + (sizeof(vec2) * _sphere.size),
 		NULL,
 		GL_STATIC_DRAW
 	);
@@ -299,7 +294,7 @@ void sphere(void) {
 	glBufferSubData(
 		GL_ARRAY_BUFFER,
 		sizeof(vec4) * _sphere.size * 3,
-		sizeof(vec4) * _sphere.size,
+		sizeof(vec2) * _sphere.size,
 		_sphere.textures
 	);
 }
@@ -319,7 +314,7 @@ void shadow(void) {
 	glBindBuffer(GL_ARRAY_BUFFER, _shadow.buffer);
 	glBufferData(
 		GL_ARRAY_BUFFER,
-		sizeof(vec4) * _shadow.size * 4,
+		(sizeof(vec4) * _shadow.size * 3) + (sizeof(vec2) * _shadow.size),
 		NULL,
 		GL_STATIC_DRAW
 	);
@@ -344,7 +339,7 @@ void shadow(void) {
 	glBufferSubData(
 		GL_ARRAY_BUFFER,
 		sizeof(vec4) * _shadow.size * 3,
-		sizeof(vec4) * _shadow.size,
+		sizeof(vec2) * _shadow.size,
 		_shadow.textures
 	);
 }
@@ -435,11 +430,13 @@ void flags(void) {
 	glUniform1i(glGetUniformLocation(program, "flagFrame"), flagFrame);
 	glUniform1i(glGetUniformLocation(program, "flagTextureOrientation"), flagTextureOrientation);
 
-	glUniform1i(glGetUniformLocation(program, "texture2d"), GL_TEXTURE0);
-	glUniform1i(glGetUniformLocation(program, "texture1d"), GL_TEXTURE1);
+	glUniform1i(glGetUniformLocation(program, "texture2d"), 0);
+	glUniform1i(glGetUniformLocation(program, "texture1d"), 1);
 }
 
 void display(void) {
+	glUseProgram(program);
+
 	flags();
 
 	// set to true only when drawing the respective objects
@@ -453,8 +450,6 @@ void display(void) {
 
 	// background
 	glClearColor(0.529, 0.807, 0.92, 1);
-
-	glUseProgram(program);
 
 	GLuint modelView = glGetUniformLocation(program, "modelView");
 	GLuint projection = glGetUniformLocation(program, "projection");
