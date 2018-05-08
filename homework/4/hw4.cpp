@@ -23,9 +23,10 @@ extern bool flagLightType;
 extern int flagFogType;
 extern bool flagShadowBlend;
 extern bool flagFloorTexture;
+extern bool flagSphereTexture;
 extern bool flagFrame;
 extern bool flagTextureOrientation;
-extern bool flagSphereTexture;
+extern bool flagTextureType;
 
 extern GLuint program;
 
@@ -429,6 +430,7 @@ void flags(void) {
 	glUniform1i(glGetUniformLocation(program, "flagShadowBlend"), flagShadowBlend);
 	glUniform1i(glGetUniformLocation(program, "flagFrame"), flagFrame);
 	glUniform1i(glGetUniformLocation(program, "flagTextureOrientation"), flagTextureOrientation);
+	glUniform1i(glGetUniformLocation(program, "flagTextureType"), flagTextureType);
 
 	glUniform1i(glGetUniformLocation(program, "texture2d"), 0);
 	glUniform1i(glGetUniformLocation(program, "texture1d"), 1);
@@ -442,9 +444,6 @@ void display(void) {
 	// set to true only when drawing the respective objects
 	glUniform1i(glGetUniformLocation(program, "flagFloorTexture"), false);
 	glUniform1i(glGetUniformLocation(program, "flagSphereTexture"), false);
-
-	// pass on eye
-	glUniform4fv(glGetUniformLocation(program, "eye"), 1, eye);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -489,7 +488,7 @@ void display(void) {
 	glUniform1i(glGetUniformLocation(program, "flagLight"), flagLight);
 
 	// draw sphere
-	glUniform1i(glGetUniformLocation(program, "flagSphereTexture"), true);
+	glUniform1i(glGetUniformLocation(program, "flagSphereTexture"), flagSphereTexture);
 	sphereRotationMatrix = Rotate(
 		sphereRate,
 		sphereRotationAxes[sphereIndex].x,
@@ -781,14 +780,33 @@ void menu(int index) {
 			break;
 
 		case 16:
-			eye = originalEye;
+			flagSphereTexture = false;
+			glUniform1i(glGetUniformLocation(program, "flagSphereTexture"), flagSphereTexture);
 			break;
 
 		case 17:
-			flagWire = !flagWire;
+			flagSphereTexture = true;
+			flagTextureType = false;
+			glUniform1i(glGetUniformLocation(program, "flagSphereTexture"), flagSphereTexture);
+			glUniform1i(glGetUniformLocation(program, "flagTextureType"), flagTextureType);
 			break;
 
 		case 18:
+			flagSphereTexture = true;
+			flagTextureType = true;
+			glUniform1i(glGetUniformLocation(program, "flagSphereTexture"), flagSphereTexture);
+			glUniform1i(glGetUniformLocation(program, "flagTextureType"), flagTextureType);
+			break;
+
+		case 19:
+			eye = originalEye;
+			break;
+
+		case 20:
+			flagWire = !flagWire;
+			break;
+
+		case 21:
 			exit(EXIT_SUCCESS);
 			break;
 	}
@@ -845,9 +863,14 @@ int main(int argc, char** argv) {
 	glutAddMenuEntry("No", 14);
 	glutAddMenuEntry("Yes", 15);
 
+	GLuint sphereTextureMenu = glutCreateMenu(menu);
+	glutAddMenuEntry("No", 16);
+	glutAddMenuEntry("Yes - Contour Lines", 17);
+	glutAddMenuEntry("Yes - Checkerboard", 18);
+
 	glutCreateMenu(menu);
-	glutAddMenuEntry("Default View Point", 16);
-	glutAddMenuEntry("Wire Frame Sphere", 17);
+	glutAddMenuEntry("Default View Point", 19);
+	glutAddMenuEntry("Wire Frame Sphere", 20);
 	glutAddSubMenu("Shadow", shadowMenu);
 	glutAddSubMenu("Blending Shadow", shadowBlendingMenu);
 	glutAddSubMenu("Enable Lighting", lightingMenu);
@@ -855,7 +878,8 @@ int main(int argc, char** argv) {
 	glutAddSubMenu("Light Source", lightTypeMenu);
 	glutAddSubMenu("Fog", fogTypeMenu);
 	glutAddSubMenu("Texture Mapped Ground", floorTextureMenu);
-	glutAddMenuEntry("Quit", 18);
+	glutAddSubMenu("Texture Mapped Sphere", sphereTextureMenu);
+	glutAddMenuEntry("Quit", 21);
 	glutAttachMenu(GLUT_LEFT_BUTTON);
 
 	glutDisplayFunc(display);

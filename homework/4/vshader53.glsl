@@ -14,11 +14,10 @@ uniform bool flagShading;
 uniform bool flagLightType;
 uniform int flagFogType;
 uniform bool flagTextureOrientation;
+uniform bool flagTextureType;
 uniform bool flagFrame;
 uniform bool flagFloorTexture;
 uniform bool flagSphereTexture;
-
-uniform vec4 eye;
 
 uniform vec4 fogColor;
 uniform float fogStart;
@@ -149,23 +148,47 @@ void floorTexture(void) {
 void sphereTexture(void) {
 	vec3 pos = (modelView * vPosition).xyz;
 
-	if (!flagTextureOrientation) {
-		// vertical
-		if (flagFrame) {
-			// object frame
-			fTexture1d = vPosition.x * 2.5;
+	if (!flagTextureType) {
+		// stripe
+		if (!flagTextureOrientation) {
+			// vertical
+			if (flagFrame) {
+				// eye frame
+				fTexture1d = pos.x * 2.5;
+			} else {
+				// object frame
+				fTexture1d = vPosition.x * 2.5;
+			}
 		} else {
-			// eye frame
-			fTexture1d = pos.x * 2.5;
+			// slanted
+			if (flagFrame) {
+				// eye frame
+				fTexture1d = 1.5 * (pos.x + pos.y + pos.z);
+			} else {
+				// object frame
+				fTexture1d = 1.5 * (vPosition.x + vPosition.y + vPosition.z);
+			}
 		}
 	} else {
-		// slanted
-		if (flagFrame) {
-			// object frame
-			fTexture1d = 1.5 * (vPosition.x + vPosition.y + vPosition.z);
+		// checker
+		if (!flagTextureOrientation) {
+			// vertical
+			if (flagFrame) {
+				// eye frame
+				fTexture2d = vec2(0.75 * (pos.x + 1), 0.75 * (pos.y + 1));
+			} else {
+				// object frame
+				fTexture2d = vec2(0.75 * (vPosition.x + 1), 0.75 * (vPosition.y + 1));
+			}
 		} else {
-			// eye frame
-			fTexture1d = 1.5 * (pos.x + pos.y + pos.z);
+			// slanted
+			if (flagFrame) {
+				// eye frame
+				fTexture2d = vec2(0.45 * (pos.x + pos.y + pos.z), 0.45 * (pos.x - pos.y + pos.z));
+			} else {
+				// object frame
+				fTexture2d = vec2(0.45 * (vPosition.x + vPosition.y + vPosition.z), 0.45 * (vPosition.x - vPosition.y + vPosition.z));
+			}
 		}
 	}
 }
@@ -179,7 +202,7 @@ void main(void) {
 		floorTexture();
 	}
 
-	if (flagSphereTexture) {
+	if (flagSphereTexture && !flagWire) {
 		sphereTexture();
 	}
 

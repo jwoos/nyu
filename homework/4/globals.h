@@ -15,8 +15,10 @@ bool flagLightType = false;
 int flagFogType = 0;
 bool flagShadowBlend = true;
 bool flagFloorTexture = true;
+bool flagSphereTexture = true;
 bool flagFrame = false;
 bool flagTextureOrientation = false;
+bool flagTextureType = false;
 
 GLuint program;
 

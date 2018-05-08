@@ -6,8 +6,10 @@ File Name: "fshader53.glsl":
 #version 150
 
 uniform int flagFogType;
+uniform bool flagWire;
 uniform bool flagFloorTexture;
 uniform bool flagSphereTexture;
+uniform bool flagTextureType;
 
 uniform sampler2D texture2d;
 uniform sampler1D texture1d;
@@ -31,8 +33,18 @@ void main(void) {
 		outColor = texture(texture2d, fTexture2d) * outColor;
 	}
 
-	if (flagSphereTexture) {
-		outColor = texture(texture1d, fTexture1d) * outColor;
+	if (flagSphereTexture && !flagWire) {
+		if (!flagTextureType) {
+			// stripe
+			outColor = texture(texture1d, fTexture1d) * outColor;
+		} else {
+			// checker
+			if (texture(texture2d, fTexture2d).r == 0) {
+				outColor = vec4(0.9, 0.1, 0.1, 1) * outColor;
+			} else {
+				outColor = texture(texture2d, fTexture2d) * outColor;
+			}
+		}
 	}
 
 	if (flagFogType > 0) {
