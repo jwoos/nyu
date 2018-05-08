@@ -19,6 +19,8 @@ bool flagSphereTexture = true;
 bool flagFrame = false;
 bool flagTextureOrientation = false;
 bool flagTextureType = false;
+bool flagLattice = false;
+bool flagLatticeOrientation = false;
 
 GLuint program;
 

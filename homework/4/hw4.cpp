@@ -27,6 +27,8 @@ extern bool flagSphereTexture;
 extern bool flagFrame;
 extern bool flagTextureOrientation;
 extern bool flagTextureType;
+extern bool flagLattice;
+extern bool flagLatticeOrientation;
 
 extern GLuint program;
 
@@ -431,7 +433,8 @@ void flags(void) {
 	glUniform1i(glGetUniformLocation(program, "flagFrame"), flagFrame);
 	glUniform1i(glGetUniformLocation(program, "flagTextureOrientation"), flagTextureOrientation);
 	glUniform1i(glGetUniformLocation(program, "flagTextureType"), flagTextureType);
-
+	glUniform1i(glGetUniformLocation(program, "flagLattice"), flagLattice);
+	glUniform1i(glGetUniformLocation(program, "flagLatticeOrientation"), flagLatticeOrientation);
 	glUniform1i(glGetUniformLocation(program, "texture2d"), 0);
 	glUniform1i(glGetUniformLocation(program, "texture1d"), 1);
 }
@@ -444,6 +447,7 @@ void display(void) {
 	// set to true only when drawing the respective objects
 	glUniform1i(glGetUniformLocation(program, "flagFloorTexture"), false);
 	glUniform1i(glGetUniformLocation(program, "flagSphereTexture"), false);
+	glUniform1i(glGetUniformLocation(program, "flagLattice"), false);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -489,6 +493,7 @@ void display(void) {
 
 	// draw sphere
 	glUniform1i(glGetUniformLocation(program, "flagSphereTexture"), flagSphereTexture);
+	glUniform1i(glGetUniformLocation(program, "flagLattice"), flagLattice);
 	sphereRotationMatrix = Rotate(
 		sphereRate,
 		sphereRotationAxes[sphereIndex].x,
@@ -513,6 +518,7 @@ void display(void) {
 		drawObject(_sphere.buffer, _sphere.size, program);
 	}
 	glUniform1i(glGetUniformLocation(program, "flagSphereTexture"), false);
+	glUniform1i(glGetUniformLocation(program, "flagLattice"), false);
 
 	mv = LookAt(eye, at, up);
 	glUniformMatrix4fv(modelView, 1, GL_TRUE, mv);
@@ -534,6 +540,7 @@ void display(void) {
 
 	// draw shadow
 	if (flagShadow) {
+		glUniform1i(glGetUniformLocation(program, "flagLattice"), flagLattice);
 		glUniform1i(glGetUniformLocation(program, "flagLight"), false);
 		mat4 shadowMatrix(
 			vec4(1, 0, 0, 0),
@@ -562,6 +569,7 @@ void display(void) {
 		}
 
 		glUniform1i(glGetUniformLocation(program, "flagLight"), flagLight);
+		glUniform1i(glGetUniformLocation(program, "flagLattice"), false);
 	}
 
 	glDepthMask(GL_TRUE);
@@ -657,6 +665,21 @@ void keyboard(unsigned char key, int x, int y) {
 		case 'e':
 		case 'E':
 			flagFrame = true;
+			break;
+
+		case 'u':
+		case 'U':
+			flagLatticeOrientation = false;
+			break;
+
+		case 't':
+		case 'T':
+			flagLatticeOrientation = true;
+			break;
+
+		case 'l':
+		case 'L':
+			flagLattice = !flagLattice;
 			break;
 
 		case 'b':

@@ -10,6 +10,7 @@ uniform bool flagWire;
 uniform bool flagFloorTexture;
 uniform bool flagSphereTexture;
 uniform bool flagTextureType;
+uniform bool flagLattice;
 
 uniform sampler2D texture2d;
 uniform sampler1D texture1d;
@@ -28,6 +29,12 @@ out vec4 outColor;
 
 void main(void) {
 	outColor = fColor;
+
+	if (flagLattice) {
+		if (fract(4 * fTexture2d.x) < 0.35 && fract(4 * fTexture2d.y) < 0.35) {
+			discard;
+		}
+	}
 
 	if (flagFloorTexture) {
 		outColor = texture(texture2d, fTexture2d) * outColor;

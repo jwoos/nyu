@@ -18,6 +18,8 @@ uniform bool flagTextureType;
 uniform bool flagFrame;
 uniform bool flagFloorTexture;
 uniform bool flagSphereTexture;
+uniform bool flagLattice;
+uniform bool flagLatticeOrientation;
 
 uniform vec4 fogColor;
 uniform float fogStart;
@@ -189,6 +191,16 @@ void sphereTexture(void) {
 				// object frame
 				fTexture2d = vec2(0.45 * (vPosition.x + vPosition.y + vPosition.z), 0.45 * (vPosition.x - vPosition.y + vPosition.z));
 			}
+		}
+	}
+
+	if (flagLattice) {
+		if (!flagLatticeOrientation) {
+			// vertical
+			fTexture2d = vec2(0.5 * (vPosition.x + 1), 0.5 * (vPosition.y + 1));
+		} else {
+			// tilted
+			fTexture2d = vec2(0.3 * (vPosition.x + vPosition.y + vPosition.z), 0.3 * (vPosition.x - vPosition.y + vPosition.z));
 		}
 	}
 }
