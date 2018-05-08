@@ -23,6 +23,9 @@ extern bool flagLightType;
 extern int flagFogType;
 extern bool flagShadowBlend;
 extern bool flagFloorTexture;
+extern bool flagFrame;
+extern bool flagTextureOrientation;
+extern bool flagSphereTexture;
 
 extern GLuint program;
 
@@ -74,12 +77,27 @@ extern float fogStart;
 extern float fogEnd;
 extern float fogDensity;
 
-GLuint texture1d;
-GLuint texture2d;
-
 
 void texture(void) {
 	image_set_up();
+
+	GLuint texture1d;
+	GLuint texture2d;
+
+	// set up 1d texture
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+	glGenTextures(1, &texture1d);
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_1D, texture1d);
+
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+	glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA, STRIPE_IMAGE_WIDTH, 0, GL_RGBA, GL_UNSIGNED_BYTE, TEXTURE_STRIPE_IMAGE);
 
 	// set up 2d texture
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -406,16 +424,27 @@ void light(mat4 mv, const Light& global, const Light& dLight, const Light& pLigh
 	glUniform1f(glGetUniformLocation(program, "pAngle"), cos(pLight.angle * (M_PI / 180)));
 }
 
-void display(void) {
-	fog();
-
+void flags(void) {
+	glUniform1i(glGetUniformLocation(program, "flagShadow"), flagShadow);
+	glUniform1i(glGetUniformLocation(program, "flagShading"), flagShading);
+	glUniform1i(glGetUniformLocation(program, "flagWire"), flagWire);
 	glUniform1i(glGetUniformLocation(program, "flagLight"), flagLight);
-	glUniform1f(glGetUniformLocation(program, "flagShading"), flagShading);
-	glUniform1f(glGetUniformLocation(program, "flagFogType"), flagFogType);
+	glUniform1i(glGetUniformLocation(program, "flagLightType"), flagLightType);
+	glUniform1i(glGetUniformLocation(program, "flagFogType"), flagFogType);
+	glUniform1i(glGetUniformLocation(program, "flagShadowBlend"), flagShadowBlend);
+	glUniform1i(glGetUniformLocation(program, "flagFrame"), flagFrame);
+	glUniform1i(glGetUniformLocation(program, "flagTextureOrientation"), flagTextureOrientation);
 
 	glUniform1i(glGetUniformLocation(program, "texture2d"), GL_TEXTURE0);
+	glUniform1i(glGetUniformLocation(program, "texture1d"), GL_TEXTURE1);
+}
 
+void display(void) {
+	flags();
+
+	// set to true only when drawing the respective objects
 	glUniform1i(glGetUniformLocation(program, "flagFloorTexture"), false);
+	glUniform1i(glGetUniformLocation(program, "flagSphereTexture"), false);
 
 	// pass on eye
 	glUniform4fv(glGetUniformLocation(program, "eye"), 1, eye);
@@ -455,6 +484,9 @@ void display(void) {
 	mat4 p = Perspective(fovy, aspect, zNear, zFar);
 	glUniformMatrix4fv(projection, 1, GL_TRUE, p);
 
+	// set up fog
+	fog();
+
 	// draw axes lines
 	glUniform1i(glGetUniformLocation(program, "flagLight"), false);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -462,6 +494,7 @@ void display(void) {
 	glUniform1i(glGetUniformLocation(program, "flagLight"), flagLight);
 
 	// draw sphere
+	glUniform1i(glGetUniformLocation(program, "flagSphereTexture"), true);
 	sphereRotationMatrix = Rotate(
 		sphereRate,
 		sphereRotationAxes[sphereIndex].x,
@@ -485,6 +518,7 @@ void display(void) {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		drawObject(_sphere.buffer, _sphere.size, program);
 	}
+	glUniform1i(glGetUniformLocation(program, "flagSphereTexture"), false);
 
 	mv = LookAt(eye, at, up);
 	glUniformMatrix4fv(modelView, 1, GL_TRUE, mv);
@@ -609,6 +643,26 @@ void keyboard(unsigned char key, int x, int y) {
 
 		case 'z':
 			eye[2] -= 1.0;
+			break;
+
+		case 'v':
+		case 'V':
+			flagTextureOrientation = false;
+			break;
+
+		case 's':
+		case 'S':
+			flagTextureOrientation = true;
+			break;
+
+		case 'o':
+		case 'O':
+			flagFrame = false;
+			break;
+
+		case 'e':
+		case 'E':
+			flagFrame = true;
 			break;
 
 		case 'b':

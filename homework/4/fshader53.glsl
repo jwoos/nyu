@@ -7,6 +7,7 @@ File Name: "fshader53.glsl":
 
 uniform int flagFogType;
 uniform bool flagFloorTexture;
+uniform bool flagSphereTexture;
 
 uniform sampler2D texture2d;
 uniform sampler1D texture1d;
@@ -17,7 +18,8 @@ uniform float fogEnd;
 uniform float fogDensity;
 
 in vec4 fColor;
-in vec2 fTexture;
+in float fTexture1d;
+in vec2 fTexture2d;
 
 out vec4 outColor;
 
@@ -28,7 +30,11 @@ void main(void) {
 	float fogDistance = gl_FragCoord.z / gl_FragCoord.w;
 
 	if (flagFloorTexture) {
-		outColor = texture(texture2d, fTexture) * outColor;
+		outColor = texture(texture2d, fTexture2d) * outColor;
+	}
+
+	if (flagSphereTexture) {
+		outColor = texture(texture1d, fTexture1d) * outColor;
 	}
 
 	if (flagFogType > 0) {

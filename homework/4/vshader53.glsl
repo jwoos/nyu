@@ -14,6 +14,9 @@ uniform bool flagShading;
 uniform bool flagLightType;
 uniform int flagFogType;
 uniform bool flagFloorTexture;
+uniform bool flagTextureOrientation;
+uniform bool flagFrame;
+uniform bool flagSphereTexture;
 
 uniform vec4 eye;
 
@@ -28,7 +31,8 @@ in vec4 vNormal;
 in vec2 vTexture;
 
 out vec4 fColor;
-out vec2 fTexture;
+out float fTexture1d;
+out vec2 fTexture2d;
 
 uniform mat4 modelView;
 uniform mat4 projection;
@@ -139,9 +143,33 @@ vec4 positional(void) {
 }
 
 void main(void) {
+	vec3 pos = (modelView * vPosition).xyz;
+
 	gl_Position = projection * modelView * vPosition;
 
-	fTexture = vTexture;
+	fTexture2d = vTexture;
+
+	if (flagSphereTexture) {
+		if (!flagTextureOrientation) {
+			// vertical
+			if (flagFrame) {
+				// object frame
+				fTexture1d = vPosition.x * 2.5;
+			} else {
+				// eye frame
+				fTexture1d = pos.x * 2.5;
+			}
+		} else {
+			// slanted
+			if (flagFrame) {
+				// object frame
+				fTexture1d = 1.5 * (vPosition.x + vPosition.y + vPosition.z);
+			} else {
+				// eye frame
+				fTexture1d = 1.5 * (pos.x + pos.y + pos.z);
+			}
+		}
+	}
 
 	if (flagLight && !flagWire) {
 		fColor = globalLight + directional() + positional();

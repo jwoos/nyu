@@ -8,13 +8,15 @@
 bool flagAnimation = false;
 bool flagStarted = false;
 bool flagShadow = true;
-bool flagShading = false;
+bool flagShading = true;
 bool flagWire = false;
 bool flagLight = true;
 bool flagLightType = false;
-int flagFogType = false;
-bool flagShadowBlend = false;
-bool flagFloorTexture = false;
+int flagFogType = 0;
+bool flagShadowBlend = true;
+bool flagFloorTexture = true;
+bool flagFrame = false;
+bool flagTextureOrientation = false;
 
 GLuint program;
 
