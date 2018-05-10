@@ -20,6 +20,8 @@ typedef struct Entity {
 	vec4* normals;
 	vec2* textures;
 
+	vec4* velocities;
+
 	GLuint buffer;
 
 	int size;
@@ -46,6 +48,8 @@ typedef struct Light {
 
 
 void drawObject(GLuint, int, GLuint);
+
+void drawParticles(GLuint, int, GLuint);
 
 void readFile(const string&, const string&, vector<vec4>&, vector<vec4>&);
 

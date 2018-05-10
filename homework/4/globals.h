@@ -21,8 +21,10 @@ bool flagTextureOrientation = false;
 bool flagTextureType = false;
 bool flagLattice = false;
 bool flagLatticeOrientation = false;
+bool flagFirework = false;
 
 GLuint program;
+GLuint fireworkProgram;
 
 vec4 originalEye(7, 3, -10, 1);
 vec4 eye = originalEye;
@@ -168,6 +170,11 @@ mat4 sphereRotationMatrix(
 Entity _shadow;
 vec4 shadowColor(0.25, 0.25, 0.25, 0.65);
 vector<vec4> shadowVertices;
+
+Entity _firework;
+int fireworkParticleCount = 300;
+float fireworkTime = 0;
+int fireworkMaxTime = 10000;
 
 
 #endif

@@ -1,7 +1,7 @@
 #include "utils.h"
 
 
-void drawObject(GLuint buffer, int num_vertices, GLuint program) {
+void drawObject(GLuint buffer, int vertexCount, GLuint program) {
 	//--- Activate the vertex buffer object to be drawn ---//
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
 
@@ -12,25 +12,42 @@ void drawObject(GLuint buffer, int num_vertices, GLuint program) {
 
 	GLuint vColor = glGetAttribLocation(program, "vColor");
 	glEnableVertexAttribArray(vColor);
-	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(vec4) * num_vertices));
+	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(vec4) * vertexCount));
 
 	GLuint vNormal = glGetAttribLocation(program, "vNormal");
 	glEnableVertexAttribArray(vNormal);
-	glVertexAttribPointer(vNormal, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(vec4) * num_vertices * 2));
+	glVertexAttribPointer(vNormal, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(vec4) * vertexCount * 2));
 
 	GLuint vTexture = glGetAttribLocation(program, "vTexture");
 	glEnableVertexAttribArray(vTexture);
-	glVertexAttribPointer(vTexture, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(vec4) * num_vertices * 3));
+	glVertexAttribPointer(vTexture, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(vec4) * vertexCount * 3));
 
 	/* Draw a sequence of geometric objs (triangles) from the vertex buffer
 	   (using the attributes specified in each enabled vertex attribute array) */
-	glDrawArrays(GL_TRIANGLES, 0, num_vertices);
+	glDrawArrays(GL_TRIANGLES, 0, vertexCount);
 
 	/*--- Disable each vertex attribute array being enabled ---*/
 	glDisableVertexAttribArray(vPosition);
 	glDisableVertexAttribArray(vColor);
 	glDisableVertexAttribArray(vNormal);
 	glDisableVertexAttribArray(vTexture);
+}
+
+void drawParticles(GLuint buffer, int vertexCount, GLuint program) {
+	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+
+	GLuint vColor = glGetAttribLocation(program, "vColor");
+	glEnableVertexAttribArray(vColor);
+	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+
+	GLuint vVelocity = glGetAttribLocation(program, "vVelocity");
+	glEnableVertexAttribArray(vVelocity);
+	glVertexAttribPointer(vVelocity, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(vec4) * vertexCount));
+
+	glDrawArrays(GL_POINTS, 0, vertexCount);
+
+	glDisableVertexAttribArray(vColor);
+	glDisableVertexAttribArray(vVelocity);
 }
 
 // reads in points into spherePoints

@@ -29,8 +29,10 @@ extern bool flagTextureOrientation;
 extern bool flagTextureType;
 extern bool flagLattice;
 extern bool flagLatticeOrientation;
+extern bool flagFirework;
 
 extern GLuint program;
+extern GLuint fireworkProgram;
 
 extern GLuint positionalLight;
 extern GLuint uniformLight;
@@ -74,6 +76,11 @@ extern mat4 sphereRotationMatrix;
 extern Entity _shadow;
 extern vec4 shadowColor;
 extern vector<vec4> shadowVertices;
+
+extern Entity _firework;
+extern int fireworkParticleCount;
+extern float fireworkTime;
+extern int fireworkMaxTime;
 
 extern vec4 fogColor;
 extern float fogStart;
@@ -347,6 +354,51 @@ void shadow(void) {
 	);
 }
 
+// set up firework
+void firework(void) {
+	_firework.size = fireworkParticleCount;
+
+	_firework.colors = new vec4[_firework.size];
+	_firework.velocities = new vec4[_firework.size];
+
+	for (int i = 0; i < _firework.size; i++) {
+		_firework.colors[i] = vec4(
+			(rand() % 256) / 256.0,
+			(rand() % 256) / 256.0,
+			(rand() % 256) / 256.0,
+			1
+		);
+
+		_firework.velocities[i] = vec4(
+			2.0 * ((rand() % 256) / 256.0 - 0.5),
+			1.2 * 2.0 * ((rand() % 256) / 256.0),
+			2.0 * ((rand() % 256) / 256.0 - 0.5),
+			1
+		);
+	}
+
+	glGenBuffers(1, &_firework.buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, _firework.buffer);
+	glBufferData(
+		GL_ARRAY_BUFFER,
+		sizeof(vec4) * _firework.size * 2,
+		NULL,
+		GL_STATIC_DRAW
+	);
+	glBufferSubData(
+		GL_ARRAY_BUFFER,
+		0,
+		sizeof(vec4) * _firework.size,
+		_firework.colors
+	);
+	glBufferSubData(
+		GL_ARRAY_BUFFER,
+		sizeof(vec4) * _firework.size,
+		sizeof(vec4) * _firework.size,
+		_firework.velocities
+	);
+}
+
 // set up fog
 void fog(void) {
 	glUniform4fv(glGetUniformLocation(program, "fogColor"), 1, fogColor);
@@ -372,6 +424,7 @@ void init(void) {
 
 	// initialize the shader
 	program = InitShader("vshader53.glsl", "fshader53.glsl");
+	fireworkProgram = InitShader("vshaderFirework.glsl", "fshaderFirework.glsl");
 
 	texture();
 
@@ -383,9 +436,13 @@ void init(void) {
 
 	shadow();
 
+	firework();
+
 	glEnable(GL_DEPTH_TEST);
-	glClearColor(0.0, 0.0, 0.0, 1.0);
-	glLineWidth(2.0);
+
+	glClearColor(0.0, 0.0, 0.0, 1);
+	glLineWidth(2);
+	glPointSize(3);
 }
 
 void light(mat4 mv, const Light& global, const Light& dLight, const Light& pLight, const Light& material) {
@@ -590,6 +647,17 @@ void display(void) {
 	drawObject(_floor.buffer, _floor.size, program);
 	glUniform1i(glGetUniformLocation(program, "flagFloorTexture"), false);
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
+	if (flagFirework) {
+		glUseProgram(fireworkProgram);
+
+		float t = fmod(glutGet(GLUT_ELAPSED_TIME) - fireworkTime, fireworkMaxTime);
+		glUniform1f(glGetUniformLocation(fireworkProgram, "time"), t);
+		glUniformMatrix4fv(glGetUniformLocation(fireworkProgram, "projection"), 1, GL_TRUE, Perspective(fovy, aspect, zNear, zFar));
+		glUniformMatrix4fv(glGetUniformLocation(fireworkProgram, "modelView"), 1, GL_TRUE, LookAt(eye, at, up));
+
+		drawParticles(_firework.buffer, _firework.size, fireworkProgram);
+	}
 
 	glutSwapBuffers();
 }
@@ -822,14 +890,25 @@ void menu(int index) {
 			break;
 
 		case 19:
-			eye = originalEye;
+			flagFirework = false;
 			break;
 
 		case 20:
-			flagWire = !flagWire;
+			if (!flagFirework) {
+				flagFirework = true;
+				fireworkTime = glutGet(GLUT_ELAPSED_TIME);
+			}
 			break;
 
 		case 21:
+			eye = originalEye;
+			break;
+
+		case 22:
+			flagWire = !flagWire;
+			break;
+
+		case 23:
 			exit(EXIT_SUCCESS);
 			break;
 	}
@@ -891,9 +970,13 @@ int main(int argc, char** argv) {
 	glutAddMenuEntry("Yes - Contour Lines", 17);
 	glutAddMenuEntry("Yes - Checkerboard", 18);
 
+	GLuint fireworkMenu = glutCreateMenu(menu);
+	glutAddMenuEntry("No", 19);
+	glutAddMenuEntry("Yes", 20);
+
 	glutCreateMenu(menu);
-	glutAddMenuEntry("Default View Point", 19);
-	glutAddMenuEntry("Wire Frame Sphere", 20);
+	glutAddMenuEntry("Default View Point", 21);
+	glutAddMenuEntry("Wire Frame Sphere", 22);
 	glutAddSubMenu("Shadow", shadowMenu);
 	glutAddSubMenu("Blending Shadow", shadowBlendingMenu);
 	glutAddSubMenu("Enable Lighting", lightingMenu);
@@ -902,7 +985,8 @@ int main(int argc, char** argv) {
 	glutAddSubMenu("Fog", fogTypeMenu);
 	glutAddSubMenu("Texture Mapped Ground", floorTextureMenu);
 	glutAddSubMenu("Texture Mapped Sphere", sphereTextureMenu);
-	glutAddMenuEntry("Quit", 21);
+	glutAddSubMenu("Firework", fireworkMenu);
+	glutAddMenuEntry("Quit", 23);
 	glutAttachMenu(GLUT_LEFT_BUTTON);
 
 	glutDisplayFunc(display);

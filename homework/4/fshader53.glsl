@@ -1,9 +1,5 @@
-/*
-File Name: "fshader53.glsl":
-           Fragment Shader
-*/
-
 #version 150
+
 
 uniform int flagFogType;
 uniform bool flagWire;
