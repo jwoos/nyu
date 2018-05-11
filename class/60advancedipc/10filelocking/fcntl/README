@@ -1,0 +1,48 @@
+lockSomething:
+
+    Demonstrates use fcntl for locking a file "record". Actually since
+    we are starting at the beginning and specified a length of zero,
+    we are locking the entire file.
+
+    Note the use here, first, of F_SETLK to try the lock but not
+    block.
+
+    If we didn't get the lock because of EAGAIN or EACCESS, that means
+    someone else has it. We then use F_GETLK to see who it was. By the
+    time we get and answer, it might be no one, which we will see if
+    l_type is F-UNLCK. If it was still locked the l_pid will have the
+    identity of the process holding the lock.
+
+    If someone beat us to the lock then we block with F_SETLKW.
+
+filelockingcycle:
+
+    Demonstrates that file locks are checked for deadlocking.
+
+    
+I was curious about the comment in the documentation that fcntl would
+return EACCES or EAGAIN if the lock was already held when attempting
+to acquire it with F_SETLK (as opposed to F_SETLKW which blocks).  
+
+So I went to find them, for no good reason. My search took me to:
+
+  - <errno.h>.  Fine, that's in /usr/include where it ought
+                to be.  But it includes:
+
+  - <bits/errno.h>.  Ok, bits is down under x86_64-linux-gnu and there
+                we find errno.h -- which includes:
+
+  - <linux/errno.h>.  The subdirectory linux is back up under
+                /usr/include and, yes, there is another errno.h
+                -- which includes
+
+  - <asm/errno.h>.  Back to x86_64-linux-gnu where we will find the
+               asm subdirectory. Here errno.h includes
+
+  - <asm-generic/errno.h>, which again is under /usr/include.  Yes, it
+              has #defines for the various errno values!  But not for
+              EACCES or EAGAIN.  Instead that sends us to
+
+  - <asm-generic/errno-base.h>.  Happily we are already in that
+              directory!  And this file has the values we want.  No,
+              they are not the same.

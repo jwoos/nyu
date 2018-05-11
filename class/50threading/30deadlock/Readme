@@ -1,0 +1,66 @@
+50.Pthreads/30.Bowing
+  - This is about adding a level of protection / mutual exclusion, to
+    the data.
+  - Initially there is no problem as we only have one bowing event.
+  - But when we add bowing events, then we don't want someone to be
+    involved in bowing to two people simultaneously.
+  - We could introduce one big lock, as in 3.bowing, 
+  - or provide finer grained locking as 4.bowing
+    - but that leads to deadlock
+  - 5.bowing takes a step towards a solution.
+  - 6.bowingV[1-3] solves the deadlock problem.
+
+0.bowing.c
+  - single threaded
+  - Two friends, one bowing event, Alphonse bows to Gaston
+  - init_friend, bow, bow_back.
+
+1.bowing.c
+  - multi-threaded, main just waiting for second thread.
+  - Two friends, one bowing event, again Alphonse bows to Gaston
+  - Requires a "wrapper" function, bowing, that is passes 
+    the array of the two friends
+
+2.bowing.c:
+  - Throw in another bowing event with Gaston now initiating the bowing
+  - And sleep between before bow_back. (actually, not using on Mac)
+  - Note that we see Alphonse and Gaston both initiating a bow and
+    then both bowing back. Try to picture it happening, wierd!
+  - How can we prevent this sort of thing?
+  - Add a lock to synchronize / protect the resources. (Think of this
+    as the friends begin resources and the bow/bow_back pair being a
+    process.
+
+2.bowingB.c: ignore
+
+3.bowing.cpp:
+  - Simple / simplistic solution to 2.bowing...
+  - One big lock!
+  - No more conficts, but now all bowing is forced to be
+    synchronous. No concurrency. Not great.
+
+4.bowing.cpp:
+  -	Separate lock for each object.
+  -	Managed within the bow/bowback functions.
+    - bow acquires lock on bower
+    - bow_back acquires lock on bowee
+  -	Deadlocks!
+    - Always occured in the past past
+    - Didn't occur in 17S. Had to throw in a sleep
+    - Occurs most of the time without a sleep on the Mac (18S)
+
+5.bowing.c:
+   - Moved the locks for each object into wrapper function.
+     - Achieves deadlock right away.
+     - I have added more output to demonstrate what is happening since
+       we never get into the bow function.
+
+6.bowingV1.c:
+  - Order locks by name but fails to handle ties.
+6.bowingV2.c:
+  - Order locks by name with big lock for tie.
+6.bowingV3.c:
+  -	Order locks by address.
+
+
+

@@ -1,0 +1,20 @@
+testSharedMemoryCreate.c
+  - Sets up the shared memory.  
+    If no argument, then the system is directed to provide a key.
+    Otherwise use the argument as a file name to be used by ftok to create a key.
+
+testSharedMemoryRead.c
+  - Reads what testSharedMemory wrote to the shared segment.
+    If no argument, then the system is directed to provide a key.
+    Otherwise use the argument as a file name to be used by ftok to create a key.
+
+testSharedMemoryFree.c
+  - Releases the system resources for the shared memory.
+    After running this, then running testSharedMemoryRead will report an error.
+
+Note the files require
+
+  #include <sys/shm.h>
+  #include <sys/ipc.h>  // on Linux, ipc was included from shmx
+ -D _XOPEN_SOURCE
+

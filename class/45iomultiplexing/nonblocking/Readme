@@ -1,0 +1,12 @@
+nonblocking-for-file
+
+  - Demonstrates that nonblocking for a regular file is useless.
+  - Opens the file with O_NONBLOCK, then reads and displays the file,
+    counting how many times reading would have blocked. The answer is
+    zero.
+  - Does the same reopening the file without O_NONBLOCK and then
+    turning it on with fcntl. Same result.
+
+nonblocking
+  - Demonstrates use of O_NONBLOCK with a pipe.
+

@@ -1,0 +1,33 @@
+sigdemo0.c
+ - loop forever printing hanging out.
+ - can be killed with a ^C
+
+sigdemo1.c
+ - loop forever printing hanging out.
+ - Catches ^C
+ - can be killed with a ^\
+ - sigdemo_no_bsd is the same code, but build without _BSD_SOURCE,
+   which results in non-bsd semantics, so hitting ^C a second time
+   kills the process.
+
+sigdemo2.c
+ - loop forever printing hanging out.
+ - Ignores ^C
+ - Catches ^\
+ - Need to terminate by sending SIGKILL or other signal.
+
+patricide.c
+  - identifies self / parent
+  - forks a child who 
+    - identifies self / parent
+    - sends sigkill to parent (getppid)
+    - reports the patricide
+    - sleeps a couple of second
+    - again identifies self / parent
+   
+patricide_twice.c
+  - Same as patricide
+  - but after killing off first parent, kills off adopted parent.
+  - if adopted parent is process 1, init, then the second kill fails.
+  - but linux is providing each login with its own init. And that can
+    be killed, resulting in the process being logged out.

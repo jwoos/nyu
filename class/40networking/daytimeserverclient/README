@@ -1,0 +1,12 @@
+daytimetcpsrv.c
+
+  - Sets up a server that reports the time
+  - Stolen from Steven's Network Programming.
+  - Demonstrates the use of socket, bind, listen and accept.
+    - Discuss the use of htonl for sin_addr.s_addr and htons for sin_port.
+  - I have replaced the call to bzero with one to memset. :-(
+
+daytimetcpcli.c
+
+  - Sets up a client to interact with daytimetcpsrv
+  - Again, stolen from Steven's Network Programming.
