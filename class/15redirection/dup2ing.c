@@ -23,7 +23,7 @@ int main() {
     int n = read(0, line, BUFFSIZE-1);
     line[n] = '\n';
     write(1, line, n+1);
-  
+
     // Open the file before redirecting
     // (same as in duping.c)
     fd = open("/etc/passwd", O_RDONLY);
@@ -37,7 +37,7 @@ int main() {
     // (same as in duping.c)
     close(fd);
 
-    // again read from standard input, now the file, 
+    // again read from standard input, now the file,
     // and print to the console. Same code as in the beginning.
     // (and same as in redirect.c)
     n = read(0, line, BUFFSIZE-1);

@@ -23,7 +23,7 @@ int main() {
     int n = read(0, line, BUFFSIZE-1);
     line[n] = '\n';
     write(1, line, n+1);
-  
+
     // Open the file before redirecting
     int fd = open("/etc/passwd", O_RDONLY);
 
@@ -34,9 +34,9 @@ int main() {
 
     // and close the file's original descriptor as we don't want
     // unused open file descriptors.
-    close(fd); 
+    close(fd);
 
-    // again read from standard input, now the file, 
+    // again read from standard input, now the file,
     // and print to the console. Same code as in the beginning.
     // (and same as in redirect.c)
     n = read(0, line, BUFFSIZE-1);

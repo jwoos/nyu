@@ -21,12 +21,12 @@ int main() {
     int n = read(0, line, BUFFSIZE-1);
     line[n] = '\n';
     write(1, line, n+1);
-  
+
     // redirect input by closing standard input and opening the file
     close(0);                       // close standard input
     open("/etc/passwd", O_RDONLY);  // Redirecting standard input to passwd
 
-    // again read from standard input, now the file, 
+    // again read from standard input, now the file,
     // and print to the console. Same code as in the beginning.
     n = read(0, line, BUFFSIZE-1);
     line[n] = '\n';

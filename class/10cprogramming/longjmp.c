@@ -1,7 +1,7 @@
 /*
   longjmp.c
 
-  Demonstrates how setjmp / longjmp work. 
+  Demonstrates how setjmp / longjmp work.
  */
 
 #include <stdio.h>
@@ -10,12 +10,12 @@
 
 jmp_buf buf;
 
-void curly() { 
+void curly() {
     printf("In curly\n");
     longjmp(buf, 17);
 }
 
-void larry() { 
+void larry() {
     printf("In larry\n");
     //    longjmp(buf, 42);
     curly();
