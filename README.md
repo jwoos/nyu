@@ -9,4 +9,5 @@
 - [CSUY-3393](/csuy-3393): Unix System Programming (C)
 - [CSUY-3943](/csuy-3943): Information Visualization (JavaScript)
 - [CSUY-4533](/csuy-4533): Interactive Computer Graphics (C++)
+- [CSUY-4613](/csuy-4613): Artificial Intelligence (Go)
 - [CSUY-4783](/csuy-4783): Applied Cryptography (C++/C#)
