@@ -53,6 +53,7 @@ _*
 __pycache__
 __pycache__/
 bin/
+bind_*.go
 bootblock
 build/
 chat
@@ -74,8 +75,12 @@ main
 mkfs
 modules.order
 numbers/
+nyu_csuy-4613
 obj/
 out
 shell
 test
 vectors.S
+vendor/
+vendor_astilectron_bundler/
+windows.syso

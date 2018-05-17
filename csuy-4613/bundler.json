@@ -1,0 +1,10 @@
+{
+	"app_name": "Checkers",
+	"output_path": "build",
+	"icon_path_darwin": "resources/icon.icns",
+	"icon_path_linux": "resources/icon.png",
+	"icon_path_windows": "resources/icon.ico",
+	"environments": [
+		{"arch": "amd64", "os": "linux"}
+	]
+}

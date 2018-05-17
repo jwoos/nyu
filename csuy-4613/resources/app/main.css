@@ -1,0 +1,55 @@
+body {
+	margin: 0;
+	width: 100vw;
+	height: 100vh;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+
+#board {
+	border: solid black 1px;
+	width: 500px;
+	height: 500px;
+}
+
+.row {
+	display: block;
+	width: 100%;
+	height: 16.66666%;
+}
+
+.tile {
+	display: inline-block;
+	height: 100%;
+	width: 16.666666%;
+}
+
+.tile.white {
+	background: white;
+}
+
+.tile.black {
+	background: black;
+}
+
+.piece {
+	width: 75%;
+	height: 75%;
+	border-radius: 100px;
+	transform: translateY(15%);
+	position: relative;
+	margin: 0 auto;
+	cursor: pointer;
+}
+
+.piece.white {
+	border: solid black 1px;
+	background: white;
+}
+
+.piece.black {
+	border: solid white 1px;
+	background: black;
+}
