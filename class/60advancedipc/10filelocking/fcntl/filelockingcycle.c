@@ -13,7 +13,7 @@
 #include <unistd.h>  // sleep
 
 int main() {
-        
+
     struct flock lock;
     lock.l_type = F_WRLCK;
     lock.l_whence = SEEK_SET;

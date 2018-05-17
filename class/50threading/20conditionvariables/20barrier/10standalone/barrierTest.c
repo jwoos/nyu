@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
         if (pthread_create(&tids[i], NULL, printthread, NULL))
             fprintf(stderr,"Error creating thread %d.\n", i);
     }
-    
+
     // Wait till they're done.
     for (int i = 0; i < NUM_THREADS; ++i) {
         if (pthread_join(tids[i], NULL))
@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
     fprintf(stderr,"All threads complete.\n");
     return 0;
 }
-   
+
 // Thread function
 void *printthread(void *arg) {
     // Linux uses unsigned long for pthread_t

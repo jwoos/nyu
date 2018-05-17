@@ -27,7 +27,7 @@ void wait_barrier(void) {
     --count;  // We're in!
     fprintf(stderr, "count decremented to: %d\n", count);
     // Anyone left? Then release lock and wait.
-    while (count) pthread_cond_wait(&bcond, &bmutex); 
+    while (count) pthread_cond_wait(&bcond, &bmutex);
     pthread_cond_broadcast(&bcond); // We're good!  Wake up!
     pthread_mutex_unlock(&bmutex); // And we're done with the lock.
-} 
+}
