@@ -1,0 +1,28 @@
+#ifndef CHAT_COMMON_H
+#define CHAT_COMMON_H
+
+
+#define DEFAULT_HOST "127.0.0.1"
+#define DEFAULT_PORT 8000
+
+// timeout in seconds
+#define SELECT_TIMEOUT_SECONDS 10
+#define SELECT_TIMEOUT_USECONDS 10
+
+#define BUFFER_SIZE 1024
+#define READ_SIZE 512
+
+#define DATA_DEFAULT_SIZE 16
+#define DATA_INCREASE_FACTOR 2
+
+
+enum Resize {
+	ADD,
+	MULTIPLY,
+	SUBTRACT,
+	DIVIDE,
+	SET
+};
+
+
+#endif

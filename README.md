@@ -5,5 +5,6 @@
 - [CSUY-1124](/csuy-2134): Object Oriented Programming (C++)
 - [CSUY-2134](/csuy-2134): Data Structures and Algorithms (C++)
 - [CSUY-3224](/csuy-3224): Introduction to Operating Systems (C)
+- [CSUY-3393](/csuy-3393): Unix System Programming (C)
 - [CSUY-3943](/csuy-3943): Information Visualization (JavaScript)
 - [CSUY-4783](/csuy-4783): Applied Cryptography (C++/C#)

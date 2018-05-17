@@ -1,0 +1,26 @@
+t0: Simple function call.
+    Ignore the void* parameter and return value for now.
+
+t1: Same thing but function is invoked in a new thread.
+    On this machine (Linux), the thread never gets to run.
+
+t2: Add pthread_exit(NULL) at the end of of main.  This prevents the
+    thread from "falling off the bottom of main which would cause exit
+    to be called, instead simply ending the main thread without
+    calling exit.  exit will later be called when the last thread exits.
+
+t3: Add pthread_join(pid, NULL) before the "so long" from main.
+    Instead of t2's approach, in which we say that main finishing does
+    not exit the process, here we prevent main from exiting by making
+    it wait for the created thread.
+
+t4: Add a global variable that the thread will increment in a loop.
+
+t5: Add a second thread decrementing the same thing.
+
+t6: Facilitate threads alternating.  Note that alternation isn't strict.
+
+t7: Yield between "reading" the value and modifying it.
+
+t8: Insert a mutex to protect the updating of x.
+
