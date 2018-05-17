@@ -30,15 +30,16 @@
   unused-packages = true
 
 [[constraint]]
-  branch = "master"
-  name = "github.com/jwoos/go_checkers"
-
-[[constraint]]
   name = "github.com/asticode/go-astilectron"
   #version = "0.5.0"
-  revision = "2cc41c241216d45ccdae1fb2af7e5d114855cc74"
+  #revision = "master"
+  branch = "master"
 
 [[constraint]]
   #branch = "master"
   name = "github.com/asticode/go-astilectron-bootstrap"
 	revision = "e777aa2beef481bd163363b7b9d2165f01b89817"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/jwoos/go_checkers"

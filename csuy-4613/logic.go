@@ -3,7 +3,7 @@
 package main
 
 import (
-	"github.com/jwoos/go_checkers"
+	"github.com/jwoos/go_checkers/engine"
 )
 
 // struct to pass messages to go app

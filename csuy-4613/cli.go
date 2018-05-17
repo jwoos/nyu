@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jwoos/go_checkers"
+	"github.com/jwoos/go_checkers/engine"
 )
 
 func cli() {

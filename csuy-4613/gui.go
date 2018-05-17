@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/jwoos/go_checkers"
+	"github.com/jwoos/go_checkers/engine"
 
 	"github.com/asticode/go-astilectron"
 	"github.com/asticode/go-astilectron-bootstrap"
@@ -24,7 +24,6 @@ func gui() {
 
 	// run the gui
 	err := bootstrap.Run(bootstrap.Options{
-		Asset: Asset,
 		AstilectronOptions: astilectron.Options{
 			AppName:            AppName,
 			AppIconDarwinPath:  "resources/icon.icns",
@@ -152,7 +151,6 @@ func gui() {
 
 			return "", nil
 		},
-		RestoreAssets: RestoreAssets,
 		WindowOptions: &astilectron.WindowOptions{
 			BackgroundColor: astilectron.PtrStr("#FFFFFF"),
 			Center:          astilectron.PtrBool(true),

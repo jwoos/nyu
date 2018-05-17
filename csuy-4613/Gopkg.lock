@@ -14,9 +14,10 @@
   revision = "f6a15ece2cfd2560077c556499f19340ddc768e9"
 
 [[projects]]
+  branch = "master"
   name = "github.com/asticode/go-astilectron"
   packages = ["."]
-  revision = "2cc41c241216d45ccdae1fb2af7e5d114855cc74"
+  revision = "dadc8983d828a6a8da4e97f254a4d4585b7ec148"
 
 [[projects]]
   name = "github.com/asticode/go-astilectron-bootstrap"
@@ -27,17 +28,19 @@
   branch = "master"
   name = "github.com/asticode/go-astilectron-bundler"
   packages = ["."]
-  revision = "c9aa756170b8ee1a40f9f3640d34e8f6fbc80f6b"
+  revision = "ed12a73c6d04ca07167baef2a7a3ced7a9225954"
 
 [[projects]]
+  branch = "master"
   name = "github.com/asticode/go-astilog"
   packages = ["."]
-  revision = "9566758383acb7abb2836c0f54562c34eb84f8ed"
+  revision = "48409865148a0f397641b786ff35158bba19c48f"
 
 [[projects]]
   branch = "master"
   name = "github.com/asticode/go-astitools"
   packages = [
+    "archive",
     "context",
     "exec",
     "http",
@@ -45,10 +48,9 @@
     "os",
     "ptr",
     "regexp",
-    "url",
-    "zip"
+    "url"
   ]
-  revision = "29171cb43252f23536ef331763674ab8a2bbc332"
+  revision = "703905c0a93e64daf1742aec1f82b5ea103ff177"
 
 [[projects]]
   branch = "master"
@@ -65,8 +67,8 @@
 [[projects]]
   branch = "master"
   name = "github.com/jwoos/go_checkers"
-  packages = ["."]
-  revision = "72cbafa7f288caf2bdfa2e2f0016588cc6a06095"
+  packages = ["engine"]
+  revision = "c25e649ad33aebdd3af6a469efd74961044ed070"
 
 [[projects]]
   name = "github.com/mattn/go-colorable"
@@ -96,7 +98,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "88942b9c40a4c9d203b82b3731787b672d6e809b"
+  revision = "1a580b3eff7814fc9b40602fd35256c63b50f491"
 
 [[projects]]
   branch = "master"
@@ -105,11 +107,11 @@
     "unix",
     "windows"
   ]
-  revision = "91ee8cde435411ca3f1cd365e8f20131aed4d0a1"
+  revision = "7c87d13f8e835d2fb3a70a2912c811ed0c1d241b"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "dff4f07a5de184284053b6b65fd676c688347acda5edec554f747feec6f912e8"
+  inputs-digest = "3659cd1d1270a835bf936610e24b42e98fd2ae3e66c66c6618923ab5f063dd8b"
   solver-name = "gps-cdcl"
   solver-version = 1
