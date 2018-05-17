@@ -43,12 +43,14 @@
 *.sym
 *.x86_64
 *~
+.DS_Store
 .gdb_history
 .gdbinit
 .tmp_versions/
 Mkfile.old
 Module.symvers
 _*
+__pycache__
 __pycache__/
 bin/
 bootblock
