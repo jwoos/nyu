@@ -1,0 +1,50 @@
+// A simple example of how to implement subroutine linkage through stack.
+
+
+// Subroutine that expects two floating point numbers on the stack, adds
+// them and pushes the result onto the stack.
+LABEL	0
+POP	50 // Second parameter. NOTE: POP works for both integers and floats.
+POP	51 // First parameter
+ADDF	51, 50, 52
+PUSHF	52 // Result
+RETURN
+
+// Main program.
+START	1
+LABEL 1
+WRITES "Test of built-in functions."
+NEWLINE
+READF 1 // Get a number
+
+PUSHF 1 // Parameter set up
+CALL sqrt // Call built-in
+// Write result...
+WRITES "sqrt("
+WRITEF 1
+WRITES ")="
+POP 2
+WRITEF 2
+NEWLINE
+
+// Same for log
+PUSHF 1
+CALL log
+WRITES "log("
+WRITEF 1
+WRITES ")="
+POP 2
+WRITEF 2
+NEWLINE
+
+// ... and exp
+PUSHF 1
+CALL exp
+WRITES "exp("
+WRITEF 1
+WRITES ")="
+POP 2
+WRITEF 2
+NEWLINE
+
+STOP

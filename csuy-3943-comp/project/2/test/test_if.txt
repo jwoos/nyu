@@ -1,0 +1,32 @@
+int foo(int x) {
+	write x;
+
+	if (x > 10) {
+		write "gt 10:", x;
+	} else {
+		write "le 10:", x;
+	}
+
+	return x + 10;
+}
+
+int main(int dummy) {
+	int x;
+	read x;
+
+	write "pre";
+
+	if (x > 10)
+		write "yes";
+	else {
+		if (x > 5)
+			write "sort of";
+		else
+			write "argh";
+
+		write "no";
+	}
+
+	write foo(10);
+	write foo(11);
+}

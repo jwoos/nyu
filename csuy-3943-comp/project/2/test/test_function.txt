@@ -1,0 +1,19 @@
+int bar(int x) {
+	write "bar:", x;
+
+	return x + 10;
+}
+
+int foo(int x) {
+	write "foo:", x;
+
+	x = bar(x);
+
+	return x + 1;
+}
+
+int main(int dummy) {
+	int x;
+	x = foo(10 * 2);
+	write "main:", x;
+}

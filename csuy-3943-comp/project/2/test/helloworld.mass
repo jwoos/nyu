@@ -1,0 +1,6 @@
+LABEL 1
+WRITES "Hello, world!"
+NEWLINE
+STOP
+
+START 1
