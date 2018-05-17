@@ -54,6 +54,7 @@ __pycache__
 __pycache__/
 bin/
 bootblock
+build/
 chat
 dec
 dkms.conf
