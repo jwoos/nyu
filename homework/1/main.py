@@ -1,7 +1,8 @@
 #! /usr/bin/env python3
 
 import logging
-import multiprocessing
+import multiprocessing as mp
+import os
 import socket
 
 logging.basicConfig(
@@ -152,48 +153,67 @@ class Response:
         )
 
 
+def handler(conn, count):
+    conn.settimeout(1)
+
+    try:
+        req = Request(conn)
+
+        if req.timeout:
+            return
+
+        code = 200
+
+        if req.method != 'GET':
+            code = 405
+
+        if req.path not in PAGES:
+            code = 404
+    except Exception as e:
+        logger.debug(f'Caught: {e}')
+        code = 500
+
+    resp = Response(
+        conn,
+        code=code,
+        header={
+            'Server': 'js8460',
+            'Content-Type': 'text/html',
+            'Connection': 'Closed',
+        },
+    )
+    if resp.code == 200:
+        resp.send(PAGES[req.path].format(count=count))
+    else:
+        resp.send(Response.wrap_html(STATUS_MESSAGES[resp.code]))
+
+    conn.close()
+
+
 def main(sock):
     count = 0
-    while True:
-        conn, addr = sock.accept()
-        conn.settimeout(1)
 
-        logger.info(f'Connection accepted from {addr[0]}:{addr[1]}')
-
-        try:
-            req = Request(conn)
-
-            if req.timeout:
-                continue
-
-            code = 200
-
-            if req.method != 'GET':
-                code = 405
-
-            if req.path not in PAGES:
-                code = 404
-        except e:
-            logger.debug(f'Caught: {e}')
-            code = 500
-
-        resp = Response(
-            conn,
-            code=code,
-            header={
-                'Server': 'js8460',
-                'Content-Type': 'text/html',
-                'Connection': 'Closed',
-            },
-        )
-        if resp.code == 200:
-            resp.send(PAGES[req.path].format(count=count))
-        else:
-            resp.send(Response.wrap_html(STATUS_MESSAGES[resp.code]))
-
-        conn.close()
-
+    def _success(_):
+        nonlocal count
         count += 1
+
+    def _error(e):
+        logger.error(f'Processing connection failed: {e}')
+
+    with mp.Pool(
+        processes=os.cpu_count(),
+        # maxtasksperchild=1,
+    ) as pool:
+        while True:
+            conn, addr = sock.accept()
+            logger.info(f'Connection accepted from {addr[0]}:{addr[1]}')
+
+            pool.apply_async(
+                func=handler,
+                args=(conn, count),
+                callback=_success,
+                error_callback=_error,
+            )
 
 
 if __name__ == '__main__':
