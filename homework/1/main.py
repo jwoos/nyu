@@ -1,6 +1,13 @@
 #! /usr/bin/env python3
 
+import logging
 import socket
+
+logging.basicConfig(
+    format='[%(levelname)s <> %(name)s] %(message)s',
+    level=logging.DEBUG,
+)
+logger = logging.getLogger(__name__)
 
 
 BUFFER_SIZE = 1024
@@ -53,11 +60,21 @@ class Request:
         self.metadata_list = []
         self.body_list = []
 
+        self.timeout = False
+
         while True:
-            received = conn.recv(BUFFER_SIZE)
+            try:
+                received = conn.recv(BUFFER_SIZE)
+            except socket.timeout as e:
+                logger.debug(f'Timeout: {e}')
+                self.timeout = True
+                return
+
+            logger.debug(f'Received: {received}')
             self.metadata_list.append(received)
 
             if len(received) < BUFFER_SIZE:
+                logger.debug('Received all data, continuing')
                 break
 
         self.metadata = b''.join(self.metadata_list).decode()
@@ -135,8 +152,15 @@ def main(sock):
     count = 0
     while True:
         conn, addr = sock.accept()
+        conn.settimeout(1)
+
+        logger.info(f'Connection accepted from {addr[0]}:{addr[1]}')
 
         req = Request(conn)
+
+        if req.timeout:
+            continue
+
         code = 200
 
         if req.method != 'GET':
