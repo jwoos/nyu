@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import logging
+import multiprocessing
 import socket
 
 logging.basicConfig(
@@ -16,6 +17,7 @@ STATUS_MESSAGES = {
     200: 'OK',
     404: 'Not Found',
     405: 'Method Not Allowed',
+    500: 'Internal Server Error',
 }
 
 PAGES = {
@@ -66,7 +68,9 @@ class Request:
             try:
                 received = conn.recv(BUFFER_SIZE)
             except socket.timeout as e:
-                logger.debug(f'Timeout: {e}')
+                logger.debug(f'Timed out, closing connection')
+                self.conn.send(b'')
+                self.conn.close()
                 self.timeout = True
                 return
 
@@ -156,18 +160,22 @@ def main(sock):
 
         logger.info(f'Connection accepted from {addr[0]}:{addr[1]}')
 
-        req = Request(conn)
+        try:
+            req = Request(conn)
 
-        if req.timeout:
-            continue
+            if req.timeout:
+                continue
 
-        code = 200
+            code = 200
 
-        if req.method != 'GET':
-            code = 405
+            if req.method != 'GET':
+                code = 405
 
-        if req.path not in PAGES:
-            code = 404
+            if req.path not in PAGES:
+                code = 404
+        except e:
+            logger.debug(f'Caught: {e}')
+            code = 500
 
         resp = Response(
             conn,
@@ -182,6 +190,8 @@ def main(sock):
             resp.send(PAGES[req.path].format(count=count))
         else:
             resp.send(Response.wrap_html(STATUS_MESSAGES[resp.code]))
+
+        conn.close()
 
         count += 1
 
