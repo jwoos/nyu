@@ -3,12 +3,40 @@
 import socket
 
 
-HTTP_VERSION = 1.1
-BUFFER_SIZE = 128
+BUFFER_SIZE = 1024
+
 STATUS_MESSAGES = {
     200: 'OK',
     404: 'Not Found',
     405: 'Method Not Allowed',
+}
+
+PAGES = {
+    '/': (
+        '<!doctype html>'
+        '<html><head><title>HTTP Homework</title></head>'
+        '<body><h3><center>HTTP Homework</center></h3>This is the mainpage'
+        '<p>You can click on <a href="/page2">page 2</a> or '
+        '<a href="/page3">or Page 3</a><p>'
+        '<center>This server has been used {count} times</center>'
+        '</body></html>'
+    ),
+    '/page2': (
+        '<!doctype html>'
+        '<html><head><title>HTTP Homework</title></head>'
+        '<body><h3><center>HTTP Homework</center></h3>This is page'
+        '2<p>You can go <a href="/">back</a><p>'
+        '<center>This server has been used {count} times</center>'
+        '</body></html>'
+    ),
+    '/page3': (
+        '<!doctype html>'
+        '<html><head><title>HTTP Homework</title></head>'
+        '<body><h3><center>HTTP Homework</center></h3>This is page'
+        '3<p>You can go <a href="/">back</a><p>'
+        '<center>This server has been used {count} times</center>'
+        '</body></html>'
+    ),
 }
 
 
@@ -19,22 +47,22 @@ class Request:
         self.method = None
         self.path = None
         self.header = {}
-        self.message = None
+        self.metadata = None
         self.body = None
 
-        self.message_list = []
+        self.metadata_list = []
         self.body_list = []
 
         while True:
             received = conn.recv(BUFFER_SIZE)
-            self.message_list.append(received)
+            self.metadata_list.append(received)
 
             if len(received) < BUFFER_SIZE:
                 break
 
-        self.message = b''.join(self.message_list).decode()
+        self.metadata = b''.join(self.metadata_list).decode()
 
-        lines = self.message.split('\r\n')
+        lines = self.metadata.split('\r\n')
 
         request_line = lines[0].split(' ')
         self.method = request_line[0]
@@ -77,7 +105,6 @@ class Response:
         self.header = header
         self.body = body
 
-
     def form(self):
         response = [
             f'{self.http_version} {self.code} {STATUS_MESSAGES[self.code]}\r\n',
@@ -88,20 +115,51 @@ class Response:
             response.append(f'{k}: {v}\r\n')
 
         response.append('\r\n')
-        response.append(body)
+        response.append(self.body)
 
         return ''.join(response).encode()
 
+    def send(self, data):
+        self.body = data
+        self.conn.send(self.form())
+
+    @staticmethod
+    def wrap_html(data):
+        return (
+            f'<!doctype html><html><head></head>'
+            f'<body>{data}</body></html>'
+        )
+
 
 def main(sock):
+    count = 0
     while True:
         conn, addr = sock.accept()
 
         req = Request(conn)
+        code = 200
 
-        # resp = Response(conn)
+        if req.method != 'GET':
+            code = 405
 
-        conn.send(b'HTTP/1.1 200 OK\r\nServer: js8460\r\nContent-Length: 4\r\nContent-type: text/html\r\nConnection: Closed\r\n\r\ntest')
+        if req.path not in PAGES:
+            code = 404
+
+        resp = Response(
+            conn,
+            code=code,
+            header={
+                'Server': 'js8460',
+                'Content-Type': 'text/html',
+                'Connection': 'Closed',
+            },
+        )
+        if resp.code == 200:
+            resp.send(PAGES[req.path].format(count=count))
+        else:
+            resp.send(Response.wrap_html(STATUS_MESSAGES[resp.code]))
+
+        count += 1
 
 
 if __name__ == '__main__':
