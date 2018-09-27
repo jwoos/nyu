@@ -195,7 +195,7 @@ def main(sock):
 
     def _success(_):
         nonlocal count
-        count += 1
+        logger.info(f'Processed request {count}')
 
     def _error(e):
         logger.error(f'Processing connection failed: {e}')
@@ -214,6 +214,8 @@ def main(sock):
                 callback=_success,
                 error_callback=_error,
             )
+
+            count += 1
 
 
 if __name__ == '__main__':
