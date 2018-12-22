@@ -12,3 +12,4 @@
 - [CSUY-4533](/csuy-4533): Interactive Computer Graphics (C++)
 - [CSUY-4613](/csuy-4613): Artificial Intelligence (Go)
 - [CSUY-4783](/csuy-4783): Applied Cryptography (C++/C#)
+- [CSUY-4793](/csuy-4793): Computer Networking (Python)
